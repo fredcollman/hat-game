@@ -17,16 +17,43 @@ interface User {
   username: string;
 }
 
+interface Team {
+  name: string;
+  members: User[];
+  currentDescriberIndex: number;
+}
+
+interface Suggestion {
+  clientID: string;
+  name: string;
+}
+
+interface Options {
+  teams: number;
+}
+
 interface State {
+  round: number;
   users: User[];
+  suggestions: Suggestion[];
+  teams: Team[];
   sockets: Map<string, WebSocket>;
+  options: Options;
+  currentTeamIndex: number;
 }
 
 let state: State;
 
 const initialState = (): State => ({
+  round: 0,
   users: [],
+  suggestions: [],
+  teams: [],
   sockets: new Map<string, WebSocket>(),
+  options: {
+    teams: 2,
+  },
+  currentTeamIndex: 0,
 });
 
 const handleNewUser = (
@@ -42,13 +69,34 @@ const handleNewUser = (
   }
 };
 
-const broadcast = (category: string, data: object) => {
-  return Promise.all(
-    [...state.sockets.values()].map((sock: WebSocket) =>
-      sock.send(JSON.stringify({ category, data }))
-    ),
-  );
+const handleSuggestion = (
+  clientID: string,
+  { suggestion }: { suggestion: string },
+) => {
+  if (state.round === 0 && suggestion && suggestion.length) {
+    state.suggestions = [...state.suggestions, { clientID, name: suggestion }];
+  }
 };
+
+const handleStart = () => {
+  state.round = 1;
+  const numTeams = state.options.teams;
+  const shuffleUsers = state.users.sort((a, b) =>
+    a.clientID.localeCompare(b.clientID)
+  );
+  const teams = Array.from({ length: numTeams }).map((_, teamIdx) => ({
+    name: `Team ${teamIdx + 1}`,
+    members: state.users.filter((_, userIdx) => userIdx % numTeams === teamIdx),
+    currentDescriberIndex: 0,
+  }));
+  state.teams = teams;
+  state.currentTeamIndex = 0;
+};
+
+const broadcast = (category: string, data: object) =>
+  state.sockets.forEach((sock) =>
+    sock.send(JSON.stringify({ category, data }))
+  );
 
 const getMessageHandler = (clientID: string, sock: WebSocket) => {
   const send = (category: string, data: any) => {
@@ -65,10 +113,18 @@ const getMessageHandler = (clientID: string, sock: WebSocket) => {
     switch (category) {
       case "NEW_USER":
         handleNewUser(clientID, data);
-        return await broadcast(
+        broadcast(
           "USER_LIST",
           { users: state.users.map((u) => u.username) },
         );
+        break;
+      case "ADD_SUGGESTION":
+        handleSuggestion(clientID, data);
+        broadcast("SUGGESTION_COUNT", { count: state.suggestions.length });
+        break;
+      case "START_GAME":
+        handleStart();
+        broadcast("STARTING", {});
       default:
         break;
     }
@@ -94,6 +150,7 @@ const handleWs = async (sock: WebSocket) => {
         const { code, reason } = ev;
         log.debug("ws:Close", code, reason);
         state.sockets.delete(clientID);
+        state.users = state.users.filter((u) => u.clientID !== clientID);
       }
     }
   } catch (err) {
@@ -110,6 +167,8 @@ const getResponse = async (req: ServerRequest) => {
     case "/":
     case "/index.html":
       return { body: await Deno.readFile("public/index.html") };
+    case "/style.css":
+      return { body: await Deno.readFile("public/style.css") };
     case "/client.js":
       return { body: await Deno.readFile("public/client.js") };
     case "/ws":
