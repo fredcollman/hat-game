@@ -10,48 +10,76 @@ import {
   isWebSocketPingEvent,
   WebSocket,
 } from "https://deno.land/std@0.80.0/ws/mod.ts";
+import { v4 } from "https://deno.land/std@0.80.0/uuid/mod.ts";
+
+interface User {
+  clientID: string;
+  username: string;
+}
 
 interface State {
-  users: string[];
+  users: User[];
+  sockets: Map<string, WebSocket>;
 }
 
 let state: State;
 
-const mergeState = (newState: State) => {
-  state = { ...state, ...newState };
-};
+const initialState = (): State => ({
+  users: [],
+  sockets: new Map<string, WebSocket>(),
+});
 
-const getState = (): State => ({ ...state });
-
-const handleNewUser = ({ username }: { username: string }) => {
-  const { users } = getState();
+const handleNewUser = (
+  clientID: string,
+  { username }: { username: string },
+) => {
+  const { users } = state;
   if (username && username.length) {
-    mergeState({
-      users: [...users, username],
-    });
+    state.users = [
+      ...users.filter((u) => u.clientID !== clientID),
+      { clientID, username },
+    ];
   }
 };
 
-const send = (sock: WebSocket, category: string, data: any) => {
-  sock.send(JSON.stringify({ category, data }));
+const broadcast = (category: string, data: object) => {
+  return Promise.all(
+    [...state.sockets.values()].map((sock: WebSocket) =>
+      sock.send(JSON.stringify({ category, data }))
+    ),
+  );
 };
 
-const getMessageHandler = (sock: WebSocket) =>
-  async (msg: string) => {
+const getMessageHandler = (clientID: string, sock: WebSocket) => {
+  const send = (category: string, data: any) => {
+    log.info({ to: clientID, category, data });
+    sock.send(JSON.stringify({ category, data }));
+  };
+  send(
+    "USER_LIST",
+    { users: state.users.map((u) => u.username) },
+  );
+  return async (msg: string) => {
     const { category, data } = JSON.parse(msg);
-    log.info({ category, data });
+    log.info({ from: clientID, category, data });
     switch (category) {
       case "NEW_USER":
-        handleNewUser(data);
-        return await send(sock, "USER_LIST", { users: getState().users });
+        handleNewUser(clientID, data);
+        return await broadcast(
+          "USER_LIST",
+          { users: state.users.map((u) => u.username) },
+        );
       default:
-        await sock.send(msg);
+        break;
     }
   };
+};
 
 const handleWs = async (sock: WebSocket) => {
-  log.info("socket connected!");
-  const handler = getMessageHandler(sock);
+  const clientID = v4.generate();
+  log.info(`client connected with ID ${clientID}`);
+  state.sockets.set(clientID, sock);
+  const handler = getMessageHandler(clientID, sock);
   try {
     for await (const ev of sock) {
       if (typeof ev === "string") {
@@ -65,11 +93,13 @@ const handleWs = async (sock: WebSocket) => {
       } else if (isWebSocketCloseEvent(ev)) {
         const { code, reason } = ev;
         log.debug("ws:Close", code, reason);
+        state.sockets.delete(clientID);
       }
     }
   } catch (err) {
     log.error(`failed to receive frame: ${err}`);
     if (!sock.isClosed) {
+      state.sockets.delete(clientID);
       await sock.close(1000).catch(log.error);
     }
   }
@@ -97,12 +127,8 @@ const getResponse = async (req: ServerRequest) => {
   }
 };
 
-const initialState = (): State => ({
-  users: [],
-});
-
 const main = async () => {
-  mergeState(initialState());
+  state = initialState();
   for await (const req of serve({ port: 8000 })) {
     const { method, url } = req;
     log.info(`incoming: ${method} ${url}`);
