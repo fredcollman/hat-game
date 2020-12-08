@@ -1,19 +1,25 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>The Hat Game</title>
-</head>
-<body>
-  <main>
-    <form id="username" method="post">
-      <label>
-        Please enter your name
-        <input required type="text" name="username" placeholder="e.g. adele" />
-      </label>
-      <button type="submit">Continue</button>
-    </form>
-  </main>
-  <script src="/client.js"></script>
-</body>
+  <head>
+    <meta charset="UTF-8">
+    <title>The Hat Game</title>
+  </head>
+  <body>
+    <main>
+      <h1>The Hat Game</h1>
+      <form id="username" method="post">
+        <label>
+          Please enter your name
+          <input required type="text" name="username" placeholder="e.g. adele" />
+        </label>
+        <button type="submit">Continue</button>
+      </form>
+      <section>
+        <h2>Users</h2>
+        <ul id="users">
+        </ul>
+      </section>
+    </main>
+    <script src="/client.js"></script>
+  </body>
 </html>

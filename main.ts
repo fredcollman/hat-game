@@ -11,32 +11,66 @@ import {
   WebSocket,
 } from "https://deno.land/std@0.80.0/ws/mod.ts";
 
+interface State {
+  users: string[];
+}
+
+let state: State;
+
+const mergeState = (newState: State) => {
+  state = { ...state, ...newState };
+};
+
+const getState = (): State => ({ ...state });
+
+const handleNewUser = ({ username }: { username: string }) => {
+  const { users } = getState();
+  if (username && username.length) {
+    mergeState({
+      users: [...users, username],
+    });
+  }
+};
+
+const send = (sock: WebSocket, category: string, data: any) => {
+  sock.send(JSON.stringify({ category, data }));
+};
+
+const getMessageHandler = (sock: WebSocket) =>
+  async (msg: string) => {
+    const { category, data } = JSON.parse(msg);
+    log.info({ category, data });
+    switch (category) {
+      case "NEW_USER":
+        handleNewUser(data);
+        return await send(sock, "USER_LIST", { users: getState().users });
+      default:
+        await sock.send(msg);
+    }
+  };
+
 const handleWs = async (sock: WebSocket) => {
-  console.log("socket connected!");
+  log.info("socket connected!");
+  const handler = getMessageHandler(sock);
   try {
     for await (const ev of sock) {
       if (typeof ev === "string") {
-        // text message.
-        console.log("ws:Text", ev);
-        await sock.send(ev);
+        log.debug("ws:Text", ev);
+        await handler(ev);
       } else if (ev instanceof Uint8Array) {
-        // binary message.
-        console.log("ws:Binary", ev);
+        log.debug("ws:Binary", ev);
       } else if (isWebSocketPingEvent(ev)) {
         const [, body] = ev;
-        // ping.
-        console.log("ws:Ping", body);
+        log.debug("ws:Ping", body);
       } else if (isWebSocketCloseEvent(ev)) {
-        // close.
         const { code, reason } = ev;
-        console.log("ws:Close", code, reason);
+        log.debug("ws:Close", code, reason);
       }
     }
   } catch (err) {
-    console.error(`failed to receive frame: ${err}`);
-
+    log.error(`failed to receive frame: ${err}`);
     if (!sock.isClosed) {
-      await sock.close(1000).catch(console.error);
+      await sock.close(1000).catch(log.error);
     }
   }
 };
@@ -63,7 +97,12 @@ const getResponse = async (req: ServerRequest) => {
   }
 };
 
+const initialState = (): State => ({
+  users: [],
+});
+
 const main = async () => {
+  mergeState(initialState());
   for await (const req of serve({ port: 8000 })) {
     const { method, url } = req;
     log.info(`incoming: ${method} ${url}`);
@@ -74,7 +113,7 @@ const main = async () => {
         req.respond(res);
       }
     } catch (err) {
-      console.error(`failed to accept websocket: ${err}`);
+      log.error(`failed to accept websocket: ${err}`);
       await req.respond({ status: 400 });
     }
   }
