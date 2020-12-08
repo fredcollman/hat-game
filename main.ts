@@ -8,6 +8,8 @@ const getResponse = async (url: string) => {
   switch (url) {
     case "/":
       return { body: await Deno.readFile("public/index.html") };
+    case "/client.js":
+      return { body: await Deno.readFile("public/client.js") };
     default:
       return { body: "Not found.", status: Status.NotFound };
   }
