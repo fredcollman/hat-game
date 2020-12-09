@@ -12,6 +12,7 @@ function handlePage(ctx: any) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
+    <script type="module" src="/browser.js"></script>
   </head>
   <body >
     <div id="root">${body}</div>
@@ -22,10 +23,20 @@ function handlePage(ctx: any) {
   }
 }
 
+const [diagnostics, js] = await Deno.bundle(
+  "./client/index.tsx",
+  undefined,
+  { lib: ["dom", "dom.iterable", "esnext"] },
+);
+
 if (import.meta.main) {
   const app = new Application();
   const router = new Router();
   router.get("/", handlePage);
+  router.get("/browser.js", (ctx: any) => {
+    ctx.response.type = "text/javascript";
+    ctx.response.body = js;
+  });
   app.use(router.routes());
   app.use(router.allowedMethods());
   console.log("server is running on http://localhost:8000/");
