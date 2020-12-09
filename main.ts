@@ -93,6 +93,16 @@ const handleStart = () => {
   state.currentTeamIndex = 0;
 };
 
+const getCurrentDescriber = () => {
+  const team = state.teams[state.currentTeamIndex];
+  const { clientID, username } = team.members[team.currentDescriberIndex];
+  return {
+    clientID,
+    username,
+    team: team.name,
+  };
+};
+
 const broadcast = (category: string, data: object) =>
   state.sockets.forEach((sock) =>
     sock.send(JSON.stringify({ category, data }))
@@ -104,8 +114,8 @@ const getMessageHandler = (clientID: string, sock: WebSocket) => {
     sock.send(JSON.stringify({ category, data }));
   };
   send(
-    "USER_LIST",
-    { users: state.users.map((u) => u.username) },
+    "WELCOME",
+    { clientID, users: state.users.map((u) => u.username) },
   );
   return async (msg: string) => {
     const { category, data } = JSON.parse(msg);
@@ -124,7 +134,7 @@ const getMessageHandler = (clientID: string, sock: WebSocket) => {
         break;
       case "START_GAME":
         handleStart();
-        broadcast("STARTING", {});
+        broadcast("STARTING", { describer: getCurrentDescriber() });
       default:
         break;
     }

@@ -1,5 +1,6 @@
 let username = "anon";
 let suggestions = [];
+let clientID;
 
 let ws;
 
@@ -67,16 +68,16 @@ const onClickStartGame = (e) => {
 const onReceiveMessage = (e) => {
   const { category, data } = JSON.parse(e.data);
   console.debug({ category, data });
-  switch (category) {
-    case "USER_LIST":
-      return handleUserList(data);
-    case "SUGGESTION_COUNT":
-      return handleSuggestionCount(data);
-    case "STARTING":
-      return handleStarting(data);
-    default:
-      break;
+  const handler = handlers[category];
+  if (handler) {
+    return handler(data);
   }
+  console.error("no handler for category", category);
+};
+
+const handleWelcome = (data) => {
+  clientID = data.clientID;
+  handleUserList(data);
 };
 
 const handleUserList = ({ users }) => {
@@ -100,8 +101,25 @@ const handleSuggestionCount = ({ count }) => {
   );
 };
 
-const handleStarting = () => {
+const handleStarting = ({ describer }) => {
   switchPage(byID("playing-page"));
+  if (describer.clientID === clientID) {
+    byID("whose-turn").innerHTML = `
+    <h3>It's your turn!</h3>
+    <button type="button">Start</button>
+    `;
+  } else {
+    byID("whose-turn").innerHTML = `
+    <h3>It's ${describer.username}'s turn</h3>
+    `;
+  }
+};
+
+const handlers = {
+  WELCOME: handleWelcome,
+  USER_LIST: handleUserList,
+  SUGGESTION_COUNT: handleSuggestionCount,
+  STARTING: handleStarting,
 };
 
 const init = () => {
