@@ -15,6 +15,7 @@ const useSocket = () => {
     round: 0,
     describer: null,
   });
+  const [currentSuggestion, setCurrentSuggestion] = useState();
   useEffect(() => {
     console.log("creating a socket connection!");
     const socket = io();
@@ -37,6 +38,9 @@ const useSocket = () => {
     socket.on("NEW_TURN", ({ round, describer }) => {
       setTurn({ round, describer });
     });
+    socket.on("NEXT_SUGGESTION", ({ name }) => {
+      setCurrentSuggestion(name);
+    });
     return () => {
       console.log(`Closing connection to ${socket && socket.id}`);
       socket.close();
@@ -56,9 +60,23 @@ const useSocket = () => {
   const startGame = () => {
     socket.emit("START_GAME", {});
   };
+  const requestSuggestion = () => {
+    console.log(currentSuggestion);
+    socket && socket.emit("REQUEST_SUGGESTION", {});
+  };
+  const guessCorrectly = ({ name }) => {
+    socket && socket.emit("GUESS_CORRECTLY", { name });
+  };
+  const skip = ({ name }) => {
+    socket && socket.emit("SKIP", { name });
+  };
 
-  const user = socket && users.find((u) => u.clientID === socket.id);
-  const { round, describer } = turn;
+  // TODO remove hardcoded params
+  const describer = { clientID: "foo", username: "bar" };
+  const round = 1;
+  const user = describer;
+  // const user = socket && users.find((u) => u.clientID === socket.id);
+  // const { round, describer } = turn;
   return {
     socket,
     users,
@@ -69,6 +87,10 @@ const useSocket = () => {
     user,
     round,
     describer,
+    requestSuggestion,
+    guessCorrectly,
+    skip,
+    currentSuggestion,
   };
 };
 
@@ -126,7 +148,14 @@ const Turn = ({ describer }) => {
 };
 
 const RoundOne = ({ gameState }) => {
-  const { user, describer } = gameState;
+  const {
+    user,
+    describer,
+    requestSuggestion,
+    currentSuggestion,
+    skip,
+    guessCorrectly,
+  } = gameState;
   return (
     <section>
       <h2>Round 1</h2>
@@ -136,7 +165,12 @@ const RoundOne = ({ gameState }) => {
       </p>
       {user.clientID === describer.clientID
         ? (
-          <YourTurn />
+          <YourTurn
+            requestSuggestion={requestSuggestion}
+            suggestion={currentSuggestion}
+            guessCorrectly={guessCorrectly}
+            skip={skip}
+          />
         )
         : (
           <Turn describer={describer} />
@@ -148,17 +182,18 @@ const RoundOne = ({ gameState }) => {
 const App = () => {
   const gameState = useSocket();
   const { users, user, round } = gameState;
-  return <YourTurn />;
-  // <div>
-  //   <header>
-  //     <h1>The Hat Game</h1>
-  //   </header>
-  //   <main>
-  //     {round === 0 && <RoundZero gameState={gameState} />}
-  //     {round === 1 && <RoundOne gameState={gameState} />}
-  //     <UserList users={users} user={user} />
-  //   </main>
-  // </div>
+  return (
+    <div>
+      <header>
+        <h1>The Hat Game</h1>
+      </header>
+      <main>
+        {round === 0 && <RoundZero gameState={gameState} />}
+        {round === 1 && <RoundOne gameState={gameState} />}
+        <UserList users={users} user={user} />
+      </main>
+    </div>
+  );
 };
 
 export default App;

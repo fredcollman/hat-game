@@ -7,9 +7,10 @@ const Countdown = ({ from, onComplete }) => {
     if (timer <= 0) {
       onComplete();
     } else {
-      setTimeout(() => {
+      const timeout = setTimeout(() => {
         setTimer((t) => t - 1);
       }, 1000);
+      return () => clearTimeout(timeout);
     }
   }, [timer, onComplete]);
   return <>{timer}</>;

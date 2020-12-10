@@ -89,6 +89,11 @@ class Client {
       describer: getCurrentDescriber(),
     });
   };
+
+  requestSuggestion = () => {
+    // TODO: flesh out
+    this.sock.emit("NEXT_SUGGESTION", { name: "Sherlock Holmes" });
+  };
 }
 
 io.on("connection", (socket) => {
@@ -104,4 +109,5 @@ io.on("connection", (socket) => {
   socket.on("SET_USERNAME", client.setUsername);
   socket.on("ADD_SUGGESTION", client.addSuggestion);
   socket.on("START_GAME", client.startGame);
+  socket.on("REQUEST_SUGGESTION", client.requestSuggestion);
 });
