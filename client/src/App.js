@@ -3,6 +3,7 @@ import "./App.css";
 import Signup from "./Signup";
 import StartGame from "./StartGame";
 import Suggestions from "./Suggestions";
+import YourTurn from "./YourTurn";
 import { io } from "socket.io-client";
 
 const useSocket = () => {
@@ -114,15 +115,6 @@ const RoundZero = ({ gameState }) => {
   );
 };
 
-const YourTurn = () => {
-  return (
-    <>
-      <p>It's your turn!</p>
-      <button type="button">Start</button>
-    </>
-  );
-};
-
 const Turn = ({ describer }) => {
   return (
     <>
@@ -156,18 +148,17 @@ const RoundOne = ({ gameState }) => {
 const App = () => {
   const gameState = useSocket();
   const { users, user, round } = gameState;
-  return (
-    <div>
-      <header>
-        <h1>The Hat Game</h1>
-      </header>
-      <main>
-        {round === 0 && <RoundZero gameState={gameState} />}
-        {round === 1 && <RoundOne gameState={gameState} />}
-        <UserList users={users} user={user} />
-      </main>
-    </div>
-  );
+  return <YourTurn />;
+  // <div>
+  //   <header>
+  //     <h1>The Hat Game</h1>
+  //   </header>
+  //   <main>
+  //     {round === 0 && <RoundZero gameState={gameState} />}
+  //     {round === 1 && <RoundOne gameState={gameState} />}
+  //     <UserList users={users} user={user} />
+  //   </main>
+  // </div>
 };
 
 export default App;
