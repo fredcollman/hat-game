@@ -72,6 +72,7 @@ const useSocket = () => {
     socket && socket.emit("SKIP", { name });
   };
   const endTurn = () => {
+    setCurrentSuggestion(null);
     socket.emit("END_TURN", {});
   };
 
@@ -190,6 +191,8 @@ const Round = ({ gameState }) => {
   );
 };
 
+const GameOver = () => "Thanks for playing!";
+
 const App = () => {
   const gameState = useSocket();
   const { users, user, round } = gameState;
@@ -200,7 +203,8 @@ const App = () => {
       </header>
       <main>
         {round === 0 && <RoundZero gameState={gameState} />}
-        {round > 0 && <Round gameState={gameState} />}
+        {round > 0 && round < 4 && <Round gameState={gameState} />}
+        {round === 4 && <GameOver />}
         <UserList users={users} user={user} />
       </main>
     </div>

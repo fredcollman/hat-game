@@ -28,7 +28,6 @@ const state = {
   },
   currentTeamIndex: 0,
   availableSuggestions: [],
-  skips: [],
 };
 
 const getCurrentDescriber = () => {
@@ -42,7 +41,9 @@ const getCurrentDescriber = () => {
 };
 
 const getNextSuggestion = () => {
-  return state.availableSuggestions[0];
+  const nonSkipped = state.availableSuggestions.filter((s) => !s.skipped);
+  const randomIndex = Math.floor(Math.random() * nonSkipped.length);
+  return nonSkipped[randomIndex];
 };
 
 const endTurn = () => {
@@ -51,7 +52,10 @@ const endTurn = () => {
   team.currentDescriberIndex = (team.currentDescriberIndex + 1) %
     team.members.length;
   state.currentTeamIndex = (state.currentTeamIndex + 1) % state.teams.length;
-  state.skips = [];
+  state.availableSuggestions = state.availableSuggestions.map((s) => ({
+    ...s,
+    skipped: false,
+  }));
   if (!state.availableSuggestions.length) {
     startRound(state.round + 1);
   }
@@ -59,7 +63,10 @@ const endTurn = () => {
 
 const startRound = (round) => {
   state.round = round;
-  state.availableSuggestions = [...state.suggestions];
+  state.availableSuggestions = state.suggestions.map((s) => ({
+    ...s,
+    skipped: false,
+  }));
 };
 
 const startGame = () => {
@@ -133,10 +140,9 @@ class Client {
   };
 
   skip = ({ name }) => {
-    state.availableSuggestions = state.availableSuggestions.filter(
-      (s) => s.name !== name,
+    state.availableSuggestions = state.availableSuggestions.map((s) =>
+      s.name === name ? { ...s, skipped: true } : s
     );
-    state.skips.push(name);
     console.log("skipped", name);
     this.requestSuggestion();
   };
