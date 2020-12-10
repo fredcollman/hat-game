@@ -1,11 +1,14 @@
 import { useEffect, useState } from "react";
 import "./App.css";
 import Signup from "./Signup";
+import SuggestionForm from "./SuggestionForm";
+import Suggestions from "./Suggestions";
 import { io } from "socket.io-client";
 
 const useSocket = () => {
   const [users, setUsers] = useState([]);
   const [socket, setSocket] = useState();
+  const [suggestions, setSuggestions] = useState([]);
   useEffect(() => {
     console.log("creating a socket connection!");
     const socket = io();
@@ -27,7 +30,13 @@ const useSocket = () => {
       socket.close();
     };
   }, []);
-  return { socket, users };
+
+  const addSuggestion = (suggestion) => {
+    socket.emit("ADD_SUGGESTION", { suggestion });
+    setSuggestions((prev) => [...prev, { clientID: socket.id, suggestion }]);
+  };
+
+  return { socket, users, addSuggestion, suggestions };
 };
 
 const UserList = ({ user, users }) => (
@@ -50,7 +59,7 @@ const UserList = ({ user, users }) => (
 );
 
 function App() {
-  const { socket, users } = useSocket();
+  const { socket, users, addSuggestion, suggestions } = useSocket();
   const user = socket && users.find((u) => u.clientID === socket.id);
   return (
     <div>
@@ -58,7 +67,16 @@ function App() {
         <h1>The Hat Game</h1>
       </header>
       <main>
-        {user ? null : <Signup socket={socket} />}
+        {user
+          ? (
+            <>
+              <SuggestionForm addSuggestion={addSuggestion} />
+              <Suggestions suggestions={suggestions} />
+            </>
+          )
+          : (
+            <Signup socket={socket} />
+          )}
         <UserList users={users} user={user} />
       </main>
     </div>
