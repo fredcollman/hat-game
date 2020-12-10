@@ -1,23 +1,38 @@
-import logo from './logo.svg';
-import './App.css';
+import { useEffect, useState } from "react";
+import "./App.css";
+import Signup from "./Signup";
+import { io } from "socket.io-client";
 
 function App() {
+  const [users, setUsers] = useState([]);
+  const [socket, setSocket] = useState();
+  useEffect(() => {
+    console.log("creating a socket connection!");
+    const socket = io();
+    setSocket(socket);
+    socket.on("connect", () => {
+      console.log("connected");
+    });
+    socket.on("event", (data) => {
+      console.log(data);
+    });
+    socket.on("USER_LIST", ({ users }) => {
+      setUsers(users);
+    });
+  }, []);
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
+    <div>
+      <header>
+        <h1>The Hat Game</h1>
       </header>
+      <main>
+        <Signup socket={socket} />
+        <ul>
+          {users.map((u) => (
+            <li key={u.clientID}>{u.username}</li>
+          ))}
+        </ul>
+      </main>
     </div>
   );
 }
