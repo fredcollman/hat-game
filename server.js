@@ -42,6 +42,13 @@ const getCurrentDescriber = () => {
 class Client {
   constructor(socket) {
     this.sock = socket;
+    this.suggestions = [
+      "Sherlock Holmes",
+      "Scooby Doo",
+      "Michelle Obama",
+      "Noel Gallagher",
+    ];
+    this.score = 0;
   }
 
   setUsername = ({ username }) => {
@@ -92,7 +99,20 @@ class Client {
 
   requestSuggestion = () => {
     // TODO: flesh out
-    this.sock.emit("NEXT_SUGGESTION", { name: "Sherlock Holmes" });
+    this.sock.emit("NEXT_SUGGESTION", { name: this.suggestions[0] });
+  };
+
+  guessCorrectly = ({ name }) => {
+    this.suggestions = this.suggestions.filter((s) => s !== name);
+    this.score += 1;
+    console.log("correct. current score", this.score);
+    this.sock.emit("NEXT_SUGGESTION", { name: this.suggestions[0] });
+  };
+
+  skip = ({ name }) => {
+    this.suggestions = this.suggestions.filter((s) => s !== name);
+    console.log("skipped. current score", this.score, this.suggestions, name);
+    this.sock.emit("NEXT_SUGGESTION", { name: this.suggestions[0] });
   };
 }
 
@@ -110,4 +130,6 @@ io.on("connection", (socket) => {
   socket.on("ADD_SUGGESTION", client.addSuggestion);
   socket.on("START_GAME", client.startGame);
   socket.on("REQUEST_SUGGESTION", client.requestSuggestion);
+  socket.on("GUESS_CORRECTLY", client.guessCorrectly);
+  socket.on("SKIP", client.skip);
 });

@@ -39,6 +39,7 @@ const useSocket = () => {
       setTurn({ round, describer });
     });
     socket.on("NEXT_SUGGESTION", ({ name }) => {
+      console.log("NEXT_SUGGESTION:", name);
       setCurrentSuggestion(name);
     });
     return () => {
@@ -64,10 +65,10 @@ const useSocket = () => {
     console.log(currentSuggestion);
     socket && socket.emit("REQUEST_SUGGESTION", {});
   };
-  const guessCorrectly = ({ name }) => {
+  const guessCorrectly = (name) => {
     socket && socket.emit("GUESS_CORRECTLY", { name });
   };
-  const skip = ({ name }) => {
+  const skip = (name) => {
     socket && socket.emit("SKIP", { name });
   };
 

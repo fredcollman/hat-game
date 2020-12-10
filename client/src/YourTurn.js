@@ -2,13 +2,25 @@ import { useEffect, useState } from "react";
 import Countdown from "./Countdown";
 
 const Describe = ({ suggestion, endTurn, guessCorrectly, skip }) => {
+  const [submitted, setSubmitted] = useState(false);
+  useEffect(() => {
+    setSubmitted(false);
+  }, [suggestion]);
+  const handleSkip = () => {
+    setSubmitted(true);
+    skip(suggestion);
+  };
+  const handleGuess = () => {
+    setSubmitted(true);
+    guessCorrectly(suggestion);
+  };
   return (
     <>
       <div>{suggestion}</div>
-      <button type="button" onClick={() => skip(suggestion)}>
+      <button type="button" onClick={handleSkip} disabled={submitted}>
         Skip
       </button>
-      <button type="button" onClick={() => guessCorrectly(suggestion)}>
+      <button type="button" onClick={handleGuess} disabled={submitted}>
         Got It!
       </button>
       <div>
