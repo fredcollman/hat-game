@@ -42,6 +42,9 @@ const useSocket = () => {
       console.log("NEXT_SUGGESTION:", name);
       setCurrentSuggestion(name);
     });
+    socket.on("END_TURN", () => {
+      console.log("TODO END_TURN");
+    });
     return () => {
       console.log(`Closing connection to ${socket && socket.id}`);
       socket.close();
@@ -73,11 +76,11 @@ const useSocket = () => {
   };
 
   // TODO remove hardcoded params
-  const describer = { clientID: "foo", username: "bar" };
-  const round = 1;
-  const user = describer;
-  // const user = socket && users.find((u) => u.clientID === socket.id);
-  // const { round, describer } = turn;
+  // const describer = { clientID: "foo", username: "bar" };
+  // const round = 1;
+  // const user = describer;
+  const user = socket && users.find((u) => u.clientID === socket.id);
+  const { round, describer } = turn;
   return {
     socket,
     users,
@@ -148,7 +151,13 @@ const Turn = ({ describer }) => {
   );
 };
 
-const RoundOne = ({ gameState }) => {
+const ROUND_DESCRIPTIONS = {
+  1: "In Round 1, you can use as many words as you need to describe the name you draw.",
+  2: "In Round 2, you can only use a single word. If it helps, you can say it multiple times.",
+  3: "In Round 3, you cannot make a sound! You must act out the name instead.",
+};
+
+const Round = ({ gameState }) => {
   const {
     user,
     describer,
@@ -156,14 +165,12 @@ const RoundOne = ({ gameState }) => {
     currentSuggestion,
     skip,
     guessCorrectly,
+    round,
   } = gameState;
   return (
     <section>
-      <h2>Round 1</h2>
-      <p>
-        In Round 1, you can use as many words as you need to describe the name
-        you draw.
-      </p>
+      <h2>Round {round}</h2>
+      <p>{ROUND_DESCRIPTIONS[round]}</p>
       {user.clientID === describer.clientID
         ? (
           <YourTurn
@@ -190,7 +197,7 @@ const App = () => {
       </header>
       <main>
         {round === 0 && <RoundZero gameState={gameState} />}
-        {round === 1 && <RoundOne gameState={gameState} />}
+        {round > 0 && <Round gameState={gameState} />}
         <UserList users={users} user={user} />
       </main>
     </div>

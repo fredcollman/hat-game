@@ -27,6 +27,8 @@ const state = {
     turnDurationSeconds: 60,
   },
   currentTeamIndex: 0,
+  availableSuggestions: [],
+  skips: [],
 };
 
 const getCurrentDescriber = () => {
@@ -39,16 +41,42 @@ const getCurrentDescriber = () => {
   };
 };
 
+const getNextSuggestion = () => {
+  return state.availableSuggestions[0];
+};
+
+const endTurn = () => {
+  console.log(state);
+  const team = state.teams[state.currentTeamIndex];
+  team.currentDescriberIndex = (team.currentDescriberIndex + 1) %
+    team.members.length;
+  state.currentTeamIndex = (state.currentTeamIndex + 1) % state.teams.length;
+  state.skips = [];
+  if (!state.availableSuggestions.length) {
+    startRound(state.round + 1);
+  }
+};
+
+const startRound = (round) => {
+  state.round = round;
+  state.availableSuggestions = [...state.suggestions];
+};
+
+const startGame = () => {
+  const numTeams = state.options.teams;
+  const teams = Array.from({ length: numTeams }).map((_, teamIdx) => ({
+    name: `Team ${teamIdx + 1}`,
+    members: state.users.filter((_, userIdx) => userIdx % numTeams === teamIdx),
+    currentDescriberIndex: 0,
+  }));
+  state.teams = teams;
+  state.currentTeamIndex = 0;
+  startRound(1);
+};
+
 class Client {
   constructor(socket) {
     this.sock = socket;
-    this.suggestions = [
-      "Sherlock Holmes",
-      "Scooby Doo",
-      "Michelle Obama",
-      "Noel Gallagher",
-    ];
-    this.score = 0;
   }
 
   setUsername = ({ username }) => {
@@ -78,17 +106,7 @@ class Client {
   };
 
   startGame = () => {
-    state.round = 1;
-    const numTeams = state.options.teams;
-    const teams = Array.from({ length: numTeams }).map((_, teamIdx) => ({
-      name: `Team ${teamIdx + 1}`,
-      members: state.users.filter(
-        (_, userIdx) => userIdx % numTeams === teamIdx,
-      ),
-      currentDescriberIndex: 0,
-    }));
-    state.teams = teams;
-    state.currentTeamIndex = 0;
+    startGame();
     console.log(state);
     io.emit("NEW_TURN", {
       round: state.round,
@@ -98,21 +116,35 @@ class Client {
   };
 
   requestSuggestion = () => {
-    // TODO: flesh out
-    this.sock.emit("NEXT_SUGGESTION", { name: this.suggestions[0] });
+    const suggestion = getNextSuggestion();
+    if (suggestion) {
+      this.sock.emit("NEXT_SUGGESTION", { name: suggestion.name });
+    } else {
+      endTurn();
+      console.log(state);
+      io.emit("NEW_TURN", {
+        round: state.round,
+        duration: state.options.turnDurationSeconds,
+        describer: getCurrentDescriber(),
+      });
+    }
   };
 
   guessCorrectly = ({ name }) => {
-    this.suggestions = this.suggestions.filter((s) => s !== name);
-    this.score += 1;
-    console.log("correct. current score", this.score);
-    this.sock.emit("NEXT_SUGGESTION", { name: this.suggestions[0] });
+    state.availableSuggestions = state.availableSuggestions.filter(
+      (s) => s.name !== name,
+    );
+    console.log("correct", name);
+    this.requestSuggestion();
   };
 
   skip = ({ name }) => {
-    this.suggestions = this.suggestions.filter((s) => s !== name);
-    console.log("skipped. current score", this.score, this.suggestions, name);
-    this.sock.emit("NEXT_SUGGESTION", { name: this.suggestions[0] });
+    state.availableSuggestions = state.availableSuggestions.filter(
+      (s) => s.name !== name,
+    );
+    state.skips.push(name);
+    console.log("skipped", name);
+    this.requestSuggestion();
   };
 }
 

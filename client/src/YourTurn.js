@@ -33,8 +33,10 @@ const Describe = ({ suggestion, endTurn, guessCorrectly, skip }) => {
 const YourTurn = ({ suggestion, requestSuggestion, guessCorrectly, skip }) => {
   const [status, setStatus] = useState("WAITING");
   useEffect(() => {
-    requestSuggestion();
-  }, [requestSuggestion]);
+    if (!suggestion) {
+      requestSuggestion();
+    }
+  }, [suggestion, requestSuggestion]);
   const beginTurn = () => {
     setStatus("STARTING");
   };
