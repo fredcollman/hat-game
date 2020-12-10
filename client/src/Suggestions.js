@@ -1,5 +1,20 @@
-const Suggestions = ({ suggestions }) => {
-  return <p>There are {suggestions.length} names in the hat.</p>;
+import SuggestionForm from "./SuggestionForm";
+
+const Suggestions = ({ yourSuggestions, addSuggestion, count }) => {
+  return (
+    <section>
+      <h2>Suggestions</h2>
+      <SuggestionForm addSuggestion={addSuggestion} />
+      <p>
+        There are {count} names in the hat. Your suggestions:
+        <ul>
+          {yourSuggestions.map((sugg) => (
+            <li key={sugg}>{sugg}</li>
+          ))}
+        </ul>
+      </p>
+    </section>
+  );
 };
 
 export default Suggestions;

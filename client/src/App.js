@@ -1,14 +1,15 @@
 import { useEffect, useState } from "react";
 import "./App.css";
 import Signup from "./Signup";
-import SuggestionForm from "./SuggestionForm";
+import StartGame from "./StartGame";
 import Suggestions from "./Suggestions";
 import { io } from "socket.io-client";
 
 const useSocket = () => {
   const [users, setUsers] = useState([]);
   const [socket, setSocket] = useState();
-  const [suggestions, setSuggestions] = useState([]);
+  const [yourSuggestions, setYourSuggestions] = useState([]);
+  const [suggestionCount, setSuggestionCount] = useState(0);
   useEffect(() => {
     console.log("creating a socket connection!");
     const socket = io();
@@ -25,6 +26,9 @@ const useSocket = () => {
     socket.on("USER_LIST", ({ users }) => {
       setUsers(users);
     });
+    socket.on("NEW_SUGGESTION", ({ count }) => {
+      setSuggestionCount(count);
+    });
     return () => {
       console.log(`Closing connection to ${socket && socket.id}`);
       socket.close();
@@ -32,11 +36,27 @@ const useSocket = () => {
   }, []);
 
   const addSuggestion = (suggestion) => {
-    socket.emit("ADD_SUGGESTION", { suggestion });
-    setSuggestions((prev) => [...prev, { clientID: socket.id, suggestion }]);
+    if (
+      suggestion &&
+      suggestion.length &&
+      !yourSuggestions.includes(suggestion)
+    ) {
+      socket.emit("ADD_SUGGESTION", { suggestion });
+      setYourSuggestions((prev) => [...prev, suggestion]);
+    }
+  };
+  const startGame = () => {
+    socket.emit("START_GAME", {});
   };
 
-  return { socket, users, addSuggestion, suggestions };
+  return {
+    socket,
+    users,
+    addSuggestion,
+    yourSuggestions,
+    startGame,
+    suggestionCount,
+  };
 };
 
 const UserList = ({ user, users }) => (
@@ -59,7 +79,14 @@ const UserList = ({ user, users }) => (
 );
 
 function App() {
-  const { socket, users, addSuggestion, suggestions } = useSocket();
+  const {
+    socket,
+    users,
+    addSuggestion,
+    yourSuggestions,
+    startGame,
+    suggestionCount,
+  } = useSocket();
   const user = socket && users.find((u) => u.clientID === socket.id);
   return (
     <div>
@@ -70,8 +97,12 @@ function App() {
         {user
           ? (
             <>
-              <SuggestionForm addSuggestion={addSuggestion} />
-              <Suggestions suggestions={suggestions} />
+              <Suggestions
+                yourSuggestions={yourSuggestions}
+                addSuggestion={addSuggestion}
+                count={suggestionCount}
+              />
+              <StartGame startGame={startGame} />
             </>
           )
           : (
