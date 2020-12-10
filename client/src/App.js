@@ -42,9 +42,6 @@ const useSocket = () => {
       console.log("NEXT_SUGGESTION:", name);
       setCurrentSuggestion(name);
     });
-    socket.on("END_TURN", () => {
-      console.log("TODO END_TURN");
-    });
     return () => {
       console.log(`Closing connection to ${socket && socket.id}`);
       socket.close();
@@ -74,6 +71,9 @@ const useSocket = () => {
   const skip = (name) => {
     socket && socket.emit("SKIP", { name });
   };
+  const endTurn = () => {
+    socket.emit("END_TURN", {});
+  };
 
   // TODO remove hardcoded params
   // const describer = { clientID: "foo", username: "bar" };
@@ -95,6 +95,7 @@ const useSocket = () => {
     guessCorrectly,
     skip,
     currentSuggestion,
+    endTurn,
   };
 };
 
@@ -166,6 +167,7 @@ const Round = ({ gameState }) => {
     skip,
     guessCorrectly,
     round,
+    endTurn,
   } = gameState;
   return (
     <section>
@@ -178,6 +180,7 @@ const Round = ({ gameState }) => {
             suggestion={currentSuggestion}
             guessCorrectly={guessCorrectly}
             skip={skip}
+            endTurn={endTurn}
           />
         )
         : (

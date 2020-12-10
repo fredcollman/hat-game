@@ -1,6 +1,9 @@
 import { useEffect, useState } from "react";
 import Countdown from "./Countdown";
 
+const TURN_DURATION = 6;
+const COUNTDOWN_DURATION = 1;
+
 const Describe = ({ suggestion, endTurn, guessCorrectly, skip }) => {
   const [submitted, setSubmitted] = useState(false);
   useEffect(() => {
@@ -24,13 +27,19 @@ const Describe = ({ suggestion, endTurn, guessCorrectly, skip }) => {
         Got It!
       </button>
       <div>
-        Time Remaining: <Countdown from={60} onComplete={endTurn} />
+        Time Remaining: <Countdown from={TURN_DURATION} onComplete={endTurn} />
       </div>
     </>
   );
 };
 
-const YourTurn = ({ suggestion, requestSuggestion, guessCorrectly, skip }) => {
+const YourTurn = ({
+  suggestion,
+  requestSuggestion,
+  guessCorrectly,
+  skip,
+  endTurn,
+}) => {
   const [status, setStatus] = useState("WAITING");
   useEffect(() => {
     if (!suggestion) {
@@ -43,8 +52,9 @@ const YourTurn = ({ suggestion, requestSuggestion, guessCorrectly, skip }) => {
   const showName = () => {
     setStatus("PLAYING");
   };
-  const endTurn = () => {
+  const finishTurn = () => {
     setStatus("FINISHED");
+    endTurn();
   };
   if (!suggestion) {
     return "Loading...";
@@ -57,13 +67,15 @@ const YourTurn = ({ suggestion, requestSuggestion, guessCorrectly, skip }) => {
           Start
         </button>
       )}
-      {status === "STARTING" && <Countdown from={3} onComplete={showName} />}
+      {status === "STARTING" && (
+        <Countdown from={COUNTDOWN_DURATION} onComplete={showName} />
+      )}
       {status === "PLAYING" && (
         <Describe
           suggestion={suggestion}
           guessCorrectly={guessCorrectly}
           skip={skip}
-          endTurn={endTurn}
+          endTurn={finishTurn}
         />
       )}
       {status === "FINISHED" && "You can relax now, your turn is over."}

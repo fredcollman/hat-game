@@ -120,13 +120,7 @@ class Client {
     if (suggestion) {
       this.sock.emit("NEXT_SUGGESTION", { name: suggestion.name });
     } else {
-      endTurn();
-      console.log(state);
-      io.emit("NEW_TURN", {
-        round: state.round,
-        duration: state.options.turnDurationSeconds,
-        describer: getCurrentDescriber(),
-      });
+      this.nextTurn();
     }
   };
 
@@ -146,6 +140,16 @@ class Client {
     console.log("skipped", name);
     this.requestSuggestion();
   };
+
+  nextTurn = () => {
+    endTurn();
+    console.log(state);
+    io.emit("NEW_TURN", {
+      round: state.round,
+      duration: state.options.turnDurationSeconds,
+      describer: getCurrentDescriber(),
+    });
+  };
 }
 
 io.on("connection", (socket) => {
@@ -164,4 +168,5 @@ io.on("connection", (socket) => {
   socket.on("REQUEST_SUGGESTION", client.requestSuggestion);
   socket.on("GUESS_CORRECTLY", client.guessCorrectly);
   socket.on("SKIP", client.skip);
+  socket.on("END_TURN", client.nextTurn);
 });
