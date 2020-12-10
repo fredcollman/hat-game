@@ -36,12 +36,21 @@ class Client {
     console.log(state);
     io.emit("USER_LIST", { users: state.users });
   };
+
+  welcome = () => {
+    this.sock.emit("WELCOME", { clientID: this.sock.id, users: state.users });
+  };
 }
 
 io.on("connection", (socket) => {
   console.log(`[${socket.id}] user connected`);
+  socket.on("disconnect", (reason) => {
+    console.log(`[${socket.id}] user disconnected for reason ${reason}`);
+    // TODO remove user from list of players
+  });
 
   const client = new Client(socket);
+  client.welcome();
 
   socket.on("SET_USERNAME", client.setUsername);
 });
