@@ -24,8 +24,19 @@ const state = {
   suggestions: [],
   options: {
     teams: 2,
+    turnDurationSeconds: 60,
   },
   currentTeamIndex: 0,
+};
+
+const getCurrentDescriber = () => {
+  const team = state.teams[state.currentTeamIndex];
+  const { clientID, username } = team.members[team.currentDescriberIndex];
+  return {
+    clientID,
+    username,
+    team: team.name,
+  };
 };
 
 class Client {
@@ -71,6 +82,12 @@ class Client {
     }));
     state.teams = teams;
     state.currentTeamIndex = 0;
+    console.log(state);
+    io.emit("NEW_TURN", {
+      round: state.round,
+      duration: state.options.turnDurationSeconds,
+      describer: getCurrentDescriber(),
+    });
   };
 }
 

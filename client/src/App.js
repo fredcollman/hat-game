@@ -10,6 +10,10 @@ const useSocket = () => {
   const [socket, setSocket] = useState();
   const [yourSuggestions, setYourSuggestions] = useState([]);
   const [suggestionCount, setSuggestionCount] = useState(0);
+  const [turn, setTurn] = useState({
+    round: 0,
+    describer: null,
+  });
   useEffect(() => {
     console.log("creating a socket connection!");
     const socket = io();
@@ -28,6 +32,9 @@ const useSocket = () => {
     });
     socket.on("NEW_SUGGESTION", ({ count }) => {
       setSuggestionCount(count);
+    });
+    socket.on("NEW_TURN", ({ round, describer }) => {
+      setTurn({ round, describer });
     });
     return () => {
       console.log(`Closing connection to ${socket && socket.id}`);
@@ -49,6 +56,8 @@ const useSocket = () => {
     socket.emit("START_GAME", {});
   };
 
+  const user = socket && users.find((u) => u.clientID === socket.id);
+  const { round, describer } = turn;
   return {
     socket,
     users,
@@ -56,6 +65,9 @@ const useSocket = () => {
     yourSuggestions,
     startGame,
     suggestionCount,
+    user,
+    round,
+    describer,
   };
 };
 
@@ -78,40 +90,84 @@ const UserList = ({ user, users }) => (
   </section>
 );
 
-function App() {
+const RoundZero = ({ gameState }) => {
   const {
     socket,
-    users,
     addSuggestion,
     yourSuggestions,
     startGame,
     suggestionCount,
-  } = useSocket();
-  const user = socket && users.find((u) => u.clientID === socket.id);
+    user,
+  } = gameState;
+  if (!user) {
+    return <Signup socket={socket} />;
+  }
+  return (
+    <>
+      <Suggestions
+        yourSuggestions={yourSuggestions}
+        addSuggestion={addSuggestion}
+        count={suggestionCount}
+      />
+      <StartGame startGame={startGame} />
+    </>
+  );
+};
+
+const YourTurn = () => {
+  return (
+    <>
+      <p>It's your turn!</p>
+      <button type="button">Start</button>
+    </>
+  );
+};
+
+const Turn = ({ describer }) => {
+  return (
+    <>
+      <p>
+        It's {describer.team}'s turn, and {describer.username} is describing.
+      </p>
+    </>
+  );
+};
+
+const RoundOne = ({ gameState }) => {
+  const { user, describer } = gameState;
+  return (
+    <section>
+      <h2>Round 1</h2>
+      <p>
+        In Round 1, you can use as many words as you need to describe the name
+        you draw.
+      </p>
+      {user.clientID === describer.clientID
+        ? (
+          <YourTurn />
+        )
+        : (
+          <Turn describer={describer} />
+        )}
+    </section>
+  );
+};
+
+const App = () => {
+  const gameState = useSocket();
+  const { users, user, round } = gameState;
   return (
     <div>
       <header>
         <h1>The Hat Game</h1>
       </header>
       <main>
-        {user
-          ? (
-            <>
-              <Suggestions
-                yourSuggestions={yourSuggestions}
-                addSuggestion={addSuggestion}
-                count={suggestionCount}
-              />
-              <StartGame startGame={startGame} />
-            </>
-          )
-          : (
-            <Signup socket={socket} />
-          )}
+        {round === 0 && <RoundZero gameState={gameState} />}
+        {round === 1 && <RoundOne gameState={gameState} />}
         <UserList users={users} user={user} />
       </main>
     </div>
   );
-}
+};
 
 export default App;
