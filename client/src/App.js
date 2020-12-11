@@ -37,6 +37,7 @@ const useSocket = () => {
     });
     socket.on("NEW_TURN", ({ round, describer }) => {
       setTurn({ round, describer });
+      setCurrentSuggestion(null);
     });
     socket.on("NEXT_SUGGESTION", ({ name }) => {
       console.log("NEXT_SUGGESTION:", name);
