@@ -6,9 +6,9 @@ const SuggestionForm = ({ addSuggestion }) => {
     e.target["suggestion"].value = "";
   };
   return (
-    <form onSubmit={handleSubmit}>
+    <form className="flex flex-column flex-center" onSubmit={handleSubmit}>
       <label>
-        Enter a famous name
+        <div>Enter a famous name</div>
         <input
           required
           type="text"

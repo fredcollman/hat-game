@@ -30,3 +30,11 @@
 .flex-center {
   align-items: center;
 }
+
+.bg-light {
+  background: var(--grey);
+}
+
+.gap-m {
+  gap: 1em;
+}

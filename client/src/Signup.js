@@ -5,7 +5,7 @@ const Signup = ({ socket }) => {
     socket.emit("SET_USERNAME", { username: e.target["username"].value });
   };
   return (
-    <div className="center-text">
+    <section className="center-text">
       <h2>Let's get started!</h2>
       <form className="flex flex-column flex-center" onSubmit={handleSubmit}>
         <label className="">
@@ -21,7 +21,7 @@ const Signup = ({ socket }) => {
           Continue
         </button>
       </form>
-    </div>
+    </section>
   );
 };
 

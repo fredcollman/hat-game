@@ -112,9 +112,9 @@ const useSocket = () => {
 const UserList = ({ user, users }) => (
   <section>
     <h2>Players</h2>
-    <ul>
+    <ul className="flex gap-m">
       {users.map((u) => (
-        <li key={u.clientID}>
+        <li key={u.clientID} className="padding-m bg-light">
           {u.clientID === user?.clientID
             ? (
               <strong>{u.username} (you)</strong>
