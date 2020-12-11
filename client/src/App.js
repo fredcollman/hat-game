@@ -1,5 +1,8 @@
 import { useEffect, useState } from "react";
-import "./App.css";
+import "./reset.css";
+import "./variables.css";
+import "./global.css";
+import "./utility.css";
 import Signup from "./Signup";
 import StartGame from "./StartGame";
 import Suggestions from "./Suggestions";
@@ -226,8 +229,8 @@ const App = () => {
   const gameState = useSocket();
   const { users, user, round, scores } = gameState;
   return (
-    <div>
-      <header>
+    <div className="wrapper center-h padding-m center-text">
+      <header className="debug center-text">
         <h1>The Hat Game</h1>
       </header>
       <main>
