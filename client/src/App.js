@@ -16,6 +16,7 @@ const useSocket = () => {
     describer: null,
   });
   const [currentSuggestion, setCurrentSuggestion] = useState();
+  const [scores, setScores] = useState([]);
   useEffect(() => {
     console.log("creating a socket connection!");
     const socket = io();
@@ -42,6 +43,9 @@ const useSocket = () => {
     socket.on("NEXT_SUGGESTION", ({ name }) => {
       console.log("NEXT_SUGGESTION:", name);
       setCurrentSuggestion(name);
+    });
+    socket.on("LATEST_SCORES", (data) => {
+      setScores(data);
     });
     return () => {
       console.log(`Closing connection to ${socket && socket.id}`);
@@ -98,6 +102,7 @@ const useSocket = () => {
     skip,
     currentSuggestion,
     endTurn,
+    scores,
   };
 };
 
@@ -192,11 +197,34 @@ const Round = ({ gameState }) => {
   );
 };
 
-const GameOver = () => "Thanks for playing!";
+const GameOver = ({ scores }) => {
+  const ordered = scores.sort(
+    (a, b) => b.correct - a.correct || a.skips - b.skips,
+  );
+  return (
+    <>
+      <h2>Congrats to {ordered[0].name}!</h2>
+      <table>
+        <thead>
+          <th>Team</th>
+          <th>Points</th>
+          <th>Skips</th>
+        </thead>
+        {ordered.map((team) => (
+          <tr key={team.name}>
+            <td>{team.name}</td>
+            <td>{team.correct}</td>
+            <td>{team.skips}</td>
+          </tr>
+        ))}
+      </table>
+    </>
+  );
+};
 
 const App = () => {
   const gameState = useSocket();
-  const { users, user, round } = gameState;
+  const { users, user, round, scores } = gameState;
   return (
     <div>
       <header>
@@ -205,7 +233,7 @@ const App = () => {
       <main>
         {round === 0 && <RoundZero gameState={gameState} />}
         {round > 0 && round < 4 && <Round gameState={gameState} />}
-        {round === 4 && <GameOver />}
+        {round === 4 && <GameOver scores={scores} />}
         <UserList users={users} user={user} />
       </main>
     </div>

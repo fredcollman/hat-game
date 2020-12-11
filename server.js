@@ -30,8 +30,12 @@ const state = {
   availableSuggestions: [],
 };
 
+const getCurrentTeam = () => {
+  return state.teams[state.currentTeamIndex];
+};
+
 const getCurrentDescriber = () => {
-  const team = state.teams[state.currentTeamIndex];
+  const team = getCurrentTeam();
   const { clientID, username } = team.members[team.currentDescriberIndex];
   return {
     clientID,
@@ -75,6 +79,8 @@ const startGame = () => {
     name: `Team ${teamIdx + 1}`,
     members: state.users.filter((_, userIdx) => userIdx % numTeams === teamIdx),
     currentDescriberIndex: 0,
+    guessedCorrectly: 0,
+    skips: 0,
   }));
   state.teams = teams;
   state.currentTeamIndex = 0;
@@ -131,11 +137,24 @@ class Client {
     }
   };
 
+  notifyScores = () => {
+    io.emit(
+      "LATEST_SCORES",
+      state.teams.map((t) => ({
+        name: t.name,
+        correct: t.guessedCorrectly,
+        skips: t.skips,
+      })),
+    );
+  };
+
   guessCorrectly = ({ name }) => {
     state.availableSuggestions = state.availableSuggestions.filter(
       (s) => s.name !== name,
     );
+    getCurrentTeam().guessedCorrectly++;
     console.log("correct", name);
+    this.notifyScores();
     this.requestSuggestion();
   };
 
@@ -143,7 +162,9 @@ class Client {
     state.availableSuggestions = state.availableSuggestions.map((s) =>
       s.name === name ? { ...s, skipped: true } : s
     );
+    getCurrentTeam().skips++;
     console.log("skipped", name);
+    this.notifyScores();
     this.requestSuggestion();
   };
 
