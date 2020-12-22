@@ -11,4 +11,6 @@ COPY package.json yarn.lock ./
 RUN yarn install --production
 COPY --from=client /dest/build/ ./client/build/
 COPY server.js .
+
+EXPOSE 3001
 CMD ["yarn", "run", "server"]
