@@ -22,7 +22,9 @@ const useSocket = () => {
   const [scores, setScores] = useState([]);
   useEffect(() => {
     console.log("creating a socket connection!");
-    const socket = io();
+    const socket = io({
+      path: `${process.env.PUBLIC_URL}/socket.io`,
+    });
     setSocket(socket);
     socket.on("connect", () => {
       console.log("connected");
