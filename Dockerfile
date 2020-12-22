@@ -3,6 +3,7 @@ WORKDIR /dest/
 COPY client/package.json client/yarn.lock ./
 RUN yarn install --production
 COPY client/ ./
+ARG PUBLIC_URL=.
 RUN yarn build
 
 FROM node:alpine AS server
