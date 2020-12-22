@@ -1,16 +1,18 @@
 import express from "express";
 import http from "http";
+import path from "path";
 import { Server } from "socket.io";
 
 const PORT = 3001;
+const __dirname = path.resolve();
 
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 
-app.get("/", (req, res) => {
-  // TODO: serve React app and static files
-  res.send("hellooo");
+app.use(express.static(path.join(__dirname, "client", "build")));
+app.get("/", function (req, res) {
+  res.sendFile(path.join(__dirname, "client", "build", "index.html"));
 });
 
 server.listen(PORT, () => {

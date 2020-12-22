@@ -1,13 +1,14 @@
 FROM node:alpine AS client
 WORKDIR /dest/
-COPY client/ .
+COPY client/package.json client/yarn.lock ./
 RUN yarn install --production
+COPY client/ ./
 RUN yarn build
 
 FROM node:alpine AS server
 WORKDIR /app/
 COPY package.json yarn.lock ./
 RUN yarn install --production
-COPY --from=client /dest/build/ ./dest
+COPY --from=client /dest/build/ ./client/build/
 COPY server.js .
 CMD ["yarn", "run", "server"]
