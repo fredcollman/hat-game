@@ -11,6 +11,7 @@ export default class Client {
     client.welcome();
 
     client.registerHandler("START_GROUP", client.startGroup);
+    client.registerHandler("JOIN_GROUP", client.joinGroup);
     client.registerHandler("SET_USERNAME", client.setUsername);
     client.registerHandler("ADD_SUGGESTION", client.addSuggestion);
     client.registerHandler("START_GAME", client.startGame);
@@ -44,6 +45,10 @@ export default class Client {
   }
 
   startGroup({ groupID }) {
+    this.joinGroup({ groupID });
+  }
+
+  joinGroup({ groupID }) {
     if (this.room === null) {
       this.room = `group:${groupID}`;
       this.sock.join(this.room);

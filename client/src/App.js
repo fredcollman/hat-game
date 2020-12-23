@@ -68,6 +68,10 @@ const useSocket = () => {
     socket.emit("START_GROUP", { groupID: newGroupID });
     setGroupID(newGroupID);
   };
+  const joinGroup = (groupID) => {
+    socket.emit("JOIN_GROUP", { groupID });
+    setGroupID(groupID);
+  };
   const addSuggestion = (suggestion) => {
     if (
       suggestion &&
@@ -102,6 +106,7 @@ const useSocket = () => {
     socket,
     groupID,
     startGroup,
+    joinGroup,
     users,
     addSuggestion,
     yourSuggestions,
@@ -237,7 +242,15 @@ const GameOver = ({ scores }) => {
 
 const App = () => {
   const gameState = useSocket();
-  const { users, user, round, scores, groupID, startGroup } = gameState;
+  const {
+    users,
+    user,
+    round,
+    scores,
+    groupID,
+    startGroup,
+    joinGroup,
+  } = gameState;
   return (
     <div className="wrapper center-h padding-m center-text">
       <header className="debug center-text">
@@ -255,7 +268,7 @@ const App = () => {
             </>
           )
           : (
-            <SelectGroup startGroup={startGroup} />
+            <SelectGroup startGroup={startGroup} joinGroup={joinGroup} />
           )}
       </main>
     </div>
