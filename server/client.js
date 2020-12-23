@@ -3,12 +3,14 @@ export default class Client {
     this.sock = socket;
     this.io = io;
     this.game = game;
+    this.room = null;
   }
 
   static prepare({ io, socket, game }) {
     const client = new this({ io, socket, game });
     client.welcome();
 
+    client.registerHandler("START_GROUP", client.startGroup);
     client.registerHandler("SET_USERNAME", client.setUsername);
     client.registerHandler("ADD_SUGGESTION", client.addSuggestion);
     client.registerHandler("START_GAME", client.startGame);
@@ -25,13 +27,13 @@ export default class Client {
   }
 
   replyAll(messageType, data) {
-    console.log(`[${this.sock.id}] sending ${messageType} to all`);
-    this.io.emit(messageType, data);
-  }
-
-  setUsername({ username }) {
-    this.game.addUser({ clientID: this.sock.id, username });
-    this.replyAll("USER_LIST", { users: this.game.getUsers() });
+    if (this.room) {
+      console.log(`[${this.sock.id}] sending ${messageType} to ${this.room}`);
+      this.io.to(this.room).emit(messageType, data);
+    } else {
+      console.log(`[${this.sock.id}] sending ${messageType} to all`);
+      this.io.emit(messageType, data);
+    }
   }
 
   welcome() {
@@ -39,6 +41,19 @@ export default class Client {
       clientID: this.sock.id,
       users: this.game.getUsers(),
     });
+  }
+
+  startGroup({ groupID }) {
+    if (this.room === null) {
+      this.room = `group:${groupID}`;
+      this.sock.join(this.room);
+      this.replyOne("JOINED_GROUP", { groupID, users: this.game.getUsers() });
+    }
+  }
+
+  setUsername({ username }) {
+    this.game.addUser({ clientID: this.sock.id, username });
+    this.replyAll("USER_LIST", { users: this.game.getUsers() });
   }
 
   addSuggestion({ suggestion }) {
