@@ -2,6 +2,7 @@ import express from "express";
 import http from "http";
 import path from "path";
 import { Server } from "socket.io";
+import Game from "./game.js";
 
 const PORT = 3001;
 const __dirname = path.resolve();
@@ -40,63 +41,7 @@ const initialState = () => ({
 });
 
 const state = initialState();
-
-const getCurrentTeam = () => {
-  return state.teams[state.currentTeamIndex];
-};
-
-const getCurrentDescriber = () => {
-  const team = getCurrentTeam();
-  const { clientID, username } = team.members[team.currentDescriberIndex];
-  return {
-    clientID,
-    username,
-    team: team.name,
-  };
-};
-
-const getNextSuggestion = () => {
-  const nonSkipped = state.availableSuggestions.filter((s) => !s.skipped);
-  const randomIndex = Math.floor(Math.random() * nonSkipped.length);
-  return nonSkipped[randomIndex];
-};
-
-const endTurn = () => {
-  console.log(state);
-  const team = state.teams[state.currentTeamIndex];
-  team.currentDescriberIndex = (team.currentDescriberIndex + 1) %
-    team.members.length;
-  state.currentTeamIndex = (state.currentTeamIndex + 1) % state.teams.length;
-  state.availableSuggestions = state.availableSuggestions.map((s) => ({
-    ...s,
-    skipped: false,
-  }));
-  if (!state.availableSuggestions.length) {
-    startRound(state.round + 1);
-  }
-};
-
-const startRound = (round) => {
-  state.round = round;
-  state.availableSuggestions = state.suggestions.map((s) => ({
-    ...s,
-    skipped: false,
-  }));
-};
-
-const startGame = () => {
-  const numTeams = state.options.teams;
-  const teams = Array.from({ length: numTeams }).map((_, teamIdx) => ({
-    name: `Team ${teamIdx + 1}`,
-    members: state.users.filter((_, userIdx) => userIdx % numTeams === teamIdx),
-    currentDescriberIndex: 0,
-    guessedCorrectly: 0,
-    skips: 0,
-  }));
-  state.teams = teams;
-  state.currentTeamIndex = 0;
-  startRound(1);
-};
+const game = new Game(state);
 
 class Client {
   constructor(socket) {
@@ -130,17 +75,17 @@ class Client {
   };
 
   startGame = () => {
-    startGame();
+    game.startGame();
     console.log(state);
     io.emit("NEW_TURN", {
       round: state.round,
       duration: state.options.turnDurationSeconds,
-      describer: getCurrentDescriber(),
+      describer: game.getCurrentDescriber(),
     });
   };
 
   requestSuggestion = () => {
-    const suggestion = getNextSuggestion();
+    const suggestion = game.getNextSuggestion();
     if (suggestion) {
       this.sock.emit("NEXT_SUGGESTION", { name: suggestion.name });
     } else {
@@ -163,7 +108,7 @@ class Client {
     state.availableSuggestions = state.availableSuggestions.filter(
       (s) => s.name !== name,
     );
-    getCurrentTeam().guessedCorrectly++;
+    game.getCurrentTeam().guessedCorrectly++;
     console.log("correct", name);
     this.notifyScores();
     this.requestSuggestion();
@@ -173,19 +118,19 @@ class Client {
     state.availableSuggestions = state.availableSuggestions.map((s) =>
       s.name === name ? { ...s, skipped: true } : s
     );
-    getCurrentTeam().skips++;
+    game.getCurrentTeam().skips++;
     console.log("skipped", name);
     this.notifyScores();
     this.requestSuggestion();
   };
 
   nextTurn = () => {
-    endTurn();
+    game.endTurn();
     console.log(state);
     io.emit("NEW_TURN", {
       round: state.round,
       duration: state.options.turnDurationSeconds,
-      describer: getCurrentDescriber(),
+      describer: game.getCurrentDescriber(),
     });
   };
 
