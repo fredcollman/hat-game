@@ -5,6 +5,20 @@ export default class Client {
     this.game = game;
   }
 
+  static prepare({ io, socket, game }) {
+    const client = new this({ io, socket, game });
+    client.welcome();
+
+    client.registerHandler("SET_USERNAME", client.setUsername);
+    client.registerHandler("ADD_SUGGESTION", client.addSuggestion);
+    client.registerHandler("START_GAME", client.startGame);
+    client.registerHandler("REQUEST_SUGGESTION", client.requestSuggestion);
+    client.registerHandler("GUESS_CORRECTLY", client.guessCorrectly);
+    client.registerHandler("SKIP", client.skip);
+    client.registerHandler("END_TURN", client.nextTurn);
+    return client;
+  }
+
   replyOne(messageType, data) {
     console.log(`[${this.sock.id}] sending ${messageType}`);
     this.sock.emit(messageType, data);
