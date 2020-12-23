@@ -179,6 +179,19 @@ class Client {
       describer: getCurrentDescriber(),
     });
   };
+
+  registerHandler = (messageType, handler) => {
+    this.sock.on(messageType, (data) => {
+      try {
+        handler(data);
+      } catch (e) {
+        console.error(
+          `[${this.sock.id}] Failed to handle ${messageType} message due to`,
+          e,
+        );
+      }
+    });
+  };
 }
 
 io.on("connection", (socket) => {
@@ -191,11 +204,11 @@ io.on("connection", (socket) => {
   const client = new Client(socket);
   client.welcome();
 
-  socket.on("SET_USERNAME", client.setUsername);
-  socket.on("ADD_SUGGESTION", client.addSuggestion);
-  socket.on("START_GAME", client.startGame);
-  socket.on("REQUEST_SUGGESTION", client.requestSuggestion);
-  socket.on("GUESS_CORRECTLY", client.guessCorrectly);
-  socket.on("SKIP", client.skip);
-  socket.on("END_TURN", client.nextTurn);
+  client.registerHandler("SET_USERNAME", client.setUsername);
+  client.registerHandler("ADD_SUGGESTION", client.addSuggestion);
+  client.registerHandler("START_GAME", client.startGame);
+  client.registerHandler("REQUEST_SUGGESTION", client.requestSuggestion);
+  client.registerHandler("GUESS_CORRECTLY", client.guessCorrectly);
+  client.registerHandler("SKIP", client.skip);
+  client.registerHandler("END_TURN", client.nextTurn);
 });
