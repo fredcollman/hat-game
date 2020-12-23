@@ -1,4 +1,3 @@
-import Game from "./game.js";
 import Store from "./store.js";
 
 export default class Client {
@@ -49,16 +48,15 @@ export default class Client {
     });
   }
 
-  startGroup() {
-    this.store.addGroup().then((group) => {
-      this.joinGroup({ groupID: group.id });
-    });
+  async startGroup() {
+    const group = await this.store.addGroup();
+    this.joinGroup({ groupID: group.id });
   }
 
-  joinGroup({ groupID }) {
+  async joinGroup({ groupID }) {
     if (this.room === null) {
       this.room = `group:${groupID}`;
-      this.game = Game.create(); // TODO load existing game details
+      this.game = await this.store.loadGame({ groupID });
       this.sock.join(this.room);
       this.replyOne("JOINED_GROUP", { groupID, users: this.game.getUsers() });
     }
