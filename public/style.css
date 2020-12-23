@@ -1,3 +1,0 @@
-.page:not([aria-current="page"]) {
-  display: none;
-}
