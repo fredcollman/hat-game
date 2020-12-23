@@ -30,66 +30,69 @@ server.listen(PORT, () => {
 let game = Game.create();
 
 class Client {
-  constructor(socket) {
+  constructor({ io, socket, game }) {
     this.sock = socket;
+    this.replyOne = this.sock.emit.bind(this.sock);
+    this.replyAll = io.emit.bind(io);
+    this.game = game;
   }
 
-  setUsername = ({ username }) => {
-    game.addUser({ clientID: this.sock.id, username });
-    io.emit("USER_LIST", { users: game.getUsers() });
-  };
+  setUsername({ username }) {
+    this.game.addUser({ clientID: this.sock.id, username });
+    this.replyAll("USER_LIST", { users: this.game.getUsers() });
+  }
 
-  welcome = () => {
-    this.sock.emit("WELCOME", {
+  welcome() {
+    this.replyOne("WELCOME", {
       clientID: this.sock.id,
-      users: game.getUsers(),
+      users: this.game.getUsers(),
     });
-  };
+  }
 
-  addSuggestion = ({ suggestion }) => {
-    game.addSuggestion({ clientID: this.sock.id, suggestion });
-    io.emit("NEW_SUGGESTION", { count: game.countSuggestions() });
-  };
+  addSuggestion({ suggestion }) {
+    this.game.addSuggestion({ clientID: this.sock.id, suggestion });
+    this.replyAll("NEW_SUGGESTION", { count: this.game.countSuggestions() });
+  }
 
-  startGame = () => {
-    game.start();
-    io.emit("NEW_TURN", game.getCurrentTurnDetails());
-  };
+  startGame() {
+    this.game.start();
+    this.replyAll("NEW_TURN", this.game.getCurrentTurnDetails());
+  }
 
-  requestSuggestion = () => {
-    const suggestion = game.getNextSuggestion();
+  requestSuggestion() {
+    const suggestion = this.game.getNextSuggestion();
     if (suggestion) {
-      this.sock.emit("NEXT_SUGGESTION", { name: suggestion.name });
+      this.replyOne("NEXT_SUGGESTION", { name: suggestion.name });
     } else {
       this.nextTurn();
     }
-  };
+  }
 
-  notifyScores = () => {
-    io.emit("LATEST_SCORES", game.getScores());
-  };
+  notifyScores() {
+    this.replyAll("LATEST_SCORES", this.game.getScores());
+  }
 
-  guessCorrectly = ({ name }) => {
-    game.guessCorrectly(name);
+  guessCorrectly({ name }) {
+    this.game.guessCorrectly(name);
     this.notifyScores();
     this.requestSuggestion();
-  };
+  }
 
-  skip = ({ name }) => {
-    game.skip(name);
+  skip({ name }) {
+    this.game.skip(name);
     this.notifyScores();
     this.requestSuggestion();
-  };
+  }
 
-  nextTurn = () => {
-    game.endTurn();
-    io.emit("NEW_TURN", game.getCurrentTurnDetails());
-  };
+  nextTurn() {
+    this.game.endTurn();
+    this.replyAll("NEW_TURN", this.game.getCurrentTurnDetails());
+  }
 
-  registerHandler = (messageType, handler) => {
+  registerHandler(messageType, handler) {
     this.sock.on(messageType, (data) => {
       try {
-        handler(data);
+        handler.call(this, data);
       } catch (e) {
         console.error(
           `[${this.sock.id}] Failed to handle ${messageType} message due to`,
@@ -97,7 +100,7 @@ class Client {
         );
       }
     });
-  };
+  }
 }
 
 io.on("connection", (socket) => {
@@ -107,7 +110,7 @@ io.on("connection", (socket) => {
     // TODO remove user from list of players
   });
 
-  const client = new Client(socket);
+  const client = new Client({ io, socket, game });
   client.welcome();
 
   client.registerHandler("SET_USERNAME", client.setUsername);
