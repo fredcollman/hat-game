@@ -1,14 +1,21 @@
+import Store from "./store.js";
+
 export default class Client {
-  constructor({ io, socket, game }) {
+  constructor({ io, socket, db, store }) {
     this.sock = socket;
     this.io = io;
-    this.game = game;
+    this.db = db;
+    this.store = store;
+    this.room = null;
+    this.game = null;
   }
 
-  static prepare({ io, socket, game }) {
-    const client = new this({ io, socket, game });
+  static prepare({ io, socket, db }) {
+    const client = new this({ io, socket, db, store: new Store(db) });
     client.welcome();
 
+    client.registerHandler("START_GROUP", client.startGroup);
+    client.registerHandler("JOIN_GROUP", client.joinGroup);
     client.registerHandler("SET_USERNAME", client.setUsername);
     client.registerHandler("ADD_SUGGESTION", client.addSuggestion);
     client.registerHandler("START_GAME", client.startGame);
@@ -25,20 +32,39 @@ export default class Client {
   }
 
   replyAll(messageType, data) {
-    console.log(`[${this.sock.id}] sending ${messageType} to all`);
-    this.io.emit(messageType, data);
-  }
-
-  setUsername({ username }) {
-    this.game.addUser({ clientID: this.sock.id, username });
-    this.replyAll("USER_LIST", { users: this.game.getUsers() });
+    if (this.room) {
+      console.log(`[${this.sock.id}] sending ${messageType} to ${this.room}`);
+      this.io.to(this.room).emit(messageType, data);
+    } else {
+      console.log(`[${this.sock.id}] sending ${messageType} to all`);
+      this.io.emit(messageType, data);
+    }
   }
 
   welcome() {
     this.replyOne("WELCOME", {
       clientID: this.sock.id,
-      users: this.game.getUsers(),
+      users: [], // TODO remove
     });
+  }
+
+  async startGroup() {
+    const group = await this.store.addGroup();
+    this.joinGroup({ groupID: group.id });
+  }
+
+  async joinGroup({ groupID }) {
+    if (this.room === null) {
+      this.room = `group:${groupID}`;
+      this.game = await this.store.loadGame({ groupID });
+      this.sock.join(this.room);
+      this.replyOne("JOINED_GROUP", { groupID, users: this.game.getUsers() });
+    }
+  }
+
+  setUsername({ username }) {
+    this.game.addUser({ clientID: this.sock.id, username });
+    this.replyAll("USER_LIST", { users: this.game.getUsers() });
   }
 
   addSuggestion({ suggestion }) {

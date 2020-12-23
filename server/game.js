@@ -1,23 +1,31 @@
+const initialState = () => ({
+  round: 0,
+  users: [],
+  teams: [],
+  suggestions: [],
+  options: {
+    teams: 2,
+    turnDurationSeconds: 60,
+  },
+  currentTeamIndex: 0,
+  availableSuggestions: [],
+});
+
 export default class Game {
   #state;
+  #handleChange;
 
-  static create() {
-    return new this({
-      round: 0,
-      users: [],
-      teams: [],
-      suggestions: [],
-      options: {
-        teams: 2,
-        turnDurationSeconds: 60,
-      },
-      currentTeamIndex: 0,
-      availableSuggestions: [],
-    });
+  static resume({ state, onChange }) {
+    return new this(state || initialState(), onChange);
   }
 
-  constructor(state) {
+  static create({ onChange }) {
+    return new this(initialState(), onChange);
+  }
+
+  constructor(state, onChange) {
     this.#state = state;
+    this.#handleChange = () => onChange(this.#state);
   }
 
   addUser({ clientID, username }) {
@@ -26,6 +34,7 @@ export default class Game {
         ...this.#state.users.filter((u) => u.clientID !== clientID),
         { clientID, username },
       ];
+      this.#handleChange();
     }
   }
 
@@ -39,6 +48,7 @@ export default class Game {
         ...this.#state.suggestions,
         { clientID, name: suggestion },
       ];
+      this.#handleChange();
     }
   }
 
@@ -98,11 +108,12 @@ export default class Game {
       }),
     );
     if (!this.#state.availableSuggestions.length) {
-      this.startRound(this.#state.round + 1);
+      this._startRound(this.#state.round + 1);
     }
+    this.#handleChange();
   }
 
-  startRound(round) {
+  _startRound(round) {
     this.#state.round = round;
     this.#state.availableSuggestions = this.#state.suggestions.map((s) => ({
       ...s,
@@ -123,7 +134,8 @@ export default class Game {
     }));
     this.#state.teams = teams;
     this.#state.currentTeamIndex = 0;
-    this.startRound(1);
+    this._startRound(1);
+    this.#handleChange();
   }
 
   guessCorrectly(name) {
@@ -131,6 +143,7 @@ export default class Game {
       (s) => s.name !== name,
     );
     this.getCurrentTeam().guessedCorrectly++;
+    this.#handleChange();
     console.log("correct", name);
   }
 
@@ -139,6 +152,7 @@ export default class Game {
       (s) => (s.name === name ? { ...s, skipped: true } : s),
     );
     this.getCurrentTeam().skips++;
+    this.#handleChange();
     console.log("skipped", name);
   }
 }

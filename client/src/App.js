@@ -1,15 +1,18 @@
 import { useEffect, useState } from "react";
+import { io } from "socket.io-client";
 import "./reset.css";
 import "./variables.css";
 import "./global.css";
 import "./utility.css";
+import SelectGroup from "./SelectGroup";
+import GroupInfo from "./GroupInfo";
 import Signup from "./Signup";
 import StartGame from "./StartGame";
 import Suggestions from "./Suggestions";
 import YourTurn from "./YourTurn";
-import { io } from "socket.io-client";
 
 const useSocket = () => {
+  const [groupID, setGroupID] = useState();
   const [users, setUsers] = useState([]);
   const [socket, setSocket] = useState();
   const [yourSuggestions, setYourSuggestions] = useState([]);
@@ -32,7 +35,8 @@ const useSocket = () => {
     socket.on("event", (data) => {
       console.log(data);
     });
-    socket.on("WELCOME", ({ users }) => {
+    socket.on("JOINED_GROUP", ({ groupID, users }) => {
+      setGroupID(groupID);
       setUsers(users);
     });
     socket.on("USER_LIST", ({ users }) => {
@@ -58,6 +62,13 @@ const useSocket = () => {
     };
   }, []);
 
+  const startGroup = () => {
+    socket.emit("START_GROUP", {});
+  };
+  const joinGroup = (groupID) => {
+    socket.emit("JOIN_GROUP", { groupID });
+    setGroupID(groupID);
+  };
   const addSuggestion = (suggestion) => {
     if (
       suggestion &&
@@ -86,14 +97,13 @@ const useSocket = () => {
     socket.emit("END_TURN", {});
   };
 
-  // TODO remove hardcoded params
-  // const describer = { clientID: "foo", username: "bar" };
-  // const round = 1;
-  // const user = describer;
   const user = socket && users.find((u) => u.clientID === socket.id);
   const { round, describer } = turn;
   return {
     socket,
+    groupID,
+    startGroup,
+    joinGroup,
     users,
     addSuggestion,
     yourSuggestions,
@@ -229,17 +239,34 @@ const GameOver = ({ scores }) => {
 
 const App = () => {
   const gameState = useSocket();
-  const { users, user, round, scores } = gameState;
+  const {
+    users,
+    user,
+    round,
+    scores,
+    groupID,
+    startGroup,
+    joinGroup,
+  } = gameState;
   return (
     <div className="wrapper center-h padding-m center-text">
       <header className="debug center-text">
         <h1>The Hat Game</h1>
       </header>
       <main>
-        {round === 0 && <RoundZero gameState={gameState} />}
-        {round > 0 && round < 4 && <Round gameState={gameState} />}
-        {round === 4 && <GameOver scores={scores} />}
-        <UserList users={users} user={user} />
+        {groupID
+          ? (
+            <>
+              <GroupInfo groupID={groupID} />
+              {round === 0 && <RoundZero gameState={gameState} />}
+              {round > 0 && round < 4 && <Round gameState={gameState} />}
+              {round === 4 && <GameOver scores={scores} />}
+              <UserList users={users} user={user} />
+            </>
+          )
+          : (
+            <SelectGroup startGroup={startGroup} joinGroup={joinGroup} />
+          )}
       </main>
     </div>
   );

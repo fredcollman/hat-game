@@ -4,7 +4,6 @@ import path from "path";
 import { Server } from "socket.io";
 import low from "lowdb";
 import FileAsync from "lowdb/adapters/FileAsync.js";
-import Game from "./game.js";
 import Client from "./client.js";
 
 const PORT = 3001;
@@ -14,25 +13,18 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 
+app.use(express.static(path.join(__dirname, "client", "build")));
+app.get("/", function (req, res) {
+  res.sendFile(path.join(__dirname, "client", "build", "index.html"));
+});
+
 const adapter = new FileAsync("db.json");
 low(adapter)
   .then((db) => {
-    let game = Game.create();
-
-    app.use(express.static(path.join(__dirname, "client", "build")));
-    app.get("/", function (req, res) {
-      res.sendFile(path.join(__dirname, "client", "build", "index.html"));
-    });
-    if (process.env.NODE_ENV === "development") {
-      app.get("/__reset", (req, res) => {
-        console.warn("RESETTING STATE");
-        game = Game.create();
-        res.status(200).send();
-      });
-    }
-    return game;
+    db.defaults({ games: [], groups: [] }).write();
+    return db;
   })
-  .then((game) => {
+  .then((db) => {
     server.listen(PORT, () => {
       console.log(`Serving at http://localhost:${PORT}`);
     });
@@ -44,6 +36,6 @@ low(adapter)
         // TODO remove user from list of players
       });
 
-      Client.prepare({ io, socket, game });
+      Client.prepare({ io, socket, db });
     });
   });
