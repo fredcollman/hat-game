@@ -4,7 +4,6 @@ import path from "path";
 import { Server } from "socket.io";
 import low from "lowdb";
 import FileAsync from "lowdb/adapters/FileAsync.js";
-import Game from "./game.js";
 import Client from "./client.js";
 
 const PORT = 3001;
@@ -22,16 +21,10 @@ app.get("/", function (req, res) {
 const adapter = new FileAsync("db.json");
 low(adapter)
   .then((db) => {
-    db.defaults({ games: [] }).write();
+    db.defaults({ games: [], groups: [] }).write();
     return db;
   })
   .then((db) => {
-    const stored = db.get("games").first().value();
-    console.log("loaded", stored);
-    let game = Game.create(stored);
-    return game;
-  })
-  .then((game) => {
     server.listen(PORT, () => {
       console.log(`Serving at http://localhost:${PORT}`);
     });
@@ -43,6 +36,6 @@ low(adapter)
         // TODO remove user from list of players
       });
 
-      Client.prepare({ io, socket, game });
+      Client.prepare({ io, socket, db });
     });
   });
