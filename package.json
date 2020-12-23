@@ -2,7 +2,7 @@
   "name": "hat-game",
   "version": "1.0.0",
   "type": "module",
-  "main": "index.js",
+  "main": "server/main.js",
   "author": "Fred Collman <fredcollman@gmail.com>",
   "license": "MIT",
   "devDependencies": {
@@ -24,6 +24,6 @@
   "scripts": {
     "start": "concurrently \"yarn run server\" \"yarn run client\"",
     "client": "cd client && yarn start",
-    "server": "node server.js"
+    "server": "node server/main.js"
   }
 }
