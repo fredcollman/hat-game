@@ -14,22 +14,21 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 
+app.use(express.static(path.join(__dirname, "client", "build")));
+app.get("/", function (req, res) {
+  res.sendFile(path.join(__dirname, "client", "build", "index.html"));
+});
+
 const adapter = new FileAsync("db.json");
 low(adapter)
   .then((db) => {
-    let game = Game.create();
-
-    app.use(express.static(path.join(__dirname, "client", "build")));
-    app.get("/", function (req, res) {
-      res.sendFile(path.join(__dirname, "client", "build", "index.html"));
-    });
-    if (process.env.NODE_ENV === "development") {
-      app.get("/__reset", (req, res) => {
-        console.warn("RESETTING STATE");
-        game = Game.create();
-        res.status(200).send();
-      });
-    }
+    db.defaults({ games: [] }).write();
+    return db;
+  })
+  .then((db) => {
+    const stored = db.get("games").first().value();
+    console.log("loaded", stored);
+    let game = Game.create(stored);
     return game;
   })
   .then((game) => {
