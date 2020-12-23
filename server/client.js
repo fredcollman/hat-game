@@ -1,16 +1,18 @@
 import Game from "./game.js";
+import Store from "./store.js";
 
 export default class Client {
-  constructor({ io, socket, db }) {
+  constructor({ io, socket, db, store }) {
     this.sock = socket;
     this.io = io;
     this.db = db;
+    this.store = store;
     this.room = null;
     this.game = null;
   }
 
   static prepare({ io, socket, db }) {
-    const client = new this({ io, socket, db });
+    const client = new this({ io, socket, db, store: new Store(db) });
     client.welcome();
 
     client.registerHandler("START_GROUP", client.startGroup);
@@ -47,14 +49,10 @@ export default class Client {
     });
   }
 
-  startGroup({ groupID }) {
-    this.db
-      .get("groups")
-      .push({ id: groupID })
-      .write()
-      .then(() => {
-        this.joinGroup({ groupID });
-      });
+  startGroup() {
+    this.store.addGroup().then((group) => {
+      this.joinGroup({ groupID: group.id });
+    });
   }
 
   joinGroup({ groupID }) {

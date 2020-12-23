@@ -10,7 +10,6 @@ import Signup from "./Signup";
 import StartGame from "./StartGame";
 import Suggestions from "./Suggestions";
 import YourTurn from "./YourTurn";
-import { randomID } from "./random";
 
 const useSocket = () => {
   const [groupID, setGroupID] = useState();
@@ -36,7 +35,8 @@ const useSocket = () => {
     socket.on("event", (data) => {
       console.log(data);
     });
-    socket.on("WELCOME", ({ users }) => {
+    socket.on("JOINED_GROUP", ({ groupID, users }) => {
+      setGroupID(groupID);
       setUsers(users);
     });
     socket.on("USER_LIST", ({ users }) => {
@@ -63,10 +63,7 @@ const useSocket = () => {
   }, []);
 
   const startGroup = () => {
-    const newGroupID = randomID();
-    console.log(newGroupID);
-    socket.emit("START_GROUP", { groupID: newGroupID });
-    setGroupID(newGroupID);
+    socket.emit("START_GROUP", {});
   };
   const joinGroup = (groupID) => {
     socket.emit("JOIN_GROUP", { groupID });
