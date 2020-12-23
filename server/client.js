@@ -1,9 +1,18 @@
 export default class Client {
   constructor({ io, socket, game }) {
     this.sock = socket;
-    this.replyOne = this.sock.emit.bind(this.sock);
-    this.replyAll = io.emit.bind(io);
+    this.io = io;
     this.game = game;
+  }
+
+  replyOne(messageType, data) {
+    console.log(`[${this.sock.id}] sending ${messageType}`);
+    this.sock.emit(messageType, data);
+  }
+
+  replyAll(messageType, data) {
+    console.log(`[${this.sock.id}] sending ${messageType} to all`);
+    this.io.emit(messageType, data);
   }
 
   setUsername({ username }) {
@@ -60,6 +69,7 @@ export default class Client {
 
   registerHandler(messageType, handler) {
     this.sock.on(messageType, (data) => {
+      console.log(`[${this.sock.id}] incoming ${messageType}`);
       try {
         handler.call(this, data);
       } catch (e) {
