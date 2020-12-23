@@ -49,39 +49,25 @@ class Client {
   }
 
   setUsername = ({ username }) => {
-    if (username && username.length) {
-      state.users = [
-        ...state.users.filter((u) => u.clientID !== this.sock.id),
-        { clientID: this.sock.id, username },
-      ];
-    }
-    console.log(state);
-    io.emit("USER_LIST", { users: state.users });
+    game.addUser({ clientID: this.sock.id, username });
+    io.emit("USER_LIST", { users: game.getUsers() });
   };
 
   welcome = () => {
-    this.sock.emit("WELCOME", { clientID: this.sock.id, users: state.users });
+    this.sock.emit("WELCOME", {
+      clientID: this.sock.id,
+      users: game.getUsers(),
+    });
   };
 
   addSuggestion = ({ suggestion }) => {
-    if (suggestion && suggestion.length) {
-      state.suggestions = [
-        ...state.suggestions,
-        { clientID: this.sock.id, name: suggestion },
-      ];
-    }
-    console.log(state);
-    io.emit("NEW_SUGGESTION", { count: state.suggestions.length });
+    game.addSuggestion({ clientID: this.sock.id, suggestion });
+    io.emit("NEW_SUGGESTION", { count: game.countSuggestions() });
   };
 
   startGame = () => {
-    game.startGame();
-    console.log(state);
-    io.emit("NEW_TURN", {
-      round: state.round,
-      duration: state.options.turnDurationSeconds,
-      describer: game.getCurrentDescriber(),
-    });
+    game.start();
+    io.emit("NEW_TURN", game.getCurrentTurnDetails());
   };
 
   requestSuggestion = () => {
@@ -94,44 +80,24 @@ class Client {
   };
 
   notifyScores = () => {
-    io.emit(
-      "LATEST_SCORES",
-      state.teams.map((t) => ({
-        name: t.name,
-        correct: t.guessedCorrectly,
-        skips: t.skips,
-      })),
-    );
+    io.emit("LATEST_SCORES", game.getScores());
   };
 
   guessCorrectly = ({ name }) => {
-    state.availableSuggestions = state.availableSuggestions.filter(
-      (s) => s.name !== name,
-    );
-    game.getCurrentTeam().guessedCorrectly++;
-    console.log("correct", name);
+    game.guessCorrectly(name);
     this.notifyScores();
     this.requestSuggestion();
   };
 
   skip = ({ name }) => {
-    state.availableSuggestions = state.availableSuggestions.map((s) =>
-      s.name === name ? { ...s, skipped: true } : s
-    );
-    game.getCurrentTeam().skips++;
-    console.log("skipped", name);
+    game.skip(name);
     this.notifyScores();
     this.requestSuggestion();
   };
 
   nextTurn = () => {
     game.endTurn();
-    console.log(state);
-    io.emit("NEW_TURN", {
-      round: state.round,
-      duration: state.options.turnDurationSeconds,
-      describer: game.getCurrentDescriber(),
-    });
+    io.emit("NEW_TURN", game.getCurrentTurnDetails());
   };
 
   registerHandler = (messageType, handler) => {

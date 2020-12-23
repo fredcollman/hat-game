@@ -5,6 +5,32 @@ export default class Game {
     this.#state = state;
   }
 
+  addUser({ clientID, username }) {
+    if (username && username.length) {
+      this.#state.users = [
+        ...this.#state.users.filter((u) => u.clientID !== clientID),
+        { clientID, username },
+      ];
+    }
+  }
+
+  getUsers() {
+    return this.#state.users;
+  }
+
+  addSuggestion({ clientID, suggestion }) {
+    if (suggestion && suggestion.length) {
+      this.#state.suggestions = [
+        ...this.#state.suggestions,
+        { clientID, name: suggestion },
+      ];
+    }
+  }
+
+  countSuggestions() {
+    return this.#state.suggestions.length;
+  }
+
   getCurrentTeam() {
     return this.#state.teams[this.#state.currentTeamIndex];
   }
@@ -17,6 +43,22 @@ export default class Game {
       username,
       team: team.name,
     };
+  }
+
+  getCurrentTurnDetails() {
+    return {
+      round: this.#state.round,
+      duration: this.#state.options.turnDurationSeconds,
+      describer: this.getCurrentDescriber(),
+    };
+  }
+
+  getScores() {
+    return this.#state.teams.map((t) => ({
+      name: t.name,
+      correct: t.guessedCorrectly,
+      skips: t.skips,
+    }));
   }
 
   getNextSuggestion() {
@@ -53,7 +95,7 @@ export default class Game {
     }));
   }
 
-  startGame() {
+  start() {
     const numTeams = this.#state.options.teams;
     const teams = Array.from({ length: numTeams }).map((_, teamIdx) => ({
       name: `Team ${teamIdx + 1}`,
@@ -67,5 +109,21 @@ export default class Game {
     this.#state.teams = teams;
     this.#state.currentTeamIndex = 0;
     this.startRound(1);
+  }
+
+  guessCorrectly(name) {
+    this.#state.availableSuggestions = this.#state.availableSuggestions.filter(
+      (s) => s.name !== name,
+    );
+    this.getCurrentTeam().guessedCorrectly++;
+    console.log("correct", name);
+  }
+
+  skip(name) {
+    this.#state.availableSuggestions = this.#state.availableSuggestions.map(
+      (s) => (s.name === name ? { ...s, skipped: true } : s),
+    );
+    this.getCurrentTeam().skips++;
+    console.log("skipped", name);
   }
 }
