@@ -14,12 +14,19 @@ app.use(express.static(path.join(__dirname, "client", "build")));
 app.get("/", function (req, res) {
   res.sendFile(path.join(__dirname, "client", "build", "index.html"));
 });
+if (process.env.NODE_ENV === "development") {
+  app.get("/__reset", (req, res) => {
+    console.warn("RESETTING STATE");
+    Object.assign(state, initialState());
+    res.status(200).send();
+  });
+}
 
 server.listen(PORT, () => {
   console.log(`Serving at http://localhost:${PORT}`);
 });
 
-const state = {
+const initialState = () => ({
   round: 0,
   users: [],
   teams: [],
@@ -30,7 +37,9 @@ const state = {
   },
   currentTeamIndex: 0,
   availableSuggestions: [],
-};
+});
+
+const state = initialState();
 
 const getCurrentTeam = () => {
   return state.teams[state.currentTeamIndex];
