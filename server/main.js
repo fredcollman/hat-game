@@ -18,7 +18,7 @@ app.get("/", function (req, res) {
 if (process.env.NODE_ENV === "development") {
   app.get("/__reset", (req, res) => {
     console.warn("RESETTING STATE");
-    Object.assign(state, initialState());
+    game = Game.create();
     res.status(200).send();
   });
 }
@@ -27,21 +27,7 @@ server.listen(PORT, () => {
   console.log(`Serving at http://localhost:${PORT}`);
 });
 
-const initialState = () => ({
-  round: 0,
-  users: [],
-  teams: [],
-  suggestions: [],
-  options: {
-    teams: 2,
-    turnDurationSeconds: 60,
-  },
-  currentTeamIndex: 0,
-  availableSuggestions: [],
-});
-
-const state = initialState();
-const game = new Game(state);
+let game = Game.create();
 
 class Client {
   constructor(socket) {

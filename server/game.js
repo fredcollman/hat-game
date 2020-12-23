@@ -1,6 +1,21 @@
 export default class Game {
   #state;
 
+  static create() {
+    return new this({
+      round: 0,
+      users: [],
+      teams: [],
+      suggestions: [],
+      options: {
+        teams: 2,
+        turnDurationSeconds: 60,
+      },
+      currentTeamIndex: 0,
+      availableSuggestions: [],
+    });
+  }
+
   constructor(state) {
     this.#state = state;
   }
