@@ -11,6 +11,10 @@
   padding: 1em;
 }
 
+.padding-t-m {
+  padding-top: 1em;
+}
+
 .debug {
   border: 1px dashed red;
 }
@@ -37,4 +41,8 @@
 
 .gap-m {
   gap: 1em;
+}
+
+.stack-m > * + * {
+  margin-top: 1em;
 }

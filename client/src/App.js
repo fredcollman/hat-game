@@ -96,7 +96,7 @@ const App = () => {
   const { actions, state } = gameState;
   const { scores, groupID, round } = state;
   return (
-    <div className="wrapper center-h padding-m center-text">
+    <div className="wrapper center-h padding-m">
       <header className="debug center-text">
         <h1>The Hat Game</h1>
       </header>

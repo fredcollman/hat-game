@@ -2,10 +2,10 @@ import BasicForm from "./BasicForm";
 
 const SelectGroup = ({ actions }) => {
   const { startGroup, joinGroup } = actions;
-  const handleSubmit = (e) => joinGroup(e.target["groupID"].value);
+  const handleSubmit = (e) =>
+    joinGroup(e.target["groupID"].value.toUpperCase());
   return (
-    <>
-      Welcome to the hat game.
+    <div className="center-text">
       <section>
         <h2>Join an existing group</h2>
         <BasicForm
@@ -22,7 +22,7 @@ const SelectGroup = ({ actions }) => {
           Start
         </button>
       </section>
-    </>
+    </div>
   );
 };
 

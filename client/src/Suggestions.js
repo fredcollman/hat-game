@@ -1,18 +1,35 @@
 import SuggestionForm from "./SuggestionForm";
 
-const Suggestions = ({ yourSuggestions, addSuggestion, count }) => {
+const YourSuggestions = ({ names }) => {
+  if (!names.length) {
+    return "You haven't submitted any names yet.";
+  }
   return (
-    <section>
-      <h2>Suggestions</h2>
-      <SuggestionForm addSuggestion={addSuggestion} />
-      <p>There are {count} names in the hat.</p> Your suggestions:
+    <>
+      Your suggestions:
       <ul className="flex gap-m">
-        {yourSuggestions.map((sugg) => (
-          <li key={sugg} className="padding-m bg-light">
-            {sugg}
+        {names.map((name) => (
+          <li key={name} className="padding-m bg-light">
+            {name}
           </li>
         ))}
       </ul>
+    </>
+  );
+};
+
+const Suggestions = ({ yourSuggestions, addSuggestion, count }) => {
+  const countText = count === 1
+    ? "There is 1 name"
+    : `There are ${count} names`;
+  return (
+    <section className="stack-m">
+      <h2>Suggestions</h2>
+      <SuggestionForm addSuggestion={addSuggestion} />
+      <div>
+        {`${countText} in the hat. `}
+        <YourSuggestions names={yourSuggestions} />
+      </div>
     </section>
   );
 };
