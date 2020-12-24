@@ -1,8 +1,8 @@
-const Signup = ({ socket }) => {
+const Signup = ({ socket, setUsername }) => {
   const handleSubmit = (e) => {
     e.preventDefault();
     console.log(e);
-    socket.emit("SET_USERNAME", { username: e.target["username"].value });
+    setUsername(e.target["username"].value);
   };
   return (
     <section className="center-text">

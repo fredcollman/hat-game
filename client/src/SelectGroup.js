@@ -1,4 +1,5 @@
-const SelectGroup = ({ startGroup, joinGroup }) => {
+const SelectGroup = ({ actions }) => {
+  const { startGroup, joinGroup } = actions;
   const handleSubmit = (e) => {
     e.preventDefault();
     joinGroup(e.target["groupID"].value);
