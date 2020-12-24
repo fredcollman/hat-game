@@ -4,6 +4,7 @@ import "./reset.css";
 import "./variables.css";
 import "./global.css";
 import "./utility.css";
+import { currentPlayer } from "./utils";
 import Actions from "./actions";
 import SelectGroup from "./SelectGroup";
 import GroupInfo from "./GroupInfo";
@@ -13,20 +14,21 @@ import RoundZero from "./RoundZero";
 import Round from "./Round";
 
 const INITIAL_STATE = {
+  clientID: null,
   groupID: null,
   users: [],
   yourSuggestions: [],
   suggestionCount: 0,
-  turn: {
-    round: 0,
-    describer: null,
-  },
+  round: 0,
+  describer: null,
   currentSuggestion: null,
   scores: [],
 };
 
 const reducer = (state, { type, data }) => {
   switch (type) {
+    case "SOCKET_CONNECTION":
+      return { ...state, clientID: data };
     case "JOINED_GROUP":
       return {
         ...state,
@@ -45,7 +47,8 @@ const reducer = (state, { type, data }) => {
     case "NEW_TURN":
       return {
         ...state,
-        turn: { round: data.round, describer: data.describer },
+        round: data.round,
+        describer: data.describer,
         currentSuggestion: null,
       };
     case "NEXT_SUGGESTION":
@@ -70,6 +73,7 @@ const useSocket = () => {
     setSocket(socket);
     socket.on("connect", () => {
       console.log("connected");
+      dispatch({ type: "SOCKET_CONNECTION", data: socket.id });
     });
     socket.onAny((type, data) => dispatch({ type, data }));
     return () => {
@@ -79,7 +83,7 @@ const useSocket = () => {
   }, []);
   const actions = new Actions({ state, socket, dispatch });
 
-  const user = socket && state.users.find((u) => u.clientID === socket.id);
+  const user = socket && currentPlayer(state);
   return {
     state,
     actions,
@@ -89,9 +93,8 @@ const useSocket = () => {
 
 const App = () => {
   const gameState = useSocket();
-  const { actions, state, user } = gameState;
-  const { users, scores, groupID } = state;
-  const round = state.turn.round;
+  const { actions, state } = gameState;
+  const { scores, groupID, round } = state;
   return (
     <div className="wrapper center-h padding-m center-text">
       <header className="debug center-text">
@@ -105,7 +108,7 @@ const App = () => {
               {round === 0 && <RoundZero gameState={gameState} />}
               {round > 0 && round < 4 && <Round gameState={gameState} />}
               {round === 4 && <GameOver scores={scores} />}
-              <UserList users={users} user={user} />
+              <UserList state={state} />
             </>
           )
           : (

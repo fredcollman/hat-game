@@ -1,3 +1,4 @@
+import { isThisPlayer } from "./utils";
 import YourTurn from "./YourTurn";
 
 const ROUND_DESCRIPTIONS = {
@@ -17,14 +18,13 @@ const Turn = ({ describer }) => {
 };
 
 const Round = ({ gameState }) => {
-  const { state, actions, user } = gameState;
-  const { describer, currentSuggestion } = state;
-  const round = state.turn.round;
+  const { state, actions } = gameState;
+  const { describer, round, currentSuggestion } = state;
   return (
     <section>
       <h2>Round {round}</h2>
       <p>{ROUND_DESCRIPTIONS[round]}</p>
-      {user.clientID === describer.clientID
+      {isThisPlayer(state, describer)
         ? (
           <YourTurn
             requestSuggestion={actions.requestSuggestion}

@@ -10,7 +10,7 @@ const RoundZero = ({ gameState }) => {
   return (
     <>
       <Suggestions
-        yourSuggestions={actions.yourSuggestions}
+        yourSuggestions={state.yourSuggestions}
         addSuggestion={actions.addSuggestion}
         count={state.suggestionCount}
       />
