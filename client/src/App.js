@@ -36,6 +36,11 @@ const reducer = (state, { type, data }) => {
       return { ...state, users: data.users };
     case "NEW_SUGGESTION":
       return { ...state, suggestionCount: data.count };
+    case "ADD_SUGGESTION":
+      return {
+        ...state,
+        yourSuggestions: [...state.yourSuggestions, data.suggestion],
+      };
     case "NEW_TURN":
       return {
         ...state,
@@ -56,7 +61,6 @@ const reducer = (state, { type, data }) => {
 const useSocket = () => {
   const [state, dispatch] = useReducer(reducer, INITIAL_STATE);
   const [socket, setSocket] = useState();
-  const [yourSuggestions, setYourSuggestions] = useState([]);
   useEffect(() => {
     console.log("creating a socket connection!");
     const socket = io({
@@ -83,10 +87,10 @@ const useSocket = () => {
     if (
       suggestion &&
       suggestion.length &&
-      !yourSuggestions.includes(suggestion)
+      !state.yourSuggestions.includes(suggestion)
     ) {
       socket.emit("ADD_SUGGESTION", { suggestion });
-      setYourSuggestions((prev) => [...prev, suggestion]);
+      dispatch({ type: "ADD_SUGGESTION", data: { suggestion } });
     }
   };
   const startGame = () => {
@@ -114,6 +118,7 @@ const useSocket = () => {
     currentSuggestion,
     scores,
     suggestionCount,
+    yourSuggestions,
   } = state;
   const user = socket && users.find((u) => u.clientID === socket.id);
   const { round, describer } = turn;
