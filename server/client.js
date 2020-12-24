@@ -12,17 +12,17 @@ export default class Client {
 
   static prepare({ io, socket, db }) {
     const client = new this({ io, socket, db, store: new Store(db) });
-    client.welcome();
-
-    client.registerHandler("START_GROUP", client.startGroup);
-    client.registerHandler("JOIN_GROUP", client.joinGroup);
-    client.registerHandler("SET_USERNAME", client.setUsername);
-    client.registerHandler("ADD_SUGGESTION", client.addSuggestion);
-    client.registerHandler("START_GAME", client.startGame);
-    client.registerHandler("REQUEST_SUGGESTION", client.requestSuggestion);
-    client.registerHandler("GUESS_CORRECTLY", client.guessCorrectly);
-    client.registerHandler("SKIP", client.skip);
-    client.registerHandler("END_TURN", client.nextTurn);
+    [
+      ["START_GROUP", client.startGroup],
+      ["JOIN_GROUP", client.joinGroup],
+      ["SET_USERNAME", client.setUsername],
+      ["ADD_SUGGESTION", client.addSuggestion],
+      ["START_GAME", client.startGame],
+      ["REQUEST_SUGGESTION", client.requestSuggestion],
+      ["GUESS_CORRECTLY", client.guessCorrectly],
+      ["SKIP", client.skip],
+      ["END_TURN", client.nextTurn],
+    ].forEach(([name, handler]) => client.registerHandler(name, handler));
     return client;
   }
 
@@ -39,13 +39,6 @@ export default class Client {
       console.log(`[${this.sock.id}] sending ${messageType} to all`);
       this.io.emit(messageType, data);
     }
-  }
-
-  welcome() {
-    this.replyOne("WELCOME", {
-      clientID: this.sock.id,
-      users: [], // TODO remove
-    });
   }
 
   async startGroup() {

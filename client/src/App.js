@@ -48,7 +48,8 @@ const reducer = (state, { type, data }) => {
     case "LATEST_SCORES":
       return { ...state, scores: data };
     default:
-      console.log("unhandled", type);
+      console.warn("unhandled", type);
+      return state;
   }
 };
 
@@ -65,19 +66,7 @@ const useSocket = () => {
     socket.on("connect", () => {
       console.log("connected");
     });
-    socket.on("event", (data) => {
-      console.log(data);
-    });
-    [
-      "JOINED_GROUP",
-      "USER_LIST",
-      "NEW_SUGGESTION",
-      "NEW_TURN",
-      "NEXT_SUGGESTION",
-      "LATEST_SCORES",
-    ].forEach((type) => {
-      socket.on(type, (data) => dispatch({ type, data }));
-    });
+    socket.onAny((type, data) => dispatch({ type, data }));
     return () => {
       console.log(`Closing connection to ${socket && socket.id}`);
       socket.close();
@@ -250,17 +239,21 @@ const GameOver = ({ scores }) => {
       <h2>Congrats to {ordered[0].name}!</h2>
       <table>
         <thead>
-          <th>Team</th>
-          <th>Points</th>
-          <th>Skips</th>
-        </thead>
-        {ordered.map((team) => (
-          <tr key={team.name}>
-            <td>{team.name}</td>
-            <td>{team.correct}</td>
-            <td>{team.skips}</td>
+          <tr>
+            <th>Team</th>
+            <th>Points</th>
+            <th>Skips</th>
           </tr>
-        ))}
+        </thead>
+        <tbody>
+          {ordered.map((team) => (
+            <tr key={team.name}>
+              <td>{team.name}</td>
+              <td>{team.correct}</td>
+              <td>{team.skips}</td>
+            </tr>
+          ))}
+        </tbody>
       </table>
     </>
   );
