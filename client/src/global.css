@@ -1,6 +1,13 @@
+@import url('https://fonts.googleapis.com/css2?family=Permanent+Marker&family=Montserrat&display=swap');
+
+
 body {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";;
+  font-family: 'Montserrat', sans-serif;
   background: var(--grey);
+}
+
+button {
+  font-family: 'Permanent Marker', cursive;
 }
 
 h1 {
@@ -18,6 +25,7 @@ button {
   padding: 0.7em 1.5em;
   background: var(--success);
   border: none;
+  border-radius: 100em;
   color: white;
 }
 

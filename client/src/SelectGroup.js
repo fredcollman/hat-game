@@ -1,21 +1,20 @@
+import BasicForm from "./BasicForm";
+
 const SelectGroup = ({ actions }) => {
   const { startGroup, joinGroup } = actions;
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    joinGroup(e.target["groupID"].value);
-  };
+  const handleSubmit = (e) => joinGroup(e.target["groupID"].value);
   return (
     <>
       Welcome to the hat game.
       <section>
         <h2>Join an existing group</h2>
-        <form onSubmit={handleSubmit}>
-          <label>
-            Group ID
-            <input type="text" name="groupID" placeholder="e.g. ABCXYZ" />
-          </label>
-          <button type="submit">Join</button>
-        </form>
+        <BasicForm
+          onSubmit={handleSubmit}
+          labelText="6-letter Group ID"
+          fieldName="groupID"
+          placeholder="e.g. ABCXYZ"
+          buttonText="Join"
+        />
       </section>
       <section>
         <h2>Start a new group</h2>
