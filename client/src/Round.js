@@ -11,7 +11,8 @@ const Turn = ({ describer }) => {
   return (
     <>
       <p>
-        It's {describer.team}'s turn, and {describer.username} is describing.
+        It's <strong>{describer.team}</strong>'s turn, and{" "}
+        <strong>{describer.username}</strong> is describing.
       </p>
     </>
   );
@@ -21,7 +22,7 @@ const Round = ({ gameState }) => {
   const { state, actions } = gameState;
   const { describer, round, currentSuggestion } = state;
   return (
-    <section>
+    <section className="stack-m">
       <h2>Round {round}</h2>
       <p>{ROUND_DESCRIPTIONS[round]}</p>
       {isThisPlayer(state, describer)

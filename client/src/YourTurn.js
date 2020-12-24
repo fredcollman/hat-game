@@ -63,9 +63,11 @@ const YourTurn = ({
     <>
       <p>It's your turn!</p>
       {status === "WAITING" && (
-        <button type="button" onClick={beginTurn}>
-          Start
-        </button>
+        <div className="center-text">
+          <button type="button" onClick={beginTurn}>
+            Start
+          </button>
+        </div>
       )}
       {status === "STARTING" && (
         <Countdown from={COUNTDOWN_DURATION} onComplete={showName} />

@@ -3,12 +3,14 @@ import { isThisPlayer } from "./utils";
 const GroupInfo = ({ state }) => {
   const { groupID, teams } = state;
   return (
-    <aside>
+    <aside className="stack-m">
       <h2>This Group</h2>
-      6-letter Group ID:{" "}
-      <code>
-        <strong>{groupID}</strong>
-      </code>
+      <span>
+        6-letter Group ID:{" "}
+        <code>
+          <strong>{groupID}</strong>
+        </code>
+      </span>
       <div className="flex flex-wrap space-around gap-m">
         {teams.map((t) => {
           return (
