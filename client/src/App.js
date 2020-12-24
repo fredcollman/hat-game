@@ -79,62 +79,19 @@ const useSocket = () => {
   }, []);
   const actions = new Actions({ state, socket, dispatch });
 
-  const {
-    startGroup,
-    joinGroup,
-    addSuggestion,
-    startGame,
-    requestSuggestion,
-    guessCorrectly,
-    skip,
-    endTurn,
-  } = actions;
-
-  const {
-    turn,
-    groupID,
-    users,
-    currentSuggestion,
-    scores,
-    suggestionCount,
-    yourSuggestions,
-  } = state;
-  const user = socket && users.find((u) => u.clientID === socket.id);
-  const { round, describer } = turn;
+  const user = socket && state.users.find((u) => u.clientID === socket.id);
   return {
     state,
     actions,
-    groupID,
-    startGroup,
-    joinGroup,
-    users,
-    addSuggestion,
-    yourSuggestions,
-    startGame,
-    suggestionCount,
     user,
-    round,
-    describer,
-    requestSuggestion,
-    guessCorrectly,
-    skip,
-    currentSuggestion,
-    endTurn,
-    scores,
   };
 };
 
 const App = () => {
   const gameState = useSocket();
-  const {
-    users,
-    user,
-    round,
-    scores,
-    groupID,
-    startGroup,
-    joinGroup,
-  } = gameState;
+  const { actions, state, user } = gameState;
+  const { users, scores, groupID } = state;
+  const round = state.turn.round;
   return (
     <div className="wrapper center-h padding-m center-text">
       <header className="debug center-text">
@@ -152,7 +109,7 @@ const App = () => {
             </>
           )
           : (
-            <SelectGroup startGroup={startGroup} joinGroup={joinGroup} />
+            <SelectGroup actions={actions} />
           )}
       </main>
     </div>
