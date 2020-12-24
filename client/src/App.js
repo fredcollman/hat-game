@@ -4,6 +4,7 @@ import "./reset.css";
 import "./variables.css";
 import "./global.css";
 import "./utility.css";
+import Actions from "./actions";
 import SelectGroup from "./SelectGroup";
 import GroupInfo from "./GroupInfo";
 import Signup from "./Signup";
@@ -76,40 +77,18 @@ const useSocket = () => {
       socket.close();
     };
   }, []);
+  const actions = new Actions({ state, socket, dispatch });
 
-  const startGroup = () => {
-    socket.emit("START_GROUP", {});
-  };
-  const joinGroup = (groupID) => {
-    socket.emit("JOIN_GROUP", { groupID });
-  };
-  const addSuggestion = (suggestion) => {
-    if (
-      suggestion &&
-      suggestion.length &&
-      !state.yourSuggestions.includes(suggestion)
-    ) {
-      socket.emit("ADD_SUGGESTION", { suggestion });
-      dispatch({ type: "ADD_SUGGESTION", data: { suggestion } });
-    }
-  };
-  const startGame = () => {
-    socket.emit("START_GAME", {});
-  };
-  const requestSuggestion = () => {
-    console.log(state.currentSuggestion);
-    socket && socket.emit("REQUEST_SUGGESTION", {});
-  };
-  const guessCorrectly = (name) => {
-    socket && socket.emit("GUESS_CORRECTLY", { name });
-  };
-  const skip = (name) => {
-    socket && socket.emit("SKIP", { name });
-  };
-  const endTurn = () => {
-    // setCurrentSuggestion(null); TODO is this ok?
-    socket.emit("END_TURN", {});
-  };
+  const {
+    startGroup,
+    joinGroup,
+    addSuggestion,
+    startGame,
+    requestSuggestion,
+    guessCorrectly,
+    skip,
+    endTurn,
+  } = actions;
 
   const {
     turn,
