@@ -102,7 +102,8 @@ const useSocket = () => {
   const user = socket && users.find((u) => u.clientID === socket.id);
   const { round, describer } = turn;
   return {
-    socket,
+    state,
+    actions,
     groupID,
     startGroup,
     joinGroup,
@@ -143,25 +144,18 @@ const UserList = ({ user, users }) => (
 );
 
 const RoundZero = ({ gameState }) => {
-  const {
-    socket,
-    addSuggestion,
-    yourSuggestions,
-    startGame,
-    suggestionCount,
-    user,
-  } = gameState;
+  const { state, actions, user } = gameState;
   if (!user) {
-    return <Signup socket={socket} />;
+    return <Signup setUsername={actions.setUsername} />;
   }
   return (
     <>
       <Suggestions
-        yourSuggestions={yourSuggestions}
-        addSuggestion={addSuggestion}
-        count={suggestionCount}
+        yourSuggestions={actions.yourSuggestions}
+        addSuggestion={actions.addSuggestion}
+        count={state.suggestionCount}
       />
-      <StartGame startGame={startGame} />
+      <StartGame startGame={actions.startGame} />
     </>
   );
 };

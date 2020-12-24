@@ -13,6 +13,12 @@ export default class Actions {
     this.socket.emit("JOIN_GROUP", { groupID });
   };
 
+  setUsername = (username) => {
+    if (username && username.length) {
+      this.socket.emit("SET_USERNAME", { username });
+    }
+  };
+
   addSuggestion = (suggestion) => {
     if (
       suggestion &&
