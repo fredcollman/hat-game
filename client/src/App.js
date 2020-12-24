@@ -7,10 +7,10 @@ import "./utility.css";
 import Actions from "./actions";
 import SelectGroup from "./SelectGroup";
 import GroupInfo from "./GroupInfo";
-import Signup from "./Signup";
-import StartGame from "./StartGame";
-import Suggestions from "./Suggestions";
-import YourTurn from "./YourTurn";
+import GameOver from "./GameOver";
+import UserList from "./UserList";
+import RoundZero from "./RoundZero";
+import Round from "./Round";
 
 const INITIAL_STATE = {
   groupID: null,
@@ -122,119 +122,6 @@ const useSocket = () => {
     endTurn,
     scores,
   };
-};
-
-const UserList = ({ user, users }) => (
-  <section>
-    <h2>Players</h2>
-    <ul className="flex gap-m">
-      {users.map((u) => (
-        <li key={u.clientID} className="padding-m bg-light">
-          {u.clientID === user?.clientID
-            ? (
-              <strong>{u.username} (you)</strong>
-            )
-            : (
-              u.username
-            )}
-        </li>
-      ))}
-    </ul>
-  </section>
-);
-
-const RoundZero = ({ gameState }) => {
-  const { state, actions, user } = gameState;
-  if (!user) {
-    return <Signup setUsername={actions.setUsername} />;
-  }
-  return (
-    <>
-      <Suggestions
-        yourSuggestions={actions.yourSuggestions}
-        addSuggestion={actions.addSuggestion}
-        count={state.suggestionCount}
-      />
-      <StartGame startGame={actions.startGame} />
-    </>
-  );
-};
-
-const Turn = ({ describer }) => {
-  return (
-    <>
-      <p>
-        It's {describer.team}'s turn, and {describer.username} is describing.
-      </p>
-    </>
-  );
-};
-
-const ROUND_DESCRIPTIONS = {
-  1: "In Round 1, you can use as many words as you need to describe the name you draw.",
-  2: "In Round 2, you can only use a single word. If it helps, you can say it multiple times.",
-  3: "In Round 3, you cannot make a sound! You must act out the name instead.",
-};
-
-const Round = ({ gameState }) => {
-  const {
-    user,
-    describer,
-    requestSuggestion,
-    currentSuggestion,
-    skip,
-    guessCorrectly,
-    round,
-    endTurn,
-  } = gameState;
-  return (
-    <section>
-      <h2>Round {round}</h2>
-      <p>{ROUND_DESCRIPTIONS[round]}</p>
-      {user.clientID === describer.clientID
-        ? (
-          <YourTurn
-            requestSuggestion={requestSuggestion}
-            suggestion={currentSuggestion}
-            guessCorrectly={guessCorrectly}
-            skip={skip}
-            endTurn={endTurn}
-          />
-        )
-        : (
-          <Turn describer={describer} />
-        )}
-    </section>
-  );
-};
-
-const GameOver = ({ scores }) => {
-  const ordered = scores.sort(
-    (a, b) => b.correct - a.correct || a.skips - b.skips,
-  );
-  return (
-    <>
-      <h2>Congrats to {ordered[0].name}!</h2>
-      <table>
-        <thead>
-          <tr>
-            <th>Team</th>
-            <th>Points</th>
-            <th>Skips</th>
-          </tr>
-        </thead>
-        <tbody>
-          {ordered.map((team) => (
-            <tr key={team.name}>
-              <td>{team.name}</td>
-              <td>{team.correct}</td>
-              <td>{team.skips}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </>
-  );
 };
 
 const App = () => {
