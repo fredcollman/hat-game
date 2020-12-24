@@ -68,23 +68,15 @@ const useSocket = () => {
     socket.on("event", (data) => {
       console.log(data);
     });
-    socket.on("JOINED_GROUP", (data) => {
-      dispatch({ type: "JOINED_GROUP", data });
-    });
-    socket.on("USER_LIST", (data) => {
-      dispatch({ type: "USER_LIST", data });
-    });
-    socket.on("NEW_SUGGESTION", (data) => {
-      dispatch({ type: "NEW_SUGGESTION", data });
-    });
-    socket.on("NEW_TURN", (data) => {
-      dispatch({ type: "NEW_TURN", data });
-    });
-    socket.on("NEXT_SUGGESTION", (data) => {
-      dispatch({ type: "NEXT_SUGGESTION", data });
-    });
-    socket.on("LATEST_SCORES", (data) => {
-      dispatch({ type: "LATEST_SCORES", data });
+    [
+      "JOINED_GROUP",
+      "USER_LIST",
+      "NEW_SUGGESTION",
+      "NEW_TURN",
+      "NEXT_SUGGESTION",
+      "LATEST_SCORES",
+    ].forEach((type) => {
+      socket.on(type, (data) => dispatch({ type, data }));
     });
     return () => {
       console.log(`Closing connection to ${socket && socket.id}`);
