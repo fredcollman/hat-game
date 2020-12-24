@@ -27,12 +27,20 @@
   flex-direction: column;
 }
 
+.flex-wrap {
+  flex-wrap: wrap;
+}
+
 .flex-start {
   align-items: flex-start;
 }
 
 .flex-center {
   align-items: center;
+}
+
+.space-around {
+  justify-content: space-around;
 }
 
 .bg-light {
@@ -45,4 +53,8 @@
 
 .stack-m > * + * {
   margin-top: 1em;
+}
+
+.stack-h-m > * + * {
+  margin-left: 1em;
 }

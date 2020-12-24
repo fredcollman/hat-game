@@ -1,15 +1,44 @@
+const DEFAULT_TEAMS = 2;
+
 const initialState = () => ({
   round: 0,
   users: [],
-  teams: [],
+  teams: Array.from({ length: DEFAULT_TEAMS }).map((_, teamIdx) => ({
+    name: `Team ${teamIdx + 1}`,
+    members: [],
+    currentDescriberIndex: 0,
+    guessedCorrectly: 0,
+    skips: 0,
+  })),
   suggestions: [],
   options: {
-    teams: 2,
+    teams: DEFAULT_TEAMS,
     turnDurationSeconds: 6, // TODO: change back to 60
   },
   currentTeamIndex: 0,
   availableSuggestions: [],
 });
+
+const addMember = (member, team) => ({
+  ...team,
+  members: [...team.members, member],
+});
+
+const addUser = ({ clientID, username }, state) => {
+  const user = { clientID, username };
+  const teamToJoin = state.users.length % state.options.teams;
+  const newUsers = [
+    ...state.users.filter((u) => u.clientID !== clientID),
+    user,
+  ];
+  return {
+    ...state,
+    users: newUsers,
+    teams: state.teams.map((team, idx) =>
+      idx === teamToJoin ? addMember(user, team) : team
+    ),
+  };
+};
 
 export default class Game {
   #state;
@@ -28,18 +57,23 @@ export default class Game {
     this.#handleChange = () => onChange(this.#state);
   }
 
-  addUser({ clientID, username }) {
-    if (username && username.length) {
-      this.#state.users = [
-        ...this.#state.users.filter((u) => u.clientID !== clientID),
-        { clientID, username },
-      ];
+  addUser(user) {
+    if (user?.username?.length) {
+      this.#state = addUser(user, this.#state);
       this.#handleChange();
     }
   }
 
   getUsers() {
     return this.#state.users;
+  }
+
+  getTeamMembers() {
+    console.log(this.#state);
+    return this.#state.teams.map(({ name, members }) => ({
+      name,
+      members,
+    }));
   }
 
   addSuggestion({ clientID, suggestion }) {

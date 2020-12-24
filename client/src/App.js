@@ -17,6 +17,7 @@ const INITIAL_STATE = {
   clientID: null,
   groupID: null,
   users: [],
+  teams: [],
   yourSuggestions: [],
   suggestionCount: 0,
   round: 0,
@@ -40,7 +41,7 @@ const reducer = (state, { type, data }) => {
         numTeams: data?.options?.teams,
       };
     case "USER_LIST":
-      return { ...state, users: data.users };
+      return { ...state, users: data.users, teams: data.teams };
     case "NEW_SUGGESTION":
       return { ...state, suggestionCount: data.count };
     case "ADD_SUGGESTION":
@@ -108,11 +109,10 @@ const App = () => {
         {groupID
           ? (
             <>
-              <GroupInfo groupID={groupID} />
+              <GroupInfo state={state} />
               {round === 0 && <RoundZero gameState={gameState} />}
               {round > 0 && round < 4 && <Round gameState={gameState} />}
               {round === 4 && <GameOver scores={scores} />}
-              <UserList state={state} />
             </>
           )
           : (

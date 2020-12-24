@@ -12,9 +12,11 @@ const StartGame = ({ startGame, numTeams, turnDuration }) => {
           {turnDuration} seconds
         </strong>.
       </p>
-      <button type="button" onClick={startGame}>
-        Start
-      </button>
+      <div className="center-text">
+        <button type="button" onClick={startGame}>
+          Start
+        </button>
+      </div>
     </section>
   );
 };
