@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useReducer, useState } from "react";
 import { io } from "socket.io-client";
 import "./reset.css";
 import "./variables.css";
@@ -11,18 +11,51 @@ import StartGame from "./StartGame";
 import Suggestions from "./Suggestions";
 import YourTurn from "./YourTurn";
 
-const useSocket = () => {
-  const [groupID, setGroupID] = useState();
-  const [users, setUsers] = useState([]);
-  const [socket, setSocket] = useState();
-  const [yourSuggestions, setYourSuggestions] = useState([]);
-  const [suggestionCount, setSuggestionCount] = useState(0);
-  const [turn, setTurn] = useState({
+const INITIAL_STATE = {
+  groupID: null,
+  users: [],
+  yourSuggestions: [],
+  suggestionCount: 0,
+  turn: {
     round: 0,
     describer: null,
-  });
-  const [currentSuggestion, setCurrentSuggestion] = useState();
-  const [scores, setScores] = useState([]);
+  },
+  currentSuggestion: null,
+  scores: [],
+};
+
+const reducer = (state, { type, data }) => {
+  switch (type) {
+    case "JOINED_GROUP":
+      return {
+        ...state,
+        groupID: data.groupID,
+        users: data.users,
+      };
+    case "USER_LIST":
+      return { ...state, users: data.users };
+    case "NEW_SUGGESTION":
+      return { ...state, suggestionCount: data.count };
+    case "NEW_TURN":
+      return {
+        ...state,
+        turn: { round: data.round, describer: data.describer },
+        currentSuggestion: null,
+      };
+    case "NEXT_SUGGESTION":
+      console.log("NEXT_SUGGESTION:", data);
+      return { ...state, currentSuggestion: data.name };
+    case "LATEST_SCORES":
+      return { ...state, scores: data };
+    default:
+      console.log("unhandled", type);
+  }
+};
+
+const useSocket = () => {
+  const [state, dispatch] = useReducer(reducer, INITIAL_STATE);
+  const [socket, setSocket] = useState();
+  const [yourSuggestions, setYourSuggestions] = useState([]);
   useEffect(() => {
     console.log("creating a socket connection!");
     const socket = io({
@@ -35,26 +68,23 @@ const useSocket = () => {
     socket.on("event", (data) => {
       console.log(data);
     });
-    socket.on("JOINED_GROUP", ({ groupID, users }) => {
-      setGroupID(groupID);
-      setUsers(users);
+    socket.on("JOINED_GROUP", (data) => {
+      dispatch({ type: "JOINED_GROUP", data });
     });
-    socket.on("USER_LIST", ({ users }) => {
-      setUsers(users);
+    socket.on("USER_LIST", (data) => {
+      dispatch({ type: "USER_LIST", data });
     });
-    socket.on("NEW_SUGGESTION", ({ count }) => {
-      setSuggestionCount(count);
+    socket.on("NEW_SUGGESTION", (data) => {
+      dispatch({ type: "NEW_SUGGESTION", data });
     });
-    socket.on("NEW_TURN", ({ round, describer }) => {
-      setTurn({ round, describer });
-      setCurrentSuggestion(null);
+    socket.on("NEW_TURN", (data) => {
+      dispatch({ type: "NEW_TURN", data });
     });
-    socket.on("NEXT_SUGGESTION", ({ name }) => {
-      console.log("NEXT_SUGGESTION:", name);
-      setCurrentSuggestion(name);
+    socket.on("NEXT_SUGGESTION", (data) => {
+      dispatch({ type: "NEXT_SUGGESTION", data });
     });
     socket.on("LATEST_SCORES", (data) => {
-      setScores(data);
+      dispatch({ type: "LATEST_SCORES", data });
     });
     return () => {
       console.log(`Closing connection to ${socket && socket.id}`);
@@ -67,7 +97,6 @@ const useSocket = () => {
   };
   const joinGroup = (groupID) => {
     socket.emit("JOIN_GROUP", { groupID });
-    setGroupID(groupID);
   };
   const addSuggestion = (suggestion) => {
     if (
@@ -83,7 +112,7 @@ const useSocket = () => {
     socket.emit("START_GAME", {});
   };
   const requestSuggestion = () => {
-    console.log(currentSuggestion);
+    console.log(state.currentSuggestion);
     socket && socket.emit("REQUEST_SUGGESTION", {});
   };
   const guessCorrectly = (name) => {
@@ -93,10 +122,18 @@ const useSocket = () => {
     socket && socket.emit("SKIP", { name });
   };
   const endTurn = () => {
-    setCurrentSuggestion(null);
+    // setCurrentSuggestion(null); TODO is this ok?
     socket.emit("END_TURN", {});
   };
 
+  const {
+    turn,
+    groupID,
+    users,
+    currentSuggestion,
+    scores,
+    suggestionCount,
+  } = state;
   const user = socket && users.find((u) => u.clientID === socket.id);
   const { round, describer } = turn;
   return {
