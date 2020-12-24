@@ -51,7 +51,11 @@ export default class Client {
       this.room = `group:${groupID}`;
       this.game = await this.store.loadGame({ groupID });
       this.sock.join(this.room);
-      this.replyOne("JOINED_GROUP", { groupID, users: this.game.getUsers() });
+      this.replyOne("JOINED_GROUP", {
+        groupID,
+        users: this.game.getUsers(),
+        options: this.game.getOptions(),
+      });
     }
   }
 

@@ -4,17 +4,27 @@ import Suggestions from "./Suggestions";
 
 const RoundZero = ({ gameState }) => {
   const { state, actions, user } = gameState;
+  const {
+    suggestionCount,
+    yourSuggestions,
+    numTeams,
+    turnDurationSeconds,
+  } = state;
   if (!user) {
     return <Signup setUsername={actions.setUsername} />;
   }
   return (
     <>
       <Suggestions
-        yourSuggestions={state.yourSuggestions}
+        yourSuggestions={yourSuggestions}
         addSuggestion={actions.addSuggestion}
-        count={state.suggestionCount}
+        count={suggestionCount}
       />
-      <StartGame startGame={actions.startGame} />
+      <StartGame
+        numTeams={numTeams}
+        turnDuration={turnDurationSeconds}
+        startGame={actions.startGame}
+      />
     </>
   );
 };

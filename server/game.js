@@ -5,7 +5,7 @@ const initialState = () => ({
   suggestions: [],
   options: {
     teams: 2,
-    turnDurationSeconds: 60,
+    turnDurationSeconds: 6, // TODO: change back to 60
   },
   currentTeamIndex: 0,
   availableSuggestions: [],
@@ -54,6 +54,10 @@ export default class Game {
 
   countSuggestions() {
     return this.#state.suggestions.length;
+  }
+
+  getOptions() {
+    return this.#state.options;
   }
 
   getCurrentTeam() {

@@ -1,6 +1,4 @@
-const StartGame = ({ startGame }) => {
-  const numTeams = 2;
-  const turnDuration = 60;
+const StartGame = ({ startGame, numTeams, turnDuration }) => {
   return (
     <section>
       <h2>Start Game</h2>

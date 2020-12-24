@@ -23,6 +23,8 @@ const INITIAL_STATE = {
   describer: null,
   currentSuggestion: null,
   scores: [],
+  turnDurationSeconds: 60,
+  numTeams: 2,
 };
 
 const reducer = (state, { type, data }) => {
@@ -34,6 +36,8 @@ const reducer = (state, { type, data }) => {
         ...state,
         groupID: data.groupID,
         users: data.users,
+        turnDurationSeconds: data?.options?.turnDurationSeconds,
+        numTeams: data?.options?.teams,
       };
     case "USER_LIST":
       return { ...state, users: data.users };
