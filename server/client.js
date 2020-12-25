@@ -41,6 +41,12 @@ export default class Client {
     }
   }
 
+  async reload() {
+    if (this.game) {
+      this.game = await this.store.reload(this.game);
+    }
+  }
+
   async startGroup() {
     const group = await this.store.addGroup();
     this.joinGroup({ groupID: group.id });
@@ -68,6 +74,7 @@ export default class Client {
   }
 
   addSuggestion({ suggestion }) {
+    this.reload();
     this.game.addSuggestion({ clientID: this.sock.id, suggestion });
     this.replyAll("NEW_SUGGESTION", { count: this.game.countSuggestions() });
   }
@@ -86,19 +93,19 @@ export default class Client {
     }
   }
 
-  notifyScores() {
+  _notifyScores() {
     this.replyAll("LATEST_SCORES", this.game.getScores());
   }
 
   guessCorrectly({ name }) {
     this.game.guessCorrectly(name);
-    this.notifyScores();
+    this._notifyScores();
     this.requestSuggestion();
   }
 
   skip({ name }) {
     this.game.skip(name);
-    this.notifyScores();
+    this._notifyScores();
     this.requestSuggestion();
   }
 
@@ -108,9 +115,10 @@ export default class Client {
   }
 
   registerHandler(messageType, handler) {
-    this.sock.on(messageType, (data) => {
+    this.sock.on(messageType, async (data) => {
       console.log(`[${this.sock.id}] incoming ${messageType}`);
       try {
+        await this.reload();
         handler.call(this, data);
       } catch (e) {
         console.error(

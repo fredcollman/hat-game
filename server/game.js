@@ -44,16 +44,13 @@ export default class Game {
   #state;
   #handleChange;
 
-  static resume({ state, onChange }) {
-    return new this(state || initialState(), onChange);
+  static resume({ state, groupID, onChange }) {
+    return new this(state || initialState(), groupID, onChange);
   }
 
-  static create({ onChange }) {
-    return new this(initialState(), onChange);
-  }
-
-  constructor(state, onChange) {
+  constructor(state, groupID, onChange) {
     this.#state = state;
+    this.groupID = groupID;
     this.#handleChange = () => onChange(this.#state);
   }
 
@@ -160,17 +157,6 @@ export default class Game {
   }
 
   start() {
-    const numTeams = this.#state.options.teams;
-    const teams = Array.from({ length: numTeams }).map((_, teamIdx) => ({
-      name: `Team ${teamIdx + 1}`,
-      members: this.#state.users.filter(
-        (_, userIdx) => userIdx % numTeams === teamIdx,
-      ),
-      currentDescriberIndex: 0,
-      guessedCorrectly: 0,
-      skips: 0,
-    }));
-    this.#state.teams = teams;
     this.#state.currentTeamIndex = 0;
     this._startRound(1);
     this.#handleChange();
