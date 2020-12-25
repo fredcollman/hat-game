@@ -58,3 +58,33 @@
 .stack-h-m > * + * {
   margin-left: 1em;
 }
+
+.grid {
+  display: grid;
+}
+
+.grid-equal-columns {
+  grid-template-columns: repeat(var(--columns), 1fr);
+}
+
+table.grid thead,
+table.grid tbody,
+table.grid tr {
+  display: contents;
+}
+
+.justify-self-start {
+  justify-self: start;
+}
+
+.justify-self-end {
+  justify-self: end;
+}
+
+.width-m {
+  max-width: 35em;
+}
+
+.text-highlight {
+  color: var(--success);
+}

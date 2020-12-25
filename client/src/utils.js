@@ -4,4 +4,9 @@ export const currentPlayer = (state) =>
 export const isThisPlayer = (state, player) =>
   player?.clientID === currentPlayer(state)?.clientID;
 
+export const isThisTeam = (state, teamName) => {
+  const team = state.teams.find((t) => t.name === teamName);
+  return team.members.some((m) => isThisPlayer(state, m));
+};
+
 export const pluralise = (count, word) => (count === 1 ? word : `${word}s`);

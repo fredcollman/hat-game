@@ -99,7 +99,7 @@ const useSocket = () => {
 const App = () => {
   const gameState = useSocket();
   const { actions, state } = gameState;
-  const { scores, groupID, round } = state;
+  const { groupID, round } = state;
   return (
     <div className="wrapper center-h padding-m">
       <header className="debug center-text">
@@ -112,7 +112,7 @@ const App = () => {
               <GroupInfo state={state} />
               {round === 0 && <RoundZero gameState={gameState} />}
               {round > 0 && round < 4 && <Round gameState={gameState} />}
-              {round === 4 && <GameOver scores={scores} />}
+              {round === 4 && <GameOver state={state} />}
             </>
           )
           : (
