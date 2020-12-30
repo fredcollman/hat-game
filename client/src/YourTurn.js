@@ -1,10 +1,15 @@
 import { useEffect, useState } from "react";
 import Countdown from "./Countdown";
 
-const TURN_DURATION = 60;
 const COUNTDOWN_DURATION = 3;
 
-const Describe = ({ suggestion, endTurn, guessCorrectly, skip }) => {
+const Describe = ({
+  turnDuration,
+  suggestion,
+  endTurn,
+  guessCorrectly,
+  skip,
+}) => {
   const [submitted, setSubmitted] = useState(false);
   useEffect(() => {
     setSubmitted(false);
@@ -36,7 +41,7 @@ const Describe = ({ suggestion, endTurn, guessCorrectly, skip }) => {
       <div>
         Time Remaining:{" "}
         <strong>
-          <Countdown from={TURN_DURATION} onComplete={endTurn} />
+          <Countdown from={turnDuration} onComplete={endTurn} />
         </strong>
       </div>
     </div>
@@ -44,6 +49,7 @@ const Describe = ({ suggestion, endTurn, guessCorrectly, skip }) => {
 };
 
 const YourTurn = ({
+  turnDuration,
   suggestion,
   requestSuggestion,
   guessCorrectly,
@@ -92,6 +98,7 @@ const YourTurn = ({
       )}
       {status === "PLAYING" && (
         <Describe
+          turnDuration={turnDuration}
           suggestion={suggestion}
           guessCorrectly={guessCorrectly}
           skip={skip}

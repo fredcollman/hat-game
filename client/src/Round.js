@@ -20,7 +20,7 @@ const Turn = ({ describer }) => {
 
 const Round = ({ gameState }) => {
   const { state, actions } = gameState;
-  const { describer, round, currentSuggestion } = state;
+  const { describer, round, currentSuggestion, turnDurationSeconds } = state;
   return (
     <section className="stack-m">
       <h2>Round {round}</h2>
@@ -28,6 +28,7 @@ const Round = ({ gameState }) => {
       {isThisPlayer(state, describer)
         ? (
           <YourTurn
+            turnDuration={turnDurationSeconds}
             requestSuggestion={actions.requestSuggestion}
             suggestion={currentSuggestion}
             guessCorrectly={actions.guessCorrectly}

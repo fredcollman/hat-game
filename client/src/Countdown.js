@@ -1,20 +1,25 @@
 import { useEffect, useState } from "react";
-import { pluralise } from "./utils";
 
 const Countdown = ({ from, onComplete }) => {
-  const [timer, setTimer] = useState(from);
+  const [start] = useState(new Date());
+  const [remaining, setRemaining] = useState(from * 1000);
   useEffect(() => {
-    // console.log("tick");
-    if (timer <= 0) {
-      onComplete();
-    } else {
-      const timeout = setTimeout(() => {
-        setTimer((t) => t - 1);
-      }, 1000);
-      return () => clearTimeout(timeout);
-    }
-  }, [timer, onComplete]);
-  return <>{timer}</>;
+    const checkDone = () => {
+      const now = new Date();
+      const elapsed = now - start;
+      const remainingMs = 1000 * from - elapsed;
+      const remaining = Math.ceil(remainingMs / 1000);
+      setRemaining(remaining);
+      if (remaining > 0) {
+        const timeout = setTimeout(checkDone, 300);
+        return () => clearTimeout(timeout);
+      } else {
+        onComplete();
+      }
+    };
+    return checkDone();
+  }, [start, from, onComplete]);
+  return <div>{remaining}</div>;
 };
 
 export default Countdown;

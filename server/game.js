@@ -13,7 +13,7 @@ const initialState = () => ({
   suggestions: [],
   options: {
     teams: DEFAULT_TEAMS,
-    turnDurationSeconds: 6, // TODO: change back to 60
+    turnDurationSeconds: 60,
   },
   currentTeamIndex: 0,
   availableSuggestions: [],
