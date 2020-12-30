@@ -19,7 +19,7 @@ const Describe = ({ suggestion, endTurn, guessCorrectly, skip }) => {
   };
   return (
     <div className="stack-m center-text">
-      <div className="center-text paper">{suggestion}</div>
+      <div className="center-text paper padding-xl">{suggestion}</div>
       <div className="stack-h-m">
         <button
           className="negative"

@@ -7,9 +7,9 @@ const YourSuggestions = ({ names }) => {
   return (
     <>
       Your suggestions:
-      <ul className="flex gap-m">
+      <ul className="flex flex-wrap gap-m">
         {names.map((name) => (
-          <li key={name} className="padding-m bg-light">
+          <li key={name} className="paper padding-m">
             {name}
           </li>
         ))}
@@ -26,8 +26,9 @@ const Suggestions = ({ yourSuggestions, addSuggestion, count }) => {
     <section className="stack-m">
       <h2>Suggestions</h2>
       <SuggestionForm addSuggestion={addSuggestion} />
-      <div>
-        {`${countText} in the hat. `}
+      <div className="stack-m">
+        <h3>Suggested so far</h3>
+        <div>{`${countText} in the hat. `}</div>
         <YourSuggestions names={yourSuggestions} />
       </div>
     </section>

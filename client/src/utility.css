@@ -15,6 +15,10 @@
   padding-top: 1em;
 }
 
+.padding-xl {
+  padding: 2em 4em;
+}
+
 .debug {
   border: 1px dashed red;
 }
@@ -92,6 +96,5 @@ table.grid tr {
 .paper {
   display: inline-block;
   box-shadow: 2px 3px 5px 1px;
-  padding: 2em 4em;
   font-family: var(--font-handwriting);
 }
