@@ -70,8 +70,8 @@ const YourTurn = ({
     return "Loading...";
   }
   return (
-    <section>
-      <h2>It's your turn!</h2>
+    <>
+      <h3>It's your turn!</h3>
       {status === "WAITING" && (
         <div className="center-text">
           <button type="button" onClick={beginTurn}>
@@ -99,7 +99,7 @@ const YourTurn = ({
         />
       )}
       {status === "FINISHED" && "You can relax now, your turn is over."}
-    </section>
+    </>
   );
 };
 
