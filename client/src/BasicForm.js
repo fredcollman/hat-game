@@ -10,7 +10,10 @@ const BasicForm = ({
     onSubmit(e);
   };
   return (
-    <form className="flex flex-column flex-center" onSubmit={handleSubmit}>
+    <form
+      className="flex flex-column flex-center center-text"
+      onSubmit={handleSubmit}
+    >
       <label>
         <div>{labelText}</div>
         <input
