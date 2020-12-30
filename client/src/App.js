@@ -9,7 +9,6 @@ import Actions from "./actions";
 import SelectGroup from "./SelectGroup";
 import GroupInfo from "./GroupInfo";
 import GameOver from "./GameOver";
-import UserList from "./UserList";
 import RoundZero from "./RoundZero";
 import Round from "./Round";
 

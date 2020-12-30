@@ -1,13 +1,10 @@
-@import url('https://fonts.googleapis.com/css2?family=Permanent+Marker&family=Montserrat&display=swap');
-
-
 body {
-  font-family: 'Montserrat', sans-serif;
+  font-family: var(--font-regular);
   background: var(--grey);
 }
 
 button, input {
-  font-family: 'Permanent Marker', cursive;
+  font-family: var(--font-handwriting);
 }
 
 code {
@@ -40,6 +37,10 @@ button {
   border: none;
   border-radius: 100em;
   color: white;
+}
+
+button.negative {
+  background: var(--failure);
 }
 
 .wrapper {

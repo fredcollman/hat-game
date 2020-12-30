@@ -88,3 +88,10 @@ table.grid tr {
 .text-highlight {
   color: var(--success);
 }
+
+.paper {
+  display: inline-block;
+  box-shadow: 2px 3px 5px 1px;
+  padding: 2em 4em;
+  font-family: var(--font-handwriting);
+}
