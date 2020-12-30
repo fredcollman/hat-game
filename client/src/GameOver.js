@@ -1,29 +1,38 @@
-const GameOver = ({ scores }) => {
+import { isThisTeam } from "./utils";
+
+const GameOver = ({ state }) => {
+  const { scores } = state;
   const ordered = scores.sort(
     (a, b) => b.correct - a.correct || a.skips - b.skips,
   );
   return (
-    <>
+    <section>
       <h2>Congrats to {ordered[0].name}!</h2>
-      <table>
+      <table
+        className="width-m grid grid-equal-columns"
+        style={{ "--columns": 3 }}
+      >
         <thead>
           <tr>
-            <th>Team</th>
-            <th>Points</th>
-            <th>Skips</th>
+            <th className="justify-self-start">Team</th>
+            <th className="justify-self-end">Points</th>
+            <th className="justify-self-end">Skips</th>
           </tr>
         </thead>
         <tbody>
           {ordered.map((team) => (
-            <tr key={team.name}>
-              <td>{team.name}</td>
-              <td>{team.correct}</td>
-              <td>{team.skips}</td>
+            <tr
+              className={isThisTeam(state, team.name) ? "text-highlight" : ""}
+              key={team.name}
+            >
+              <td className="justify-self-start">{team.name}</td>
+              <td className="justify-self-end">{team.correct}</td>
+              <td className="justify-self-end">{team.skips}</td>
             </tr>
           ))}
         </tbody>
       </table>
-    </>
+    </section>
   );
 };
 

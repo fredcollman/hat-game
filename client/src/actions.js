@@ -5,17 +5,21 @@ export default class Actions {
     this.state = state;
   }
 
+  _send = (messageType, data) => {
+    this.socket.emit(messageType, data);
+  };
+
   startGroup = () => {
-    this.socket.emit("START_GROUP", {});
+    this._send("START_GROUP", {});
   };
 
   joinGroup = (groupID) => {
-    this.socket.emit("JOIN_GROUP", { groupID });
+    this._send("JOIN_GROUP", { groupID });
   };
 
   setUsername = (username) => {
     if (username && username.length) {
-      this.socket.emit("SET_USERNAME", { username });
+      this._send("SET_USERNAME", { username });
     }
   };
 
@@ -25,30 +29,30 @@ export default class Actions {
       suggestion.length &&
       !this.state.yourSuggestions.includes(suggestion)
     ) {
-      this.socket.emit("ADD_SUGGESTION", { suggestion });
+      this._send("ADD_SUGGESTION", { suggestion });
       this.dispatch({ type: "ADD_SUGGESTION", data: { suggestion } });
     }
   };
 
   startGame = () => {
-    this.socket.emit("START_GAME", {});
+    this._send("START_GAME", {});
   };
 
   requestSuggestion = () => {
     console.log(this.state.currentSuggestion);
-    this.socket.emit("REQUEST_SUGGESTION", {});
+    this._send("REQUEST_SUGGESTION", {});
   };
 
   guessCorrectly = (name) => {
-    this.socket.emit("GUESS_CORRECTLY", { name });
+    this._send("GUESS_CORRECTLY", { name });
   };
 
   skip = (name) => {
-    this.socket.emit("SKIP", { name });
+    this._send("SKIP", { name });
   };
 
   endTurn = () => {
     // setCurrentSuggestion(null); TODO is this ok?
-    this.socket.emit("END_TURN", {});
+    this._send("END_TURN", {});
   };
 }

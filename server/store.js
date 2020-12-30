@@ -23,6 +23,10 @@ export default class Store {
         .assign({ game: state })
         .write();
     };
-    return Game.resume({ state: group?.game, onChange });
+    return Game.resume({ state: group?.game, groupID, onChange });
+  }
+
+  async reload(game) {
+    return this.loadGame({ groupID: game.groupID });
   }
 }

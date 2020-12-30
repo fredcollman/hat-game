@@ -9,7 +9,6 @@ import Actions from "./actions";
 import SelectGroup from "./SelectGroup";
 import GroupInfo from "./GroupInfo";
 import GameOver from "./GameOver";
-import UserList from "./UserList";
 import RoundZero from "./RoundZero";
 import Round from "./Round";
 
@@ -17,12 +16,15 @@ const INITIAL_STATE = {
   clientID: null,
   groupID: null,
   users: [],
+  teams: [],
   yourSuggestions: [],
   suggestionCount: 0,
   round: 0,
   describer: null,
   currentSuggestion: null,
   scores: [],
+  turnDurationSeconds: 60,
+  numTeams: 2,
 };
 
 const reducer = (state, { type, data }) => {
@@ -34,9 +36,11 @@ const reducer = (state, { type, data }) => {
         ...state,
         groupID: data.groupID,
         users: data.users,
+        turnDurationSeconds: data?.options?.turnDurationSeconds,
+        numTeams: data?.options?.teams,
       };
     case "USER_LIST":
-      return { ...state, users: data.users };
+      return { ...state, users: data.users, teams: data.teams };
     case "NEW_SUGGESTION":
       return { ...state, suggestionCount: data.count };
     case "ADD_SUGGESTION":
@@ -94,9 +98,9 @@ const useSocket = () => {
 const App = () => {
   const gameState = useSocket();
   const { actions, state } = gameState;
-  const { scores, groupID, round } = state;
+  const { groupID, round } = state;
   return (
-    <div className="wrapper center-h padding-m center-text">
+    <div className="wrapper center-h padding-m">
       <header className="debug center-text">
         <h1>The Hat Game</h1>
       </header>
@@ -104,11 +108,10 @@ const App = () => {
         {groupID
           ? (
             <>
-              <GroupInfo groupID={groupID} />
+              <GroupInfo state={state} />
               {round === 0 && <RoundZero gameState={gameState} />}
               {round > 0 && round < 4 && <Round gameState={gameState} />}
-              {round === 4 && <GameOver scores={scores} />}
-              <UserList state={state} />
+              {round === 4 && <GameOver state={state} />}
             </>
           )
           : (

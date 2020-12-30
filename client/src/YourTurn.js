@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import Countdown from "./Countdown";
 
-const TURN_DURATION = 6;
-const COUNTDOWN_DURATION = 1;
+const TURN_DURATION = 60;
+const COUNTDOWN_DURATION = 3;
 
 const Describe = ({ suggestion, endTurn, guessCorrectly, skip }) => {
   const [submitted, setSubmitted] = useState(false);
@@ -18,18 +18,28 @@ const Describe = ({ suggestion, endTurn, guessCorrectly, skip }) => {
     guessCorrectly(suggestion);
   };
   return (
-    <>
-      <div>{suggestion}</div>
-      <button type="button" onClick={handleSkip} disabled={submitted}>
-        Skip
-      </button>
-      <button type="button" onClick={handleGuess} disabled={submitted}>
-        Got It!
-      </button>
-      <div>
-        Time Remaining: <Countdown from={TURN_DURATION} onComplete={endTurn} />
+    <div className="stack-m center-text">
+      <div className="center-text paper padding-xl">{suggestion}</div>
+      <div className="stack-h-m">
+        <button
+          className="negative"
+          type="button"
+          onClick={handleSkip}
+          disabled={submitted}
+        >
+          Skip
+        </button>
+        <button type="button" onClick={handleGuess} disabled={submitted}>
+          Got It!
+        </button>
       </div>
-    </>
+      <div>
+        Time Remaining:{" "}
+        <strong>
+          <Countdown from={TURN_DURATION} onComplete={endTurn} />
+        </strong>
+      </div>
+    </div>
   );
 };
 
@@ -61,14 +71,24 @@ const YourTurn = ({
   }
   return (
     <>
-      <p>It's your turn!</p>
+      <h3>It's your turn!</h3>
       {status === "WAITING" && (
-        <button type="button" onClick={beginTurn}>
-          Start
-        </button>
+        <div className="center-text">
+          <button type="button" onClick={beginTurn}>
+            Start
+          </button>
+        </div>
       )}
       {status === "STARTING" && (
-        <Countdown from={COUNTDOWN_DURATION} onComplete={showName} />
+        <div>
+          <p>
+            Get ready. Your turn starts in{" "}
+            <strong>
+              <Countdown from={COUNTDOWN_DURATION} onComplete={showName} />
+            </strong>
+            .
+          </p>
+        </div>
       )}
       {status === "PLAYING" && (
         <Describe

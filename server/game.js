@@ -1,45 +1,76 @@
+const DEFAULT_TEAMS = 2;
+
 const initialState = () => ({
   round: 0,
   users: [],
-  teams: [],
+  teams: Array.from({ length: DEFAULT_TEAMS }).map((_, teamIdx) => ({
+    name: `Team ${teamIdx + 1}`,
+    members: [],
+    currentDescriberIndex: 0,
+    guessedCorrectly: 0,
+    skips: 0,
+  })),
   suggestions: [],
   options: {
-    teams: 2,
-    turnDurationSeconds: 60,
+    teams: DEFAULT_TEAMS,
+    turnDurationSeconds: 6, // TODO: change back to 60
   },
   currentTeamIndex: 0,
   availableSuggestions: [],
 });
 
+const addMember = (member, team) => ({
+  ...team,
+  members: [...team.members, member],
+});
+
+const addUser = ({ clientID, username }, state) => {
+  const user = { clientID, username };
+  const teamToJoin = state.users.length % state.options.teams;
+  const newUsers = [
+    ...state.users.filter((u) => u.clientID !== clientID),
+    user,
+  ];
+  return {
+    ...state,
+    users: newUsers,
+    teams: state.teams.map((team, idx) =>
+      idx === teamToJoin ? addMember(user, team) : team
+    ),
+  };
+};
+
 export default class Game {
   #state;
   #handleChange;
 
-  static resume({ state, onChange }) {
-    return new this(state || initialState(), onChange);
+  static resume({ state, groupID, onChange }) {
+    return new this(state || initialState(), groupID, onChange);
   }
 
-  static create({ onChange }) {
-    return new this(initialState(), onChange);
-  }
-
-  constructor(state, onChange) {
+  constructor(state, groupID, onChange) {
     this.#state = state;
+    this.groupID = groupID;
     this.#handleChange = () => onChange(this.#state);
   }
 
-  addUser({ clientID, username }) {
-    if (username && username.length) {
-      this.#state.users = [
-        ...this.#state.users.filter((u) => u.clientID !== clientID),
-        { clientID, username },
-      ];
+  addUser(user) {
+    if (user?.username?.length) {
+      this.#state = addUser(user, this.#state);
       this.#handleChange();
     }
   }
 
   getUsers() {
     return this.#state.users;
+  }
+
+  getTeamMembers() {
+    console.log(this.#state);
+    return this.#state.teams.map(({ name, members }) => ({
+      name,
+      members,
+    }));
   }
 
   addSuggestion({ clientID, suggestion }) {
@@ -54,6 +85,10 @@ export default class Game {
 
   countSuggestions() {
     return this.#state.suggestions.length;
+  }
+
+  getOptions() {
+    return this.#state.options;
   }
 
   getCurrentTeam() {
@@ -122,17 +157,6 @@ export default class Game {
   }
 
   start() {
-    const numTeams = this.#state.options.teams;
-    const teams = Array.from({ length: numTeams }).map((_, teamIdx) => ({
-      name: `Team ${teamIdx + 1}`,
-      members: this.#state.users.filter(
-        (_, userIdx) => userIdx % numTeams === teamIdx,
-      ),
-      currentDescriberIndex: 0,
-      guessedCorrectly: 0,
-      skips: 0,
-    }));
-    this.#state.teams = teams;
     this.#state.currentTeamIndex = 0;
     this._startRound(1);
     this.#handleChange();
