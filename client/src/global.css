@@ -42,6 +42,13 @@ button {
 
 button.negative {
   background: var(--failure);
+  color: white;
+}
+
+button[aria-disabled="true"] {
+  background: var(--grey);
+  color: var(--failure);
+  cursor: not-allowed;
 }
 
 .wrapper {

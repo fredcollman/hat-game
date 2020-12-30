@@ -9,6 +9,7 @@ const RoundZero = ({ gameState }) => {
     yourSuggestions,
     numTeams,
     turnDurationSeconds,
+    users,
   } = state;
   if (!user) {
     return <Signup setUsername={actions.setUsername} />;
@@ -21,6 +22,8 @@ const RoundZero = ({ gameState }) => {
         count={suggestionCount}
       />
       <StartGame
+        suggestionCount={suggestionCount}
+        users={users}
         numTeams={numTeams}
         turnDuration={turnDurationSeconds}
         startGame={actions.startGame}
