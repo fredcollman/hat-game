@@ -1,44 +1,50 @@
-import { useEffect, useReducer } from "react";
+import { useEffect, useState } from "react";
 
-const useCountdown = ({ from, onComplete }) => {
-  const reducer = (state, action) => {
-    switch (action.type) {
-      case "TICK":
-        const completed = action.now - state.start > 1000 * from;
-        return { ...state, now: action.now, completed };
-      default:
-        return state;
-    }
+const init = () => {
+  const start = new Date();
+  return {
+    start,
+    now: start,
+    completed: false,
   };
-  const init = () => {
-    const start = new Date();
-    return {
-      start,
-      now: start,
-      completed: false,
-    };
-  };
+};
 
-  const [state, dispatch] = useReducer(reducer, null, init);
+const useTick = ({ from }) => {
+  const [state, setState] = useState(init);
   const { start, now, completed } = state;
+  const tick = () => {
+    const now = new Date();
+    setState((prev) => {
+      const completed = now - prev.start > 1000 * from;
+      return { ...prev, now, completed };
+    });
+  };
+
+  const elapsed = now - start;
+  const remainingMs = 1000 * from - elapsed;
+  const remaining = Math.ceil(remainingMs / 1000);
+
+  return { start, now, completed, remaining, tick };
+};
+
+const useInterval = (func, ms) => {
   useEffect(() => {
-    const interval = window.setInterval(() => {
-      dispatch({ type: "TICK", now: new Date() });
-    }, 100);
+    const interval = window.setInterval(func, ms);
     return () => {
       clearInterval(interval);
     };
-  }, [dispatch]);
+  }, [func, ms]);
+};
+
+const useCountdown = ({ from, onComplete }) => {
+  const { completed, tick, remaining } = useTick({ from });
+  useInterval(tick, 100);
   useEffect(() => {
     if (completed) {
       console.log("completing...");
       onComplete();
     }
   }, [completed, onComplete]);
-
-  const elapsed = now - start;
-  const remainingMs = 1000 * from - elapsed;
-  const remaining = Math.ceil(remainingMs / 1000);
   return { remaining };
 };
 
