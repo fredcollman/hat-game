@@ -1,39 +1,56 @@
-import { useEffect, useReducer, useState } from "react";
+import { useEffect, useState } from "react";
 
-const Countdown = ({ from, onComplete }) => {
-  const [start] = useState(new Date());
-  const [now, setNow] = useState(start);
-  const [completed, setCompleted] = useState(false);
+const REFRESH_MS = 100;
 
+const init = () => {
+  const start = new Date();
+  return {
+    start,
+    now: start,
+  };
+};
+
+const useTick = () => {
+  const [state, setState] = useState(init);
+  const { start, now } = state;
+  const tick = () => {
+    setState((prev) => ({ ...prev, now: new Date() }));
+  };
   const elapsed = now - start;
+  return { elapsed, tick };
+};
+
+const useInterval = (func, ms) => {
+  useEffect(() => {
+    const interval = window.setInterval(func, ms);
+    return () => {
+      clearInterval(interval);
+    };
+  }, [func, ms]);
+};
+
+const useTimer = () => {
+  const { tick, elapsed } = useTick();
+  useInterval(tick, REFRESH_MS);
+  return { elapsed };
+};
+
+const useCountdown = ({ from, onComplete }) => {
+  const { elapsed } = useTimer();
   const remainingMs = 1000 * from - elapsed;
-  const remaining = Math.ceil(remainingMs / 1000);
+  const completed = remainingMs <= 0;
 
   useEffect(() => {
     if (completed) {
-      // console.log("we are already done");
-      return;
+      // console.log("completing...");
+      onComplete();
     }
+  }, [completed, onComplete]);
+  return { remaining: Math.ceil(remainingMs / 1000) };
+};
 
-    const adjustRemaining = () => {
-      // console.log("adjust");
-      const now = new Date();
-      setNow(now);
-      if (now - start > 1000 * from) {
-        // console.log(now, "adjustRemaining says we are done");
-        setCompleted(true);
-        onComplete();
-      }
-    };
-
-    const interval = window.setInterval(adjustRemaining, 100);
-    // console.log("START", interval);
-    return () => {
-      // console.log("CLEAR", interval);
-      clearInterval(interval);
-    };
-  }, [from, start, completed, onComplete]);
-
+const Countdown = ({ from, onComplete }) => {
+  const { remaining } = useCountdown({ from, onComplete });
   return remaining;
 };
 
