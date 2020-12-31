@@ -1,30 +1,23 @@
 import { useEffect, useState } from "react";
 
+const REFRESH_MS = 100;
+
 const init = () => {
   const start = new Date();
   return {
     start,
     now: start,
-    completed: false,
   };
 };
 
-const useTick = ({ from }) => {
+const useTick = () => {
   const [state, setState] = useState(init);
-  const { start, now, completed } = state;
+  const { start, now } = state;
   const tick = () => {
-    const now = new Date();
-    setState((prev) => {
-      const completed = now - prev.start > 1000 * from;
-      return { ...prev, now, completed };
-    });
+    setState((prev) => ({ ...prev, now: new Date() }));
   };
-
   const elapsed = now - start;
-  const remainingMs = 1000 * from - elapsed;
-  const remaining = Math.ceil(remainingMs / 1000);
-
-  return { start, now, completed, remaining, tick };
+  return { elapsed, tick };
 };
 
 const useInterval = (func, ms) => {
@@ -36,16 +29,24 @@ const useInterval = (func, ms) => {
   }, [func, ms]);
 };
 
+const useTimer = () => {
+  const { tick, elapsed } = useTick();
+  useInterval(tick, REFRESH_MS);
+  return { elapsed };
+};
+
 const useCountdown = ({ from, onComplete }) => {
-  const { completed, tick, remaining } = useTick({ from });
-  useInterval(tick, 100);
+  const { elapsed } = useTimer();
+  const remainingMs = 1000 * from - elapsed;
+  const completed = remainingMs <= 0;
+
   useEffect(() => {
     if (completed) {
-      console.log("completing...");
+      // console.log("completing...");
       onComplete();
     }
   }, [completed, onComplete]);
-  return { remaining };
+  return { remaining: Math.ceil(remainingMs / 1000) };
 };
 
 const Countdown = ({ from, onComplete }) => {
