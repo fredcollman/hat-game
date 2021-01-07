@@ -91,11 +91,27 @@ const useSocket = () => {
   };
 };
 
+// TODO: consolidate to a genuine single source of state
+const combine = ({ player, gameState }) => {
+  if (!player) {
+    return gameState;
+  }
+
+  const { actions, state } = gameState;
+  console.log(player, state);
+  const combinedState = {
+    ...state,
+    groupID: player.groupID,
+  };
+  return { actions, state: combinedState };
+};
+
 const Main = () => {
   const gameState = useSocket();
-  const { actions, state } = gameState;
-  const { groupID, round } = state;
   const { player } = usePlayer();
+  const combined = combine({ player, gameState });
+  const { actions, state } = combined;
+  const { groupID, round } = state;
   if (!player) {
     return <NewPlayer />;
   }
@@ -106,8 +122,8 @@ const Main = () => {
         ? (
           <>
             <GroupInfo state={state} />
-            {round === 0 && <RoundZero gameState={gameState} />}
-            {round > 0 && round < 4 && <Round gameState={gameState} />}
+            {round === 0 && <RoundZero gameState={combined} />}
+            {round > 0 && round < 4 && <Round gameState={combined} />}
             {round === 4 && <GameOver state={state} />}
           </>
         )

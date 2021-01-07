@@ -1,29 +1,32 @@
-export const createUser = async ({ username }) => {
-  const response = await window.fetch(`${process.env.PUBLIC_URL}/user`, {
-    method: "POST",
+const makeApiCall = async ({ method, url, body }) => {
+  const response = await window.fetch(`${process.env.PUBLIC_URL}/${url}`, {
+    method,
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({
-      username,
-    }),
+    body: JSON.stringify(body),
   });
-  const { id } = await response.json(); // TODO: what if status != 200
+  return await response.json(); // TODO: what if status != 200
+};
+export const createUser = async ({ username }) => {
+  const { id } = await makeApiCall({
+    url: "user",
+    method: "POST",
+    body: {
+      username,
+    },
+  });
   return { id, username };
 };
 
-export const addUserToGroup = async ({ userID, groupID }) => {
-  const response = await window.fetch(
-    `${process.env.PUBLIC_URL}/user/${userID}`,
-    {
-      method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        groupID,
-      }),
+export const refreshUser = async ({ userID }) =>
+  makeApiCall({ url: `user/${userID}`, method: "GET" });
+
+export const addUserToGroup = async ({ userID, groupID }) =>
+  makeApiCall({
+    url: `user/${userID}`,
+    method: "PATCH",
+    body: {
+      groupID,
     },
-  );
-  return await response.json(); // TODO: what if status != 200
-};
+  });

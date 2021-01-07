@@ -1,5 +1,5 @@
-import React, { useContext, useState } from "react";
-import { createUser } from "./api";
+import React, { useContext, useEffect, useState } from "react";
+import { createUser, refreshUser } from "./api";
 
 const STORAGE_KEY = "username";
 
@@ -18,6 +18,12 @@ export const WithPlayer = ({ children }) => {
     storeUser(user);
     setPlayer(user);
   };
+  useEffect(() => {
+    if (player?.id) {
+      refreshUser({ userID: player.id }).then(setPlayer);
+    }
+  }, [player?.id]);
+  console.log("WithPlayer", player);
   return (
     <PlayerContext.Provider value={{ player, setName }}>
       {children}
