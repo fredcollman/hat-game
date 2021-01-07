@@ -5,12 +5,14 @@ import "./variables.css";
 import "./global.css";
 import "./utility.css";
 import { currentPlayer } from "./utils";
+import Layout from "./Layout";
 import Actions from "./actions";
 import SelectGroup from "./SelectGroup";
 import GroupInfo from "./GroupInfo";
 import GameOver from "./GameOver";
 import RoundZero from "./RoundZero";
 import Round from "./Round";
+import NewPlayer from "./NewPlayer";
 
 const INITIAL_STATE = {
   clientID: null,
@@ -100,25 +102,21 @@ const App = () => {
   const { actions, state } = gameState;
   const { groupID, round } = state;
   return (
-    <div className="wrapper center-h padding-m">
-      <header className="debug center-text">
-        <h1>The Hat Game</h1>
-      </header>
-      <main>
-        {groupID
-          ? (
-            <>
-              <GroupInfo state={state} />
-              {round === 0 && <RoundZero gameState={gameState} />}
-              {round > 0 && round < 4 && <Round gameState={gameState} />}
-              {round === 4 && <GameOver state={state} />}
-            </>
-          )
-          : (
-            <SelectGroup actions={actions} />
-          )}
-      </main>
-    </div>
+    <Layout>
+      <NewPlayer />
+      {groupID
+        ? (
+          <>
+            <GroupInfo state={state} />
+            {round === 0 && <RoundZero gameState={gameState} />}
+            {round > 0 && round < 4 && <Round gameState={gameState} />}
+            {round === 4 && <GameOver state={state} />}
+          </>
+        )
+        : (
+          <SelectGroup actions={actions} />
+        )}
+    </Layout>
   );
 };
 
