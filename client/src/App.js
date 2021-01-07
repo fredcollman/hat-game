@@ -14,6 +14,7 @@ import RoundZero from "./RoundZero";
 import Round from "./Round";
 import NewPlayer from "./NewPlayer";
 import usePlayer, { WithPlayer } from "./usePlayer";
+import PlayerInfo from "./PlayerInfo";
 
 const INITIAL_STATE = {
   clientID: null,
@@ -98,20 +99,17 @@ const useSocket = () => {
   };
 };
 
-const PlayerStats = () => {
-  const { player } = usePlayer();
-  console.log(player);
-  return "state = " + JSON.stringify(player, null, 2);
-};
-
 const Main = () => {
   const gameState = useSocket();
   const { actions, state } = gameState;
   const { groupID, round } = state;
+  const { player } = usePlayer();
+  if (!player) {
+    return <NewPlayer />;
+  }
   return (
     <>
-      <PlayerStats />
-      <NewPlayer />
+      <PlayerInfo player={player} />
       {groupID
         ? (
           <>
