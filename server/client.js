@@ -47,15 +47,16 @@ export default class Client {
     }
   }
 
-  async startGroup() {
+  async startGroup({ userID }) {
     const group = await this.store.addGroup();
-    this.joinGroup({ groupID: group.id });
+    this.joinGroup({ groupID: group.id, userID });
   }
 
-  async joinGroup({ groupID }) {
+  async joinGroup({ userID, groupID }) {
     if (this.room === null) {
       this.room = `group:${groupID}`;
       this.game = await this.store.loadGame({ groupID });
+      await this.store.joinGroup({ userID, groupID });
       this.sock.join(this.room);
       this.replyOne("JOINED_GROUP", {
         groupID,
