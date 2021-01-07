@@ -1,5 +1,5 @@
 import BasicForm from "./BasicForm";
-import { usePlayer } from "./username";
+import usePlayer from "./usePlayer";
 
 const NewPlayer = () => {
   const { setName } = usePlayer();

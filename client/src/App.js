@@ -13,7 +13,7 @@ import GameOver from "./GameOver";
 import RoundZero from "./RoundZero";
 import Round from "./Round";
 import NewPlayer from "./NewPlayer";
-import { usePlayer, WithPlayer } from "./username";
+import usePlayer, { WithPlayer } from "./usePlayer";
 
 const INITIAL_STATE = {
   clientID: null,
