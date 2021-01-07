@@ -29,7 +29,7 @@
     "start": "concurrently \"yarn run server\" \"yarn run client\"",
     "client": "cd client && yarn start",
     "server": "node server/main.js",
-    "dev:server": "nodemon --ignore db.json server/main.js",
+    "dev:server": "nodemon --watch server server/main.js",
     "lint": "eslint server/**/*.js"
   }
 }

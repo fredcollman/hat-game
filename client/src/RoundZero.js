@@ -1,9 +1,8 @@
-import Signup from "./Signup";
 import StartGame from "./StartGame";
 import Suggestions from "./Suggestions";
 
 const RoundZero = ({ gameState }) => {
-  const { state, actions, user } = gameState;
+  const { state, actions } = gameState;
   const {
     suggestionCount,
     yourSuggestions,
@@ -11,9 +10,6 @@ const RoundZero = ({ gameState }) => {
     turnDurationSeconds,
     users,
   } = state;
-  if (!user) {
-    return <Signup setUsername={actions.setUsername} />;
-  }
   return (
     <>
       <Suggestions

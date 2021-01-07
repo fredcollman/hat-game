@@ -3,16 +3,14 @@ import usePlayer from "./usePlayer";
 
 const SelectGroup = ({ actions }) => {
   const { player } = usePlayer();
-  const { startGroup, joinGroup, setUsername } = actions;
-  const handleJoin = (e) => {
-    joinGroup(e.target["groupID"].value.toUpperCase());
-    setUsername(player.username);
-  };
+  const { startGroup, joinGroup } = actions;
+  const handleJoin = (e) =>
+    joinGroup({
+      groupID: e.target["groupID"].value.toUpperCase(),
+      player,
+    });
+  const handleStart = () => startGroup({ player });
 
-  const handleStart = () => {
-    startGroup();
-    setUsername(player.username);
-  };
   if (!player) {
     // TODO add error boundary
     throw new Error("player is logged out");

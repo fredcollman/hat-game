@@ -1,6 +1,5 @@
 import { useEffect, useReducer, useState } from "react";
 import { io } from "socket.io-client";
-import { currentPlayer } from "./utils";
 import Actions from "./actions";
 import SelectGroup from "./SelectGroup";
 import GroupInfo from "./GroupInfo";
@@ -86,11 +85,9 @@ const useSocket = () => {
   }, []);
   const actions = new Actions({ state, socket, dispatch });
 
-  const user = socket && currentPlayer(state);
   return {
     state,
     actions,
-    user,
   };
 };
 

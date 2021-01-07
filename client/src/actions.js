@@ -9,15 +9,18 @@ export default class Actions {
     this.socket.emit(messageType, data);
   };
 
-  startGroup = () => {
-    this._send("START_GROUP", {});
+  startGroup = ({ player }) => {
+    this._send("START_GROUP", { userID: player.id });
+    this._setUsername(player.username);
   };
 
-  joinGroup = (groupID) => {
-    this._send("JOIN_GROUP", { groupID });
+  joinGroup = ({ groupID, player }) => {
+    this._send("JOIN_GROUP", { groupID, userID: player.id });
+    this._setUsername(player.username);
   };
 
-  setUsername = (username) => {
+  _setUsername = (username) => {
+    // TODO merge into START_GROUP / JOIN_GROUP (?)
     if (username && username.length) {
       this._send("SET_USERNAME", { username });
     }
