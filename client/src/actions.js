@@ -1,4 +1,5 @@
 export default class Actions {
+  // TODO: decide split betwen HTTP and socket
   constructor({ state, socket, dispatch }) {
     this.socket = socket;
     this.dispatch = dispatch;
