@@ -1,10 +1,11 @@
 import BasicForm from "./BasicForm";
-import { setUsername } from "./username";
+import { usePlayer } from "./username";
 
 const NewPlayer = () => {
+  const { setName } = usePlayer();
   const handleSubmit = (e) => {
     const username = e.target["username"].value;
-    setUsername(username);
+    setName(username);
   };
   return (
     <section>

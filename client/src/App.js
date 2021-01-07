@@ -13,6 +13,7 @@ import GameOver from "./GameOver";
 import RoundZero from "./RoundZero";
 import Round from "./Round";
 import NewPlayer from "./NewPlayer";
+import { usePlayer, WithPlayer } from "./username";
 
 const INITIAL_STATE = {
   clientID: null,
@@ -97,12 +98,19 @@ const useSocket = () => {
   };
 };
 
-const App = () => {
+const PlayerStats = () => {
+  const { player } = usePlayer();
+  console.log(player);
+  return "state = " + JSON.stringify(player, null, 2);
+};
+
+const Main = () => {
   const gameState = useSocket();
   const { actions, state } = gameState;
   const { groupID, round } = state;
   return (
-    <Layout>
+    <>
+      <PlayerStats />
       <NewPlayer />
       {groupID
         ? (
@@ -116,7 +124,17 @@ const App = () => {
         : (
           <SelectGroup actions={actions} />
         )}
-    </Layout>
+    </>
+  );
+};
+
+const App = () => {
+  return (
+    <WithPlayer>
+      <Layout>
+        <Main />
+      </Layout>
+    </WithPlayer>
   );
 };
 
