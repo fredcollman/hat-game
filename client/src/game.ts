@@ -22,26 +22,29 @@ export interface GroupState {
   users: User[];
 }
 
-export interface ChooseGroupPhase extends GroupState {
+export interface GameOptions {
+  turnDurationSeconds: number;
+  numTeams: number;
+}
+
+export interface ChooseGroupPhase extends GameOptions {
   phase: "CHOOSE_GROUP";
-  turnDurationSeconds: number;
-  numTeams: number;
+  clientID: string | null;
 }
 
-export interface SignUpPhase extends GroupState {
+export interface SignUpPhase extends GameOptions {
   phase: "SIGN_UP";
-  turnDurationSeconds: number;
-  numTeams: number;
+  clientID: string | null;
+  groupID: string | null;
+  users: User[];
 }
 
-export interface ConfigureGamePhase extends GroupState {
+export interface ConfigureGamePhase extends GroupState, GameOptions {
   phase: "CONFIGURE_GAME";
-  turnDurationSeconds: number;
   suggestionCount: number;
-  numTeams: number;
 }
 
-export interface PlayPhase extends GroupState {
+export interface PlayPhase extends GroupState, GameOptions {
   phase: "PLAY";
   describer: User | null;
   round: number;
