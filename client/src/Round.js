@@ -29,7 +29,6 @@ const Round = ({ gameState }) => {
         ? (
           <YourTurn
             turnDuration={turnDurationSeconds}
-            requestSuggestion={actions.requestSuggestion}
             suggestion={currentSuggestion}
             guessCorrectly={actions.guessCorrectly}
             skip={actions.skip}

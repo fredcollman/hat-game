@@ -3,7 +3,10 @@ import BasicForm from "./BasicForm";
 const Signup = ({ socket, setUsername }) => {
   const handleSubmit = (e) => {
     console.log(e);
-    setUsername(e.target["username"].value);
+    const username = e.target["username"].value;
+    if (username && username.length) {
+      setUsername(username);
+    }
   };
   return (
     <section className="center-text">

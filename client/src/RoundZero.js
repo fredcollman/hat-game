@@ -1,8 +1,12 @@
 import Signup from "./Signup";
 import StartGame from "./StartGame";
 import Suggestions from "./Suggestions";
+import useSender from "./useSender";
 
 const RoundZero = ({ gameState }) => {
+  const setUsername = useSender("SET_USERNAME");
+  // const addSuggestion = useSender("ADD_SUGGESTION");
+  const startGame = useSender("START_GAME");
   const { state, actions, user } = gameState;
   const {
     suggestionCount,
@@ -11,8 +15,9 @@ const RoundZero = ({ gameState }) => {
     turnDurationSeconds,
     users,
   } = state;
+
   if (!user) {
-    return <Signup setUsername={actions.setUsername} />;
+    return <Signup setUsername={setUsername} />;
   }
   return (
     <>
@@ -26,7 +31,7 @@ const RoundZero = ({ gameState }) => {
         users={users}
         numTeams={numTeams}
         turnDuration={turnDurationSeconds}
-        startGame={actions.startGame}
+        startGame={startGame}
       />
     </>
   );
