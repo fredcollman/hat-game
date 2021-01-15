@@ -15,7 +15,15 @@ interface TeamScore {
   skips: number;
 }
 
+type Phase =
+  | "CHOOSE_GROUP"
+  | "SIGN_UP"
+  | "CONFIGURE_GAME"
+  | "PLAY"
+  | "GAME_OVER";
+
 export interface State {
+  phase: Phase;
   describer: User | null;
   round: number;
   currentSuggestion: string | null;

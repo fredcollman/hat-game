@@ -13,6 +13,7 @@ import Round from "./Round";
 import { State } from "./game";
 
 const INITIAL_STATE: State = {
+  phase: "CHOOSE_GROUP",
   clientID: null,
   groupID: null,
   users: [],
@@ -31,7 +32,7 @@ interface Message {
   data: any;
 }
 
-const reducer = (state: State, { type, data }: Message) => {
+const reducer = (state: State, { type, data }: Message): State => {
   switch (type) {
     case "SOCKET_CONNECTION":
       return { ...state, clientID: data };
@@ -42,9 +43,15 @@ const reducer = (state: State, { type, data }: Message) => {
         users: data.users,
         turnDurationSeconds: data?.options?.turnDurationSeconds,
         numTeams: data?.options?.teams,
+        phase: "SIGN_UP",
       };
     case "USER_LIST":
-      return { ...state, users: data.users, teams: data.teams };
+      return {
+        ...state,
+        users: data.users,
+        teams: data.teams,
+        phase: "CONFIGURE_GAME",
+      };
     case "NEW_SUGGESTION":
       return { ...state, suggestionCount: data.count };
     case "NEW_TURN":
@@ -53,6 +60,7 @@ const reducer = (state: State, { type, data }: Message) => {
         round: data.round,
         describer: data.describer,
         currentSuggestion: null,
+        phase: data.round <= 3 ? "PLAY" : "GAME_OVER",
       };
     case "NEXT_SUGGESTION":
       console.log("NEXT_SUGGESTION:", data);
