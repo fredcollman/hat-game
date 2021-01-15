@@ -5,11 +5,8 @@ import "./global.css";
 import "./utility.css";
 import useSocket from "./useSocket";
 import { currentPlayer } from "./utils";
-import SelectGroup from "./SelectGroup";
-import GroupInfo from "./GroupInfo";
-import GameOver from "./GameOver";
-import RoundZero from "./RoundZero";
-import Round from "./Round";
+import Layout from "./Layout";
+import CurrentPhase from "./CurrentPhase";
 import { State } from "./game";
 
 const INITIAL_STATE: State = {
@@ -100,28 +97,10 @@ const useDispatcher = () => {
 
 const Main = () => {
   const gameState = useDispatcher();
-  const { state } = gameState;
-  const { groupID, round } = state;
   return (
-    <div className="wrapper center-h padding-m">
-      <header className="debug center-text">
-        <h1>The Hat Game</h1>
-      </header>
-      <main>
-        {groupID
-          ? (
-            <>
-              <GroupInfo state={state} />
-              {round === 0 && <RoundZero gameState={gameState} />}
-              {round > 0 && round < 4 && <Round gameState={gameState} />}
-              {round === 4 && <GameOver state={state} />}
-            </>
-          )
-          : (
-            <SelectGroup />
-          )}
-      </main>
-    </div>
+    <Layout>
+      <CurrentPhase gameState={gameState} />
+    </Layout>
   );
 };
 
