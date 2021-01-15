@@ -4,70 +4,13 @@ import "./variables.css";
 import "./global.css";
 import "./utility.css";
 import useSocket from "./useSocket";
-import { currentPlayer } from "./utils";
-import SelectGroup from "./SelectGroup";
-import GroupInfo from "./GroupInfo";
-import GameOver from "./GameOver";
-import RoundZero from "./RoundZero";
-import Round from "./Round";
-import { State } from "./game";
-
-const INITIAL_STATE: State = {
-  clientID: null,
-  groupID: null,
-  users: [],
-  teams: [],
-  suggestionCount: 0,
-  round: 0,
-  describer: null,
-  currentSuggestion: null,
-  scores: [],
-  turnDurationSeconds: 60,
-  numTeams: 2,
-};
-
-interface Message {
-  type: string;
-  data: any;
-}
-
-const reducer = (state: State, { type, data }: Message) => {
-  switch (type) {
-    case "SOCKET_CONNECTION":
-      return { ...state, clientID: data };
-    case "JOINED_GROUP":
-      return {
-        ...state,
-        groupID: data.groupID,
-        users: data.users,
-        turnDurationSeconds: data?.options?.turnDurationSeconds,
-        numTeams: data?.options?.teams,
-      };
-    case "USER_LIST":
-      return { ...state, users: data.users, teams: data.teams };
-    case "NEW_SUGGESTION":
-      return { ...state, suggestionCount: data.count };
-    case "NEW_TURN":
-      return {
-        ...state,
-        round: data.round,
-        describer: data.describer,
-        currentSuggestion: null,
-      };
-    case "NEXT_SUGGESTION":
-      console.log("NEXT_SUGGESTION:", data);
-      return { ...state, currentSuggestion: data.name };
-    case "LATEST_SCORES":
-      return { ...state, scores: data };
-    default:
-      console.warn("unhandled", type);
-      return state;
-  }
-};
+import Layout from "./Layout";
+import CurrentPhase from "./CurrentPhase";
+import reducer, { initialize } from "./reducer";
 
 const useDispatcher = () => {
   const socket = useSocket();
-  const [state, dispatch] = useReducer(reducer, INITIAL_STATE);
+  const [state, dispatch] = useReducer(reducer, initialize());
   useEffect(() => {
     if (socket) {
       console.log("configuring socket via useDispatcher!");
@@ -76,44 +19,18 @@ const useDispatcher = () => {
         dispatch({ type: "SOCKET_CONNECTION", data: socket.id });
       });
       socket.onAny((type, data) => dispatch({ type, data }));
-      return () => {
-        console.log(`Closing connection to ${socket && socket.id}`);
-        socket.close();
-      };
     }
   }, [socket]);
 
-  const user = (socket && currentPlayer(state)) || null;
-  return {
-    state,
-    user,
-  };
+  return state;
 };
 
 const Main = () => {
-  const gameState = useDispatcher();
-  const { state } = gameState;
-  const { groupID, round } = state;
+  const state = useDispatcher();
   return (
-    <div className="wrapper center-h padding-m">
-      <header className="debug center-text">
-        <h1>The Hat Game</h1>
-      </header>
-      <main>
-        {groupID
-          ? (
-            <>
-              <GroupInfo state={state} />
-              {round === 0 && <RoundZero gameState={gameState} />}
-              {round > 0 && round < 4 && <Round gameState={gameState} />}
-              {round === 4 && <GameOver state={state} />}
-            </>
-          )
-          : (
-            <SelectGroup />
-          )}
-      </main>
-    </div>
+    <Layout>
+      <CurrentPhase state={state} />
+    </Layout>
   );
 };
 
