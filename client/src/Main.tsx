@@ -1,4 +1,5 @@
 import { useEffect, useReducer } from "react";
+import { Socket } from "socket.io-client";
 import "./reset.css";
 import "./variables.css";
 import "./global.css";
@@ -10,8 +11,9 @@ import GroupInfo from "./GroupInfo";
 import GameOver from "./GameOver";
 import RoundZero from "./RoundZero";
 import Round from "./Round";
+import { State } from "./game";
 
-const INITIAL_STATE = {
+const INITIAL_STATE: State = {
   clientID: null,
   groupID: null,
   users: [],
@@ -25,7 +27,12 @@ const INITIAL_STATE = {
   numTeams: 2,
 };
 
-const reducer = (state, { type, data }) => {
+interface Message {
+  type: string;
+  data: any;
+}
+
+const reducer = (state: State, { type, data }: Message) => {
   switch (type) {
     case "SOCKET_CONNECTION":
       return { ...state, clientID: data };
@@ -59,7 +66,7 @@ const reducer = (state, { type, data }) => {
   }
 };
 
-const useDispatcher = ({ socket }) => {
+const useDispatcher = ({ socket }: { socket: Socket }) => {
   const [state, dispatch] = useReducer(reducer, INITIAL_STATE);
   useEffect(() => {
     if (socket) {

@@ -2,9 +2,9 @@ import { useState } from "react";
 import SuggestionForm from "./SuggestionForm";
 import useSender from "./useSender";
 
-const YourSuggestions = ({ names }) => {
+const YourSuggestions = ({ names }: { names: string[] }) => {
   if (!names.length) {
-    return "You haven't submitted any names yet.";
+    return <>You haven't submitted any names yet.</>;
   }
   return (
     <>
@@ -20,13 +20,17 @@ const YourSuggestions = ({ names }) => {
   );
 };
 
-const Suggestions = ({ count }) => {
+interface Props {
+  count: number;
+}
+
+const Suggestions = ({ count }: Props) => {
   const sendSuggestion = useSender("ADD_SUGGESTION");
-  const [yourSuggestions, setYourSuggestions] = useState([]);
+  const [yourSuggestions, setYourSuggestions] = useState<string[]>([]);
   const countText = count === 1
     ? "There is 1 name"
     : `There are ${count} names`;
-  const doAddSuggestion = (name) => {
+  const doAddSuggestion = (name: string) => {
     if (name && name.length) {
       setYourSuggestions((prev) => {
         if (prev.includes(name)) {

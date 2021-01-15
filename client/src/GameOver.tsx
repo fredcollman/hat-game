@@ -1,6 +1,11 @@
 import { isThisTeam } from "./utils";
+import { State } from "./game";
 
-const GameOver = ({ state }) => {
+interface Props {
+  state: State;
+}
+
+const GameOver = ({ state }: Props) => {
   const { scores } = state;
   const ordered = scores.sort(
     (a, b) => b.correct - a.correct || a.skips - b.skips,
@@ -10,7 +15,7 @@ const GameOver = ({ state }) => {
       <h2>Congrats to {ordered[0].name}!</h2>
       <table
         className="width-m grid grid-equal-columns"
-        style={{ "--columns": 3 }}
+        style={{ ["--columns" as any]: 3 }}
       >
         <thead>
           <tr>

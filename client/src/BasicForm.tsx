@@ -1,11 +1,21 @@
+import { FormEvent } from "react";
+
+interface Props {
+  onSubmit: (e: FormEvent) => void;
+  labelText: string;
+  fieldName: string;
+  placeholder: string;
+  buttonText: string;
+}
+
 const BasicForm = ({
   onSubmit,
   labelText,
   fieldName,
   placeholder,
   buttonText,
-}) => {
-  const handleSubmit = (e) => {
+}: Props) => {
+  const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
     onSubmit(e);
   };

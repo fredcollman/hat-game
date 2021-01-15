@@ -1,4 +1,13 @@
 import { pluralise } from "./utils";
+import { User } from "./game";
+
+interface Props {
+  startGame: () => void;
+  numTeams: number;
+  turnDuration: number;
+  suggestionCount: number;
+  users: User[];
+}
 
 const StartGame = ({
   startGame,
@@ -6,7 +15,7 @@ const StartGame = ({
   turnDuration,
   suggestionCount,
   users,
-}) => {
+}: Props) => {
   const numPlayers = users.length;
   const hasSuggestions = suggestionCount > 0;
   const hasEnoughPlayers = numPlayers >= numTeams;

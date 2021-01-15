@@ -1,9 +1,15 @@
+import { FormEvent } from "react";
 import BasicForm from "./BasicForm";
 
-const Signup = ({ socket, setUsername }) => {
-  const handleSubmit = (e) => {
+interface Props {
+  setUsername: ({ username }: { username: string }) => void;
+}
+
+const Signup = ({ setUsername }: Props) => {
+  const handleSubmit = (e: FormEvent) => {
     console.log(e);
-    const username = e.target["username"].value;
+    const form = e.target as HTMLFormElement;
+    const username = form["username"].value;
     if (username && username.length) {
       setUsername({ username });
     }

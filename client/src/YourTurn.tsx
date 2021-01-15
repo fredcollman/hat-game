@@ -53,7 +53,7 @@ const Describe = ({ turnDuration, suggestion, endTurn }: DescribeProps) => {
 
 interface Props {
   turnDuration: number;
-  suggestion: string;
+  suggestion: string | null;
 }
 
 const YourTurn = ({ turnDuration, suggestion }: Props) => {

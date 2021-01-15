@@ -8,7 +8,11 @@ const ROUND_DESCRIPTIONS: { [round: number]: string } = {
   3: "In Round 3, you cannot make a sound! You must act out the name instead.",
 };
 
-const Turn = ({ describer }: { describer: Describer }) => {
+const Turn = ({ describer }: { describer: Describer | null }) => {
+  if (!describer) {
+    // TODO: is this edge case possible?
+    return <>Something has gone wrong</>;
+  }
   return (
     <>
       <p>
