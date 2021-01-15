@@ -1,5 +1,4 @@
 import { useEffect, useReducer } from "react";
-import { Socket } from "socket.io-client";
 import "./reset.css";
 import "./variables.css";
 import "./global.css";
@@ -66,7 +65,8 @@ const reducer = (state: State, { type, data }: Message) => {
   }
 };
 
-const useDispatcher = ({ socket }: { socket: Socket }) => {
+const useDispatcher = () => {
+  const socket = useSocket();
   const [state, dispatch] = useReducer(reducer, INITIAL_STATE);
   useEffect(() => {
     if (socket) {
@@ -83,7 +83,7 @@ const useDispatcher = ({ socket }: { socket: Socket }) => {
     }
   }, [socket]);
 
-  const user = socket && currentPlayer(state);
+  const user = (socket && currentPlayer(state)) || null;
   return {
     state,
     user,
@@ -91,8 +91,7 @@ const useDispatcher = ({ socket }: { socket: Socket }) => {
 };
 
 const Main = () => {
-  const socket = useSocket();
-  const gameState = useDispatcher({ socket });
+  const gameState = useDispatcher();
   const { state } = gameState;
   const { groupID, round } = state;
   return (

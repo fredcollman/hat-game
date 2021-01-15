@@ -1,14 +1,12 @@
-export interface User {}
-
-interface TeamMember {
-  // TODO: = Describer? = Player?
+export interface User {
   clientID: string;
   username: string;
+  team: string;
 }
 
 interface Team {
   name: string;
-  members: TeamMember[];
+  members: User[];
 }
 
 interface TeamScore {
@@ -17,13 +15,8 @@ interface TeamScore {
   skips: number;
 }
 
-export interface Describer {
-  team: string;
-  username: string;
-}
-
 export interface State {
-  describer: Describer | null;
+  describer: User | null;
   round: number;
   currentSuggestion: string | null;
   turnDurationSeconds: number;

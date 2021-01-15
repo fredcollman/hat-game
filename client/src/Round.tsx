@@ -1,6 +1,6 @@
 import { isThisPlayer } from "./utils";
 import YourTurn from "./YourTurn";
-import { Describer, GameState } from "./game";
+import { GameState, User } from "./game";
 
 const ROUND_DESCRIPTIONS: { [round: number]: string } = {
   1: "In Round 1, you can use as many words as you need to describe the name you draw.",
@@ -8,7 +8,7 @@ const ROUND_DESCRIPTIONS: { [round: number]: string } = {
   3: "In Round 3, you cannot make a sound! You must act out the name instead.",
 };
 
-const Turn = ({ describer }: { describer: Describer | null }) => {
+const Turn = ({ describer }: { describer: User | null }) => {
   if (!describer) {
     // TODO: is this edge case possible?
     return <>Something has gone wrong</>;
