@@ -72,19 +72,97 @@ const defaultReducer = (
   }
 };
 
-const reduceChooseGroup = (state: ChooseGroupPhase, { type, data }: Message) =>
-  defaultReducer(state, { type, data });
+const reduceChooseGroup = (
+  state: ChooseGroupPhase,
+  { type, data }: Message,
+): ChooseGroupPhase | SignUpPhase => {
+  switch (type) {
+    case "SOCKET_CONNECTION":
+      return { ...state, clientID: data };
+    case "JOINED_GROUP":
+      return {
+        ...state,
+        groupID: data.groupID,
+        users: data.users,
+        turnDurationSeconds: data?.options?.turnDurationSeconds,
+        numTeams: data?.options?.teams,
+        phase: "SIGN_UP",
+      };
+    default:
+      console.warn("unhandled", type);
+      return state;
+  }
+};
 
-const reduceSignUp = (state: SignUpPhase, { type, data }: Message) =>
-  defaultReducer(state, { type, data });
+const reduceSignUp = (
+  state: SignUpPhase,
+  { type, data }: Message,
+): SignUpPhase | ConfigureGamePhase => {
+  switch (type) {
+    case "USER_LIST":
+      return {
+        ...state,
+        users: data.users,
+        teams: data.teams,
+        phase: "CONFIGURE_GAME",
+      };
+    default:
+      console.warn("unhandled", type);
+      return state;
+  }
+};
 
 const reduceConfigureGame = (
   state: ConfigureGamePhase,
   { type, data }: Message,
-) => defaultReducer(state, { type, data });
+): ConfigureGamePhase | PlayPhase => {
+  switch (type) {
+    case "USER_LIST":
+      return {
+        ...state,
+        users: data.users,
+        teams: data.teams,
+        phase: "CONFIGURE_GAME",
+      };
+    case "NEW_SUGGESTION":
+      return { ...state, suggestionCount: data.count };
+    case "NEW_TURN":
+      return {
+        ...state,
+        round: data.round,
+        describer: data.describer,
+        currentSuggestion: null,
+        phase: "PLAY",
+      };
+    default:
+      console.warn("unhandled", type);
+      return state;
+  }
+};
 
-const reducePlay = (state: PlayPhase, { type, data }: Message) =>
-  defaultReducer(state, { type, data });
+const reducePlay = (
+  state: PlayPhase,
+  { type, data }: Message,
+): PlayPhase | GameOverPhase => {
+  switch (type) {
+    case "NEW_TURN":
+      return {
+        ...state,
+        round: data.round,
+        describer: data.describer,
+        currentSuggestion: null,
+        phase: data.round <= 3 ? "PLAY" : "GAME_OVER",
+      };
+    case "NEXT_SUGGESTION":
+      console.log("NEXT_SUGGESTION:", data);
+      return { ...state, currentSuggestion: data.name };
+    case "LATEST_SCORES":
+      return { ...state, scores: data };
+    default:
+      console.warn("unhandled", type);
+      return state;
+  }
+};
 
 const reduceGameOver = (state: GameOverPhase, { type, data }: Message): State =>
   state;
