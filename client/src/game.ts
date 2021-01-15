@@ -68,13 +68,7 @@ export interface PlayPhase extends GroupState {
 
 export interface GameOverPhase extends GroupState {
   phase: "GAME_OVER";
-  describer: User | null;
-  round: number;
-  currentSuggestion: string | null;
-  turnDurationSeconds: number;
   scores: TeamScore[];
-  suggestionCount: number;
-  numTeams: number;
 }
 
 export type State =

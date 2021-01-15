@@ -28,7 +28,10 @@ interface Message {
   data: any;
 }
 
-const defaultReducer = (state: State, { type, data }: Message): State => {
+const defaultReducer = (
+  state: ChooseGroupPhase | SignUpPhase | ConfigureGamePhase | PlayPhase,
+  { type, data }: Message,
+): State => {
   switch (type) {
     case "SOCKET_CONNECTION":
       return { ...state, clientID: data };
