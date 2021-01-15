@@ -15,77 +15,64 @@ interface TeamScore {
   skips: number;
 }
 
-interface ChooseGroupPhase {
+export interface GroupState {
+  groupID: string | null;
+  teams: Team[];
+  clientID: string | null;
+  users: User[];
+}
+
+interface ChooseGroupPhase extends GroupState {
   phase: "CHOOSE_GROUP";
   describer: User | null;
   round: number;
   currentSuggestion: string | null;
   turnDurationSeconds: number;
   scores: TeamScore[];
-  groupID: string | null;
-  teams: Team[];
-  clientID: string | null;
-  users: User[];
   suggestionCount: number;
   numTeams: number;
 }
 
-interface SignUpPhase {
+interface SignUpPhase extends GroupState {
   phase: "SIGN_UP";
   describer: User | null;
   round: number;
   currentSuggestion: string | null;
   turnDurationSeconds: number;
   scores: TeamScore[];
-  groupID: string | null;
-  teams: Team[];
-  clientID: string | null;
-  users: User[];
   suggestionCount: number;
   numTeams: number;
 }
 
-export interface ConfigureGamePhase {
+export interface ConfigureGamePhase extends GroupState {
   phase: "CONFIGURE_GAME";
   describer: User | null;
   round: number;
   currentSuggestion: string | null;
   turnDurationSeconds: number;
   scores: TeamScore[];
-  groupID: string | null;
-  teams: Team[];
-  clientID: string | null;
-  users: User[];
   suggestionCount: number;
   numTeams: number;
 }
 
-export interface PlayPhase {
+export interface PlayPhase extends GroupState {
   phase: "PLAY";
   describer: User | null;
   round: number;
   currentSuggestion: string | null;
   turnDurationSeconds: number;
   scores: TeamScore[];
-  groupID: string | null;
-  teams: Team[];
-  clientID: string | null;
-  users: User[];
   suggestionCount: number;
   numTeams: number;
 }
 
-export interface GameOverPhase {
+export interface GameOverPhase extends GroupState {
   phase: "GAME_OVER";
   describer: User | null;
   round: number;
   currentSuggestion: string | null;
   turnDurationSeconds: number;
   scores: TeamScore[];
-  groupID: string | null;
-  teams: Team[];
-  clientID: string | null;
-  users: User[];
   suggestionCount: number;
   numTeams: number;
 }
