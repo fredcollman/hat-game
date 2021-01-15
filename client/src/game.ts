@@ -22,7 +22,7 @@ export interface GroupState {
   users: User[];
 }
 
-interface ChooseGroupPhase extends GroupState {
+export interface ChooseGroupPhase extends GroupState {
   phase: "CHOOSE_GROUP";
   describer: User | null;
   round: number;
@@ -33,7 +33,7 @@ interface ChooseGroupPhase extends GroupState {
   numTeams: number;
 }
 
-interface SignUpPhase extends GroupState {
+export interface SignUpPhase extends GroupState {
   phase: "SIGN_UP";
   describer: User | null;
   round: number;

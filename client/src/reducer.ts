@@ -1,4 +1,12 @@
-import { State } from "./game";
+import {
+  ChooseGroupPhase,
+  ConfigureGamePhase,
+  GameOverPhase,
+  PlayPhase,
+  SignUpPhase,
+  State,
+} from "./game";
+import { assertNever } from "./utils";
 
 export const initialize = (): State => ({
   phase: "CHOOSE_GROUP",
@@ -20,7 +28,7 @@ interface Message {
   data: any;
 }
 
-const reducer = (state: State, { type, data }: Message): State => {
+const defaultReducer = (state: State, { type, data }: Message): State => {
   switch (type) {
     case "SOCKET_CONNECTION":
       return { ...state, clientID: data };
@@ -58,6 +66,40 @@ const reducer = (state: State, { type, data }: Message): State => {
     default:
       console.warn("unhandled", type);
       return state;
+  }
+};
+
+const reduceChooseGroup = (state: ChooseGroupPhase, { type, data }: Message) =>
+  defaultReducer(state, { type, data });
+
+const reduceSignUp = (state: SignUpPhase, { type, data }: Message) =>
+  defaultReducer(state, { type, data });
+
+const reduceConfigureGame = (
+  state: ConfigureGamePhase,
+  { type, data }: Message,
+) => defaultReducer(state, { type, data });
+
+const reducePlay = (state: PlayPhase, { type, data }: Message) =>
+  defaultReducer(state, { type, data });
+
+const reduceGameOver = (state: GameOverPhase, { type, data }: Message): State =>
+  state;
+
+const reducer = (state: State, message: Message): State => {
+  switch (state.phase) {
+    case "CHOOSE_GROUP":
+      return reduceChooseGroup(state, message);
+    case "SIGN_UP":
+      return reduceSignUp(state, message);
+    case "CONFIGURE_GAME":
+      return reduceConfigureGame(state, message);
+    case "PLAY":
+      return reducePlay(state, message);
+    case "GAME_OVER":
+      return reduceGameOver(state, message);
+    default:
+      return assertNever(state);
   }
 };
 
