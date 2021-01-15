@@ -1,6 +1,7 @@
 import StartGame from "./StartGame";
 import Suggestions from "./Suggestions";
 import useSender from "./useSender";
+import GroupInfo from "./GroupInfo";
 import { GameState } from "./game";
 
 interface Props {
@@ -14,6 +15,7 @@ const RoundZero = ({ gameState }: Props) => {
 
   return (
     <>
+      <GroupInfo state={state} />
       <Suggestions count={suggestionCount} />
       <StartGame
         suggestionCount={suggestionCount}

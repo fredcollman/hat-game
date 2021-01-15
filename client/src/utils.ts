@@ -13,3 +13,9 @@ export const isThisTeam = (state: State, teamName: string) => {
 
 export const pluralise = (count: number, word: string) =>
   count === 1 ? word : `${word}s`;
+
+export const assertNever = (value: never): never => {
+  throw new Error(
+    `Unhandled discriminating union member: ${JSON.stringify(value)}`,
+  );
+};
