@@ -1,11 +1,9 @@
 import { FormEvent } from "react";
 import BasicForm from "./BasicForm";
+import useSender from "./useSender";
 
-interface Props {
-  setUsername: ({ username }: { username: string }) => void;
-}
-
-const Signup = ({ setUsername }: Props) => {
+const Signup = () => {
+  const setUsername = useSender("SET_USERNAME");
   const handleSubmit = (e: FormEvent) => {
     console.log(e);
     const form = e.target as HTMLFormElement;
