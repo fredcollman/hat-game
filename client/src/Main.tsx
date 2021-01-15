@@ -80,10 +80,6 @@ const useDispatcher = () => {
         dispatch({ type: "SOCKET_CONNECTION", data: socket.id });
       });
       socket.onAny((type, data) => dispatch({ type, data }));
-      return () => {
-        console.log(`Closing connection to ${socket && socket.id}`);
-        socket.close();
-      };
     }
   }, [socket]);
 
