@@ -2,10 +2,10 @@ import StartGame from "./StartGame";
 import Suggestions from "./Suggestions";
 import useSender from "./useSender";
 import GroupInfo from "./GroupInfo";
-import { State } from "./game";
+import { ConfigureGamePhase } from "./game";
 
 interface Props {
-  state: State;
+  state: ConfigureGamePhase;
 }
 
 const RoundZero = ({ state }: Props) => {

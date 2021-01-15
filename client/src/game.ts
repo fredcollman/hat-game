@@ -15,7 +15,7 @@ interface TeamScore {
   skips: number;
 }
 
-interface ChooseGroup {
+interface ChooseGroupPhase {
   phase: "CHOOSE_GROUP";
   describer: User | null;
   round: number;
@@ -30,7 +30,7 @@ interface ChooseGroup {
   numTeams: number;
 }
 
-interface SignUp {
+interface SignUpPhase {
   phase: "SIGN_UP";
   describer: User | null;
   round: number;
@@ -45,7 +45,7 @@ interface SignUp {
   numTeams: number;
 }
 
-interface ConfigureGame {
+export interface ConfigureGamePhase {
   phase: "CONFIGURE_GAME";
   describer: User | null;
   round: number;
@@ -60,7 +60,7 @@ interface ConfigureGame {
   numTeams: number;
 }
 
-interface Play {
+export interface PlayPhase {
   phase: "PLAY";
   describer: User | null;
   round: number;
@@ -75,7 +75,7 @@ interface Play {
   numTeams: number;
 }
 
-interface GameOver {
+export interface GameOverPhase {
   phase: "GAME_OVER";
   describer: User | null;
   round: number;
@@ -90,4 +90,9 @@ interface GameOver {
   numTeams: number;
 }
 
-export type State = ChooseGroup | SignUp | ConfigureGame | Play | GameOver;
+export type State =
+  | ChooseGroupPhase
+  | SignUpPhase
+  | ConfigureGamePhase
+  | PlayPhase
+  | GameOverPhase;

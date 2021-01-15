@@ -1,9 +1,9 @@
 import { isThisTeam } from "./utils";
-import { State } from "./game";
+import { GameOverPhase } from "./game";
 import GroupInfo from "./GroupInfo";
 
 interface Props {
-  state: State;
+  state: GameOverPhase;
 }
 
 const GameOver = ({ state }: Props) => {

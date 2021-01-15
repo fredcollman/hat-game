@@ -11,8 +11,7 @@ interface Props {
 }
 
 const CurrentPhase = ({ state }: Props) => {
-  const { phase } = state;
-  switch (phase) {
+  switch (state.phase) {
     case "CHOOSE_GROUP":
       return <SelectGroup />;
     case "SIGN_UP":
@@ -24,7 +23,7 @@ const CurrentPhase = ({ state }: Props) => {
     case "GAME_OVER":
       return <GameOver state={state} />;
     default:
-      return assertNever(phase);
+      return assertNever(state);
   }
 };
 
