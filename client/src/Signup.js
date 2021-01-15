@@ -5,7 +5,7 @@ const Signup = ({ socket, setUsername }) => {
     console.log(e);
     const username = e.target["username"].value;
     if (username && username.length) {
-      setUsername(username);
+      setUsername({ username });
     }
   };
   return (

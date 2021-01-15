@@ -7,7 +7,7 @@ const RoundZero = ({ gameState }) => {
   const setUsername = useSender("SET_USERNAME");
   // const addSuggestion = useSender("ADD_SUGGESTION");
   const startGame = useSender("START_GAME");
-  const { state, actions, user } = gameState;
+  const { state, user, addSuggestion } = gameState;
   const {
     suggestionCount,
     yourSuggestions,
@@ -23,7 +23,7 @@ const RoundZero = ({ gameState }) => {
     <>
       <Suggestions
         yourSuggestions={yourSuggestions}
-        addSuggestion={actions.addSuggestion}
+        addSuggestion={addSuggestion}
         count={suggestionCount}
       />
       <StartGame

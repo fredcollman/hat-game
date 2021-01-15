@@ -5,7 +5,6 @@ import "./global.css";
 import "./utility.css";
 import useSocket from "./useSocket";
 import { currentPlayer } from "./utils";
-import Actions from "./actions";
 import SelectGroup from "./SelectGroup";
 import GroupInfo from "./GroupInfo";
 import GameOver from "./GameOver";
@@ -82,13 +81,24 @@ const useDispatcher = ({ socket }) => {
       };
     }
   }, [socket]);
-  const actions = new Actions({ state, socket, dispatch });
+
+  // TODO: find a better place
+  const addSuggestion = (suggestion) => {
+    if (
+      suggestion &&
+      suggestion.length &&
+      !state.yourSuggestions.includes(suggestion)
+    ) {
+      socket.emit("ADD_SUGGESTION", { suggestion });
+      dispatch({ type: "ADD_SUGGESTION", data: { suggestion } });
+    }
+  };
 
   const user = socket && currentPlayer(state);
   return {
     state,
-    actions,
     user,
+    addSuggestion,
   };
 };
 

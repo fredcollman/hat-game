@@ -13,11 +13,11 @@ const Describe = ({ turnDuration, suggestion, endTurn }) => {
   }, [suggestion]);
   const handleSkip = () => {
     setSubmitted(true);
-    skip(suggestion);
+    skip({ name: suggestion });
   };
   const handleGuess = () => {
     setSubmitted(true);
-    guessCorrectly(suggestion);
+    guessCorrectly({ name: suggestion });
   };
   return (
     <div className="stack-m center-text">

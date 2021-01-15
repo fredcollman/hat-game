@@ -19,7 +19,7 @@ const Turn = ({ describer }) => {
 };
 
 const Round = ({ gameState }) => {
-  const { state, actions } = gameState;
+  const { state } = gameState;
   const { describer, round, currentSuggestion, turnDurationSeconds } = state;
   return (
     <section className="stack-m">
@@ -30,9 +30,6 @@ const Round = ({ gameState }) => {
           <YourTurn
             turnDuration={turnDurationSeconds}
             suggestion={currentSuggestion}
-            guessCorrectly={actions.guessCorrectly}
-            skip={actions.skip}
-            endTurn={actions.endTurn}
           />
         )
         : (
