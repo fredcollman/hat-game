@@ -1,17 +1,16 @@
-import { GameState } from "./game";
+import { State } from "./game";
 import GroupInfo from "./GroupInfo";
 import Round from "./Round";
 
 interface Props {
-  gameState: GameState;
+  state: State;
 }
 
-const GameInProgress = ({ gameState }: Props) => {
-  const { state } = gameState;
+const GameInProgress = ({ state }: Props) => {
   return (
     <>
       <GroupInfo state={state} />
-      <Round gameState={gameState} />
+      <Round state={state} />
     </>
   );
 };

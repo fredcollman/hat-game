@@ -2,15 +2,14 @@ import StartGame from "./StartGame";
 import Suggestions from "./Suggestions";
 import useSender from "./useSender";
 import GroupInfo from "./GroupInfo";
-import { GameState } from "./game";
+import { State } from "./game";
 
 interface Props {
-  gameState: GameState;
+  state: State;
 }
 
-const RoundZero = ({ gameState }: Props) => {
+const RoundZero = ({ state }: Props) => {
   const startGame = useSender("START_GAME");
-  const { state } = gameState;
   const { suggestionCount, numTeams, turnDurationSeconds, users } = state;
 
   return (

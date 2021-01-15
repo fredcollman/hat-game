@@ -1,6 +1,6 @@
 import { isThisPlayer } from "./utils";
 import YourTurn from "./YourTurn";
-import { GameState, User } from "./game";
+import { State, User } from "./game";
 
 const ROUND_DESCRIPTIONS: { [round: number]: string } = {
   1: "In Round 1, you can use as many words as you need to describe the name you draw.",
@@ -24,11 +24,10 @@ const Turn = ({ describer }: { describer: User | null }) => {
 };
 
 interface Props {
-  gameState: GameState;
+  state: State;
 }
 
-const Round = ({ gameState }: Props) => {
-  const { state } = gameState;
+const Round = ({ state }: Props) => {
   const { describer, round, currentSuggestion, turnDurationSeconds } = state;
   return (
     <section className="stack-m">

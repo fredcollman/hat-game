@@ -91,8 +91,3 @@ interface GameOver {
 }
 
 export type State = ChooseGroup | SignUp | ConfigureGame | Play | GameOver;
-
-export interface GameState {
-  state: State;
-  user: User | null;
-}

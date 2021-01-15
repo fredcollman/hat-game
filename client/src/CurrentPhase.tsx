@@ -1,4 +1,4 @@
-import { GameState } from "./game";
+import { State } from "./game";
 import SelectGroup from "./SelectGroup";
 import GameInProgress from "./GameInProgress";
 import GameOver from "./GameOver";
@@ -7,11 +7,10 @@ import Signup from "./Signup";
 import { assertNever } from "./utils";
 
 interface Props {
-  gameState: GameState;
+  state: State;
 }
 
-const CurrentPhase = ({ gameState }: Props) => {
-  const { state } = gameState;
+const CurrentPhase = ({ state }: Props) => {
   const { phase } = state;
   switch (phase) {
     case "CHOOSE_GROUP":
@@ -19,9 +18,9 @@ const CurrentPhase = ({ gameState }: Props) => {
     case "SIGN_UP":
       return <Signup />;
     case "CONFIGURE_GAME":
-      return <RoundZero gameState={gameState} />;
+      return <RoundZero state={state} />;
     case "PLAY":
-      return <GameInProgress gameState={gameState} />;
+      return <GameInProgress state={state} />;
     case "GAME_OVER":
       return <GameOver state={state} />;
     default:

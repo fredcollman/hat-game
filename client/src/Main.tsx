@@ -4,7 +4,6 @@ import "./variables.css";
 import "./global.css";
 import "./utility.css";
 import useSocket from "./useSocket";
-import { currentPlayer } from "./utils";
 import Layout from "./Layout";
 import CurrentPhase from "./CurrentPhase";
 import { State } from "./game";
@@ -88,18 +87,14 @@ const useDispatcher = () => {
     }
   }, [socket]);
 
-  const user = (socket && currentPlayer(state)) || null;
-  return {
-    state,
-    user,
-  };
+  return state;
 };
 
 const Main = () => {
-  const gameState = useDispatcher();
+  const state = useDispatcher();
   return (
     <Layout>
-      <CurrentPhase gameState={gameState} />
+      <CurrentPhase state={state} />
     </Layout>
   );
 };
