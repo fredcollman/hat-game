@@ -90,7 +90,6 @@ const useDispatcher = ({ socket }) => {
       !state.yourSuggestions.includes(suggestion)
     ) {
       socket.emit("ADD_SUGGESTION", { suggestion });
-      dispatch({ type: "ADD_SUGGESTION", data: { suggestion } });
     }
   };
 

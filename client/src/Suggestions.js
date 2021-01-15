@@ -1,3 +1,4 @@
+import { useState } from "react";
 import SuggestionForm from "./SuggestionForm";
 
 const YourSuggestions = ({ names }) => {
@@ -18,14 +19,26 @@ const YourSuggestions = ({ names }) => {
   );
 };
 
-const Suggestions = ({ yourSuggestions, addSuggestion, count }) => {
+const Suggestions = ({ addSuggestion, count }) => {
+  const [yourSuggestions, setYourSuggestions] = useState([]);
   const countText = count === 1
     ? "There is 1 name"
     : `There are ${count} names`;
+  const doAddSuggestion = (name) => {
+    if (name && name.length) {
+      setYourSuggestions((prev) => {
+        if (prev.includes(name)) {
+          return prev;
+        }
+        addSuggestion(name);
+        return [...prev, name];
+      });
+    }
+  };
   return (
     <section className="stack-m">
       <h2>Suggestions</h2>
-      <SuggestionForm addSuggestion={addSuggestion} />
+      <SuggestionForm addSuggestion={doAddSuggestion} />
       <div className="stack-m">
         <h3>Suggested so far</h3>
         <div>{`${countText} in the hat. `}</div>
