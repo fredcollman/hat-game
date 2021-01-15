@@ -95,7 +95,7 @@ const useDispatcher = ({ socket }) => {
 const Main = () => {
   const socket = useSocket();
   const gameState = useDispatcher({ socket });
-  const { actions, state } = gameState;
+  const { state } = gameState;
   const { groupID, round } = state;
   return (
     <div className="wrapper center-h padding-m">
@@ -113,7 +113,7 @@ const Main = () => {
             </>
           )
           : (
-            <SelectGroup actions={actions} />
+            <SelectGroup />
           )}
       </main>
     </div>

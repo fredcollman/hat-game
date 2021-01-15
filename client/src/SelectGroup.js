@@ -1,9 +1,11 @@
 import BasicForm from "./BasicForm";
+import useSender from "./useSender";
 
-const SelectGroup = ({ actions }) => {
-  const { startGroup, joinGroup } = actions;
+const SelectGroup = () => {
+  const startGroup = useSender("START_GROUP");
+  const joinGroup = useSender("JOIN_GROUP");
   const handleSubmit = (e) =>
-    joinGroup(e.target["groupID"].value.toUpperCase());
+    joinGroup({ groupID: e.target["groupID"].value.toUpperCase() });
   return (
     <div className="center-text">
       <section>
@@ -18,7 +20,7 @@ const SelectGroup = ({ actions }) => {
       </section>
       <section>
         <h2>Start a new group</h2>
-        <button type="button" onClick={startGroup}>
+        <button type="button" onClick={() => startGroup()}>
           Start
         </button>
       </section>
