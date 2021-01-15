@@ -1,13 +1,18 @@
 import { isThisPlayer } from "./utils";
 import YourTurn from "./YourTurn";
+import { GameState, User } from "./game";
 
-const ROUND_DESCRIPTIONS = {
+const ROUND_DESCRIPTIONS: { [round: number]: string } = {
   1: "In Round 1, you can use as many words as you need to describe the name you draw.",
   2: "In Round 2, you can only use a single word. If it helps, you can say it multiple times.",
   3: "In Round 3, you cannot make a sound! You must act out the name instead.",
 };
 
-const Turn = ({ describer }) => {
+const Turn = ({ describer }: { describer: User | null }) => {
+  if (!describer) {
+    // TODO: is this edge case possible?
+    return <>Something has gone wrong</>;
+  }
   return (
     <>
       <p>
@@ -18,7 +23,11 @@ const Turn = ({ describer }) => {
   );
 };
 
-const Round = ({ gameState }) => {
+interface Props {
+  gameState: GameState;
+}
+
+const Round = ({ gameState }: Props) => {
   const { state } = gameState;
   const { describer, round, currentSuggestion, turnDurationSeconds } = state;
   return (

@@ -4,7 +4,13 @@ import useSender from "./useSender";
 
 const COUNTDOWN_DURATION = 3;
 
-const Describe = ({ turnDuration, suggestion, endTurn }) => {
+interface DescribeProps {
+  turnDuration: number;
+  suggestion: string;
+  endTurn: () => void;
+}
+
+const Describe = ({ turnDuration, suggestion, endTurn }: DescribeProps) => {
   const guessCorrectly = useSender("GUESS_CORRECTLY");
   const skip = useSender("SKIP");
   const [submitted, setSubmitted] = useState(false);
@@ -45,7 +51,12 @@ const Describe = ({ turnDuration, suggestion, endTurn }) => {
   );
 };
 
-const YourTurn = ({ turnDuration, suggestion }) => {
+interface Props {
+  turnDuration: number;
+  suggestion: string | null;
+}
+
+const YourTurn = ({ turnDuration, suggestion }: Props) => {
   const [status, setStatus] = useState("WAITING");
   const requestSuggestion = useSender("REQUEST_SUGGESTION");
   const sendEndTurn = useSender("END_TURN");
@@ -65,7 +76,7 @@ const YourTurn = ({ turnDuration, suggestion }) => {
     sendEndTurn();
   };
   if (!suggestion) {
-    return "Loading...";
+    return <>Loading...</>;
   }
   return (
     <>

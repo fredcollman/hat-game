@@ -1,14 +1,14 @@
-import { createContext, useContext, useEffect, useState } from "react";
-import { io } from "socket.io-client";
+import { createContext, FC, useContext, useEffect, useState } from "react";
+import { io, Socket } from "socket.io-client";
 
-const SocketContext = createContext();
+const SocketContext = createContext<Socket | null>(null);
 
 const useSocket = () => {
   return useContext(SocketContext);
 };
 
-export const SocketProvider = ({ children }) => {
-  const [socket, setSocket] = useState();
+export const SocketProvider: FC = ({ children }) => {
+  const [socket, setSocket] = useState<Socket | null>(null);
   useEffect(() => {
     console.log("creating a socket connection via SocketProvider!");
     const socket = io({
@@ -23,6 +23,9 @@ export const SocketProvider = ({ children }) => {
       socket.close();
     };
   }, []);
+  if (!socket) {
+    return <>{children}</>;
+  }
   return (
     <SocketContext.Provider value={socket}>{children}</SocketContext.Provider>
   );

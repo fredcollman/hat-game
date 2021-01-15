@@ -16,11 +16,11 @@ const useTick = () => {
   const tick = () => {
     setState((prev) => ({ ...prev, now: new Date() }));
   };
-  const elapsed = now - start;
+  const elapsed = now.valueOf() - start.valueOf();
   return { elapsed, tick };
 };
 
-const useInterval = (func, ms) => {
+const useInterval = (func: () => void, ms: number) => {
   useEffect(() => {
     const interval = window.setInterval(func, ms);
     return () => {
@@ -35,7 +35,12 @@ const useTimer = () => {
   return { elapsed };
 };
 
-const useCountdown = ({ from, onComplete }) => {
+interface Props {
+  from: number;
+  onComplete: () => void;
+}
+
+const useCountdown = ({ from, onComplete }: Props) => {
   const { elapsed } = useTimer();
   const remainingMs = 1000 * from - elapsed;
   const completed = remainingMs <= 0;
@@ -49,9 +54,9 @@ const useCountdown = ({ from, onComplete }) => {
   return { remaining: Math.ceil(remainingMs / 1000) };
 };
 
-const Countdown = ({ from, onComplete }) => {
+const Countdown = ({ from, onComplete }: Props) => {
   const { remaining } = useCountdown({ from, onComplete });
-  return remaining;
+  return <>{remaining}</>;
 };
 
 export default Countdown;

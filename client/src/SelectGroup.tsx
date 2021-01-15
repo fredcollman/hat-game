@@ -1,11 +1,14 @@
+import { FormEvent } from "react";
 import BasicForm from "./BasicForm";
 import useSender from "./useSender";
 
 const SelectGroup = () => {
   const startGroup = useSender("START_GROUP");
   const joinGroup = useSender("JOIN_GROUP");
-  const handleSubmit = (e) =>
-    joinGroup({ groupID: e.target["groupID"].value.toUpperCase() });
+  const handleSubmit = (e: FormEvent) => {
+    const form = e.target as HTMLFormElement;
+    joinGroup({ groupID: form["groupID"].value.toUpperCase() });
+  };
   return (
     <div className="center-text">
       <section>

@@ -2,25 +2,24 @@ import Signup from "./Signup";
 import StartGame from "./StartGame";
 import Suggestions from "./Suggestions";
 import useSender from "./useSender";
+import { GameState } from "./game";
 
-const RoundZero = ({ gameState }) => {
+interface Props {
+  gameState: GameState;
+}
+
+const RoundZero = ({ gameState }: Props) => {
   const setUsername = useSender("SET_USERNAME");
   const startGame = useSender("START_GAME");
   const { state, user } = gameState;
-  const {
-    suggestionCount,
-    yourSuggestions,
-    numTeams,
-    turnDurationSeconds,
-    users,
-  } = state;
+  const { suggestionCount, numTeams, turnDurationSeconds, users } = state;
 
   if (!user) {
     return <Signup setUsername={setUsername} />;
   }
   return (
     <>
-      <Suggestions yourSuggestions={yourSuggestions} count={suggestionCount} />
+      <Suggestions count={suggestionCount} />
       <StartGame
         suggestionCount={suggestionCount}
         users={users}

@@ -1,6 +1,11 @@
 import { isThisPlayer } from "./utils";
+import { State } from "./game";
 
-const GroupInfo = ({ state }) => {
+interface Props {
+  state: State;
+}
+
+const GroupInfo = ({ state }: Props) => {
   const { groupID, teams } = state;
   return (
     <aside className="stack-m">
