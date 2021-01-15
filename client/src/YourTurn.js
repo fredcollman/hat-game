@@ -1,26 +1,23 @@
 import { useEffect, useState } from "react";
 import Countdown from "./Countdown";
+import useSender from "./useSender";
 
 const COUNTDOWN_DURATION = 3;
 
-const Describe = ({
-  turnDuration,
-  suggestion,
-  endTurn,
-  guessCorrectly,
-  skip,
-}) => {
+const Describe = ({ turnDuration, suggestion, endTurn }) => {
+  const guessCorrectly = useSender("GUESS_CORRECTLY");
+  const skip = useSender("SKIP");
   const [submitted, setSubmitted] = useState(false);
   useEffect(() => {
     setSubmitted(false);
   }, [suggestion]);
   const handleSkip = () => {
     setSubmitted(true);
-    skip(suggestion);
+    skip({ name: suggestion });
   };
   const handleGuess = () => {
     setSubmitted(true);
-    guessCorrectly(suggestion);
+    guessCorrectly({ name: suggestion });
   };
   return (
     <div className="stack-m center-text">
@@ -48,15 +45,10 @@ const Describe = ({
   );
 };
 
-const YourTurn = ({
-  turnDuration,
-  suggestion,
-  requestSuggestion,
-  guessCorrectly,
-  skip,
-  endTurn,
-}) => {
+const YourTurn = ({ turnDuration, suggestion }) => {
   const [status, setStatus] = useState("WAITING");
+  const requestSuggestion = useSender("REQUEST_SUGGESTION");
+  const sendEndTurn = useSender("END_TURN");
   useEffect(() => {
     if (!suggestion) {
       requestSuggestion();
@@ -70,7 +62,7 @@ const YourTurn = ({
   };
   const finishTurn = () => {
     setStatus("FINISHED");
-    endTurn();
+    sendEndTurn();
   };
   if (!suggestion) {
     return "Loading...";
@@ -100,8 +92,6 @@ const YourTurn = ({
         <Describe
           turnDuration={turnDuration}
           suggestion={suggestion}
-          guessCorrectly={guessCorrectly}
-          skip={skip}
           endTurn={finishTurn}
         />
       )}
