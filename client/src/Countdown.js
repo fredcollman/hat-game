@@ -51,7 +51,7 @@ const useCountdown = ({ from, onComplete }) => {
 
 const Countdown = ({ from, onComplete }) => {
   const { remaining } = useCountdown({ from, onComplete });
-  return remaining;
+  return <>{remaining}</>;
 };
 
 export default Countdown;
