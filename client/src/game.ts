@@ -24,33 +24,19 @@ export interface GroupState {
 
 export interface ChooseGroupPhase extends GroupState {
   phase: "CHOOSE_GROUP";
-  describer: User | null;
-  round: number;
-  currentSuggestion: string | null;
   turnDurationSeconds: number;
-  scores: TeamScore[];
-  suggestionCount: number;
   numTeams: number;
 }
 
 export interface SignUpPhase extends GroupState {
   phase: "SIGN_UP";
-  describer: User | null;
-  round: number;
-  currentSuggestion: string | null;
   turnDurationSeconds: number;
-  scores: TeamScore[];
-  suggestionCount: number;
   numTeams: number;
 }
 
 export interface ConfigureGamePhase extends GroupState {
   phase: "CONFIGURE_GAME";
-  describer: User | null;
-  round: number;
-  currentSuggestion: string | null;
   turnDurationSeconds: number;
-  scores: TeamScore[];
   suggestionCount: number;
   numTeams: number;
 }
@@ -62,8 +48,6 @@ export interface PlayPhase extends GroupState {
   currentSuggestion: string | null;
   turnDurationSeconds: number;
   scores: TeamScore[];
-  suggestionCount: number;
-  numTeams: number;
 }
 
 export interface GameOverPhase extends GroupState {
