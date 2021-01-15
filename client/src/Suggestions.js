@@ -1,5 +1,6 @@
 import { useState } from "react";
 import SuggestionForm from "./SuggestionForm";
+import useSender from "./useSender";
 
 const YourSuggestions = ({ names }) => {
   if (!names.length) {
@@ -19,7 +20,8 @@ const YourSuggestions = ({ names }) => {
   );
 };
 
-const Suggestions = ({ addSuggestion, count }) => {
+const Suggestions = ({ count }) => {
+  const sendSuggestion = useSender("ADD_SUGGESTION");
   const [yourSuggestions, setYourSuggestions] = useState([]);
   const countText = count === 1
     ? "There is 1 name"
@@ -30,7 +32,7 @@ const Suggestions = ({ addSuggestion, count }) => {
         if (prev.includes(name)) {
           return prev;
         }
-        addSuggestion(name);
+        sendSuggestion({ suggestion: name });
         return [...prev, name];
       });
     }

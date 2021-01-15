@@ -5,9 +5,8 @@ import useSender from "./useSender";
 
 const RoundZero = ({ gameState }) => {
   const setUsername = useSender("SET_USERNAME");
-  // const addSuggestion = useSender("ADD_SUGGESTION");
   const startGame = useSender("START_GAME");
-  const { state, user, addSuggestion } = gameState;
+  const { state, user } = gameState;
   const {
     suggestionCount,
     yourSuggestions,
@@ -21,11 +20,7 @@ const RoundZero = ({ gameState }) => {
   }
   return (
     <>
-      <Suggestions
-        yourSuggestions={yourSuggestions}
-        addSuggestion={addSuggestion}
-        count={suggestionCount}
-      />
+      <Suggestions yourSuggestions={yourSuggestions} count={suggestionCount} />
       <StartGame
         suggestionCount={suggestionCount}
         users={users}

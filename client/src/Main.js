@@ -16,7 +16,6 @@ const INITIAL_STATE = {
   groupID: null,
   users: [],
   teams: [],
-  yourSuggestions: [],
   suggestionCount: 0,
   round: 0,
   describer: null,
@@ -42,11 +41,6 @@ const reducer = (state, { type, data }) => {
       return { ...state, users: data.users, teams: data.teams };
     case "NEW_SUGGESTION":
       return { ...state, suggestionCount: data.count };
-    case "ADD_SUGGESTION":
-      return {
-        ...state,
-        yourSuggestions: [...state.yourSuggestions, data.suggestion],
-      };
     case "NEW_TURN":
       return {
         ...state,
@@ -82,22 +76,10 @@ const useDispatcher = ({ socket }) => {
     }
   }, [socket]);
 
-  // TODO: find a better place
-  const addSuggestion = (suggestion) => {
-    if (
-      suggestion &&
-      suggestion.length &&
-      !state.yourSuggestions.includes(suggestion)
-    ) {
-      socket.emit("ADD_SUGGESTION", { suggestion });
-    }
-  };
-
   const user = socket && currentPlayer(state);
   return {
     state,
     user,
-    addSuggestion,
   };
 };
 
