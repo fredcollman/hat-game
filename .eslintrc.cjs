@@ -4,15 +4,21 @@ module.exports = {
     es2021: true,
     node: true,
   },
-  extends: ["eslint:recommended"],
-  parser: "babel-eslint",
+  extends: [
+    "eslint:recommended",
+
+    "plugin:@typescript-eslint/recommended",
+    "plugin:@typescript-eslint/recommended-requiring-type-checking",
+  ],
+  parser: "@typescript-eslint/parser",
   parserOptions: {
+    project: "./tsconfig.json",
     ecmaFeatures: {
       jsx: true,
     },
     ecmaVersion: 12,
     sourceType: "module",
   },
-  plugins: [],
+  plugins: ["@typescript-eslint"],
   rules: {},
 };

@@ -4,11 +4,10 @@ import path from "path";
 import { Server } from "socket.io";
 import low from "lowdb";
 import FileAsync from "lowdb/adapters/FileAsync.js";
-import Client from "./client.js";
-import userApp from "./user.js";
+import Client from "./client";
+import userApp from "./user";
 
 const PORT = 3001;
-const __dirname = path.resolve();
 
 const app = express();
 const server = http.createServer(app);
@@ -34,7 +33,7 @@ low(adapter)
 
     io.on("connection", (socket) => {
       console.log(`[${socket.id}] user connected`);
-      socket.on("disconnect", (reason) => {
+      socket.on("disconnect", (reason: string) => {
         console.log(`[${socket.id}] user disconnected for reason ${reason}`);
         // TODO remove user from list of players
       });
