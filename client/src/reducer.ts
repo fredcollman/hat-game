@@ -10,7 +10,6 @@ import { assertNever, Message } from "./utils";
 
 export const initialize = (): State => ({
   phase: "CHOOSE_GROUP",
-  clientID: null,
   turnDurationSeconds: 60,
   numTeams: 2,
 });
@@ -20,8 +19,6 @@ const reduceChooseGroup = (
   { type, data }: Message,
 ): ChooseGroupPhase | SignUpPhase => {
   switch (type) {
-    case "SOCKET_CONNECTION":
-      return { ...state, clientID: data };
     case "JOINED_GROUP":
       return {
         ...state,

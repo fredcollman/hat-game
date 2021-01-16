@@ -24,7 +24,7 @@ const GroupInfo = ({ state }: Props) => {
               <ol>
                 {t.members.map((u) => {
                   return (
-                    <li key={u.clientID}>
+                    <li key={u.id}>
                       {isThisPlayer(state, u)
                         ? (
                           <strong>{u.username} (you)</strong>

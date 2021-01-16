@@ -15,10 +15,6 @@ const useDispatcher = () => {
   useEffect(() => {
     if (socket) {
       console.log("configuring socket via useDispatcher!");
-      socket.on("connect", () => {
-        console.log("connected inside useDispatcher");
-        dispatch({ type: "SOCKET_CONNECTION", data: socket.id });
-      });
       socket.onAny((type, data) => dispatch({ type, data }));
     }
   }, [socket]);

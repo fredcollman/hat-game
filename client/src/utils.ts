@@ -6,10 +6,10 @@ export interface Message {
 }
 
 export const currentPlayer = (state: GroupState) =>
-  state.users.find((u) => u.clientID === state.clientID);
+  state.users.find((u) => u.id === state.userID);
 
 export const isThisPlayer = (state: GroupState, player: User | null) =>
-  player && player?.clientID === currentPlayer(state)?.clientID;
+  player && player?.id === currentPlayer(state)?.id;
 
 export const isThisTeam = (state: GroupState, teamName: string) => {
   const team = state.teams.find((t) => t.name === teamName);
