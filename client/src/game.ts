@@ -4,10 +4,7 @@ export interface User {
   username: string;
 }
 
-export interface Describer {
-  // TODO: should be the same as User?
-  clientID: string;
-  username: string;
+export interface Describer extends User {
   team: string;
 }
 
@@ -26,6 +23,7 @@ export interface GroupState {
   groupID: string | null;
   teams: Team[];
   clientID: string | null;
+  userID: string | null;
   users: User[];
 }
 
@@ -43,6 +41,7 @@ export interface SignUpPhase extends GameOptions {
   phase: "SIGN_UP";
   clientID: string | null;
   groupID: string | null;
+  userID: string | null;
   users: User[];
 }
 

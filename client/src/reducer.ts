@@ -26,6 +26,7 @@ const reduceChooseGroup = (
       return {
         ...state,
         groupID: data.groupID,
+        userID: null,
         users: data.users,
         turnDurationSeconds: data?.options?.turnDurationSeconds,
         numTeams: data?.options?.teams,
@@ -53,9 +54,10 @@ const reduceSignUp = (
     case "CREATED_USER":
       return {
         ...state,
-        teams: [],
-        suggestionCount: 0,
-        phase: "CONFIGURE_GAME",
+        userID: data.id,
+        // teams: [],
+        // suggestionCount: 0,
+        // phase: "CONFIGURE_GAME", // TODO: restore this
       };
     default:
       console.warn("unhandled", type);

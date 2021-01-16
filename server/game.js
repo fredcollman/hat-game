@@ -94,8 +94,9 @@ export default class Game {
 
   getCurrentDescriber() {
     const team = this.getCurrentTeam();
-    const { clientID, username } = team.members[team.currentDescriberIndex];
+    const { id, clientID, username } = team.members[team.currentDescriberIndex];
     return {
+      id,
       clientID,
       username,
       team: team.name,
