@@ -1,15 +1,30 @@
+import lowdb from "lowdb";
 import { v4 } from "uuid";
-import { randomID } from "./random.js";
-import Game from "./game.js";
+import { randomID } from "./random";
+import Game, { IGame, State } from "./game";
+
+interface User {}
+
+interface Group {
+  id: string;
+  game?: State;
+}
+
+interface Schema {
+  users: User[];
+  groups: Group[];
+}
+
+export type Database = lowdb.LowdbAsync<Schema>;
 
 export default class Store {
-  #db;
+  #db: Database;
 
-  constructor(db) {
+  constructor(db: Database) {
     this.#db = db;
   }
 
-  async addUser({ username }) {
+  async addUser({ username }: { username: string }) {
     const id = v4();
     return this.#db.get("users").push({ id, username }).last().write();
   }
@@ -20,9 +35,9 @@ export default class Store {
     return this.#db.get("groups").push({ id }).last().write();
   }
 
-  async loadGame({ groupID }) {
+  async loadGame({ groupID }: { groupID: string }) {
     const group = await this.#db.get("groups").find({ id: groupID }).value();
-    const onChange = (state) => {
+    const onChange = (state: State) => {
       this.#db
         .get("groups")
         .find({ id: groupID })
@@ -32,7 +47,7 @@ export default class Store {
     return Game.resume({ state: group?.game, groupID, onChange });
   }
 
-  async reload(game) {
+  async reload(game: IGame) {
     return this.loadGame({ groupID: game.groupID });
   }
 }

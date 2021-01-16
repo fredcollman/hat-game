@@ -16,7 +16,7 @@ interface GameOptions {
   turnDurationSeconds: number;
 }
 
-interface State {
+export interface State {
   round: number;
   users: User[];
   teams: Team[];
@@ -26,7 +26,7 @@ interface State {
   availableSuggestions: { name: string; skipped: boolean }[];
 }
 
-type ChangeHandler = () => void;
+type ChangeHandler = (state: State) => void;
 
 const DEFAULT_TEAMS = 2;
 
@@ -68,9 +68,10 @@ const addUser = ({ username, id }: User, state: State) => {
 };
 
 export interface IGame {
+  groupID: string;
   addUser: (user: User) => void;
   getUsers: () => User[];
-  getTeamMembers: () => Team[];
+  getTeamMembers: () => { name: string; members: User[] }[];
   addSuggestion: (data: { suggestion: string }) => void;
   countSuggestions: () => number;
   getOptions: () => GameOptions;
@@ -95,7 +96,7 @@ export interface IGame {
 
 export default class Game implements IGame {
   #state: State;
-  #handleChange: ChangeHandler;
+  #handleChange: () => void;
   groupID: string;
 
   static resume({
@@ -110,7 +111,7 @@ export default class Game implements IGame {
     return new this(state || initialState(), groupID, onChange);
   }
 
-  constructor(state: State, groupID: string, onChange: (state: State) => void) {
+  constructor(state: State, groupID: string, onChange: ChangeHandler) {
     this.#state = state;
     this.groupID = groupID;
     this.#handleChange = () => onChange(this.#state);

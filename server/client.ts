@@ -1,16 +1,17 @@
 import { Server, Socket } from "socket.io";
-import Store from "./store.js";
+import Store, { Database } from "./store";
 import Game, { IGame } from "./game";
 
 interface Dependencies {
   socket: Socket;
   io: Server;
-  db: Store;
+  db: Database;
 }
 
 type Handler = (data: any) => void;
 
 const nullGame: IGame = {
+  groupID: "",
   addUser: () => {},
   getUsers: () => [],
   getTeamMembers: () => [],
@@ -31,7 +32,7 @@ const nullGame: IGame = {
 export default class Client {
   sock: Socket;
   io: Server;
-  db: Store;
+  db: Database;
   store: Store;
   room: string | null;
   game: IGame;
