@@ -1,6 +1,6 @@
 import { Server, Socket } from "socket.io";
 import Store, { Database } from "./store";
-import Game, { IGame } from "./game";
+import { IGame } from "./game";
 
 interface Dependencies {
   socket: Socket;

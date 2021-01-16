@@ -1,7 +1,6 @@
 {
   "name": "hat-game",
   "version": "1.0.0",
-  "type": "module",
   "main": "server/main.js",
   "author": "Fred Collman <fredcollman@gmail.com>",
   "license": "MIT",
