@@ -24,8 +24,8 @@ const addMember = (member, team) => ({
   members: [...team.members, member],
 });
 
-const addUser = ({ clientID, username, id }, state) => {
-  const user = { id, clientID, username };
+const addUser = ({ username, id }, state) => {
+  const user = { id, username };
   const teamToJoin = state.users.length % state.options.teams;
   const newUsers = [...state.users.filter((u) => u.id !== id), user];
   return {
@@ -70,11 +70,11 @@ export default class Game {
     }));
   }
 
-  addSuggestion({ clientID, suggestion }) {
+  addSuggestion({ suggestion }) {
     if (suggestion && suggestion.length) {
       this.#state.suggestions = [
         ...this.#state.suggestions,
-        { clientID, name: suggestion },
+        { name: suggestion },
       ];
       this.#handleChange();
     }
@@ -94,10 +94,10 @@ export default class Game {
 
   getCurrentDescriber() {
     const team = this.getCurrentTeam();
-    const { id, clientID, username } = team.members[team.currentDescriberIndex];
+    const { id, username } = team.members[team.currentDescriberIndex];
     return {
       id,
-      clientID,
+
       username,
       team: team.name,
     };
