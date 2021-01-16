@@ -11,9 +11,6 @@ import { assertNever } from "./utils";
 export const initialize = (): State => ({
   phase: "CHOOSE_GROUP",
   clientID: null,
-  groupID: null,
-  users: [],
-  teams: [],
   turnDurationSeconds: 60,
   numTeams: 2,
 });

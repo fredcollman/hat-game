@@ -1,8 +1,8 @@
 import { isThisPlayer } from "./utils";
-import { State } from "./game";
+import { GroupState } from "./game";
 
 interface Props {
-  state: State;
+  state: GroupState;
 }
 
 const GroupInfo = ({ state }: Props) => {
