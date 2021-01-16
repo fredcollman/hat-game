@@ -50,6 +50,13 @@ const reduceSignUp = (
         suggestionCount: 0,
         phase: "CONFIGURE_GAME",
       };
+    case "CREATED_USER":
+      return {
+        ...state,
+        teams: [],
+        suggestionCount: 0,
+        phase: "CONFIGURE_GAME",
+      };
     default:
       console.warn("unhandled", type);
       return state;
@@ -66,7 +73,6 @@ const reduceConfigureGame = (
         ...state,
         users: data.users,
         teams: data.teams,
-        phase: "CONFIGURE_GAME",
       };
     case "NEW_SUGGESTION":
       return { ...state, suggestionCount: data.count };
