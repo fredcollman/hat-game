@@ -1,6 +1,9 @@
 export interface User {
-  clientID: string;
+  id: string;
   username: string;
+}
+
+export interface Describer extends User {
   team: string;
 }
 
@@ -18,7 +21,7 @@ interface TeamScore {
 export interface GroupState {
   groupID: string | null;
   teams: Team[];
-  clientID: string | null;
+  userID: string | null;
   users: User[];
 }
 
@@ -29,13 +32,12 @@ export interface GameOptions {
 
 export interface ChooseGroupPhase extends GameOptions {
   phase: "CHOOSE_GROUP";
-  clientID: string | null;
 }
 
 export interface SignUpPhase extends GameOptions {
   phase: "SIGN_UP";
-  clientID: string | null;
   groupID: string | null;
+  userID: string | null; // TODO: setting this should move to ConfigureGamePhase
   users: User[];
 }
 
@@ -46,7 +48,7 @@ export interface ConfigureGamePhase extends GroupState, GameOptions {
 
 export interface PlayPhase extends GroupState, GameOptions {
   phase: "PLAY";
-  describer: User | null;
+  describer: Describer | null;
   round: number;
   currentSuggestion: string | null;
   turnDurationSeconds: number;

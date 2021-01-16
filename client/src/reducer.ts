@@ -6,31 +6,24 @@ import {
   SignUpPhase,
   State,
 } from "./game";
-import { assertNever } from "./utils";
+import { assertNever, Message } from "./utils";
 
 export const initialize = (): State => ({
   phase: "CHOOSE_GROUP",
-  clientID: null,
   turnDurationSeconds: 60,
   numTeams: 2,
 });
-
-interface Message {
-  type: string;
-  data: any;
-}
 
 const reduceChooseGroup = (
   state: ChooseGroupPhase,
   { type, data }: Message,
 ): ChooseGroupPhase | SignUpPhase => {
   switch (type) {
-    case "SOCKET_CONNECTION":
-      return { ...state, clientID: data };
     case "JOINED_GROUP":
       return {
         ...state,
         groupID: data.groupID,
+        userID: null,
         users: data.users,
         turnDurationSeconds: data?.options?.turnDurationSeconds,
         numTeams: data?.options?.teams,
@@ -55,6 +48,14 @@ const reduceSignUp = (
         suggestionCount: 0,
         phase: "CONFIGURE_GAME",
       };
+    case "CREATED_USER":
+      return {
+        ...state,
+        userID: data.id,
+        // teams: [],
+        // suggestionCount: 0,
+        // phase: "CONFIGURE_GAME", // TODO: restore this
+      };
     default:
       console.warn("unhandled", type);
       return state;
@@ -71,7 +72,6 @@ const reduceConfigureGame = (
         ...state,
         users: data.users,
         teams: data.teams,
-        phase: "CONFIGURE_GAME",
       };
     case "NEW_SUGGESTION":
       return { ...state, suggestionCount: data.count };

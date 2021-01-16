@@ -1,3 +1,4 @@
+import { v4 } from "uuid";
 import { randomID } from "./random.js";
 import Game from "./game.js";
 
@@ -6,6 +7,11 @@ export default class Store {
 
   constructor(db) {
     this.#db = db;
+  }
+
+  async addUser({ username }) {
+    const id = v4();
+    return this.#db.get("users").push({ id, username }).last().write();
   }
 
   async addGroup() {

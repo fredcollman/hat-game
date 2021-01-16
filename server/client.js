@@ -65,8 +65,8 @@ export default class Client {
     }
   }
 
-  setUsername({ username }) {
-    this.game.addUser({ clientID: this.sock.id, username });
+  setUsername({ id, username }) {
+    this.game.addUser({ id, username });
     this.replyAll("USER_LIST", {
       users: this.game.getUsers(),
       teams: this.game.getTeamMembers(),
@@ -75,7 +75,7 @@ export default class Client {
 
   addSuggestion({ suggestion }) {
     this.reload();
-    this.game.addSuggestion({ clientID: this.sock.id, suggestion });
+    this.game.addSuggestion({ suggestion });
     this.replyAll("NEW_SUGGESTION", { count: this.game.countSuggestions() });
   }
 

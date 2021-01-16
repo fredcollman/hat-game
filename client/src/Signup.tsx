@@ -1,16 +1,14 @@
 import { FormEvent } from "react";
 import BasicForm from "./BasicForm";
-import useSender from "./useSender";
+import usePerform from "./usePerform";
+import { addUser } from "./actions";
 
 const Signup = () => {
-  const setUsername = useSender("SET_USERNAME");
+  const perform = usePerform();
   const handleSubmit = (e: FormEvent) => {
-    console.log(e);
     const form = e.target as HTMLFormElement;
     const username = form["username"].value;
-    if (username && username.length) {
-      setUsername({ username });
-    }
+    perform(addUser(username));
   };
   return (
     <section className="center-text">

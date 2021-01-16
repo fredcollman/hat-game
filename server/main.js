@@ -5,6 +5,7 @@ import { Server } from "socket.io";
 import low from "lowdb";
 import FileAsync from "lowdb/adapters/FileAsync.js";
 import Client from "./client.js";
+import userApp from "./user.js";
 
 const PORT = 3001;
 const __dirname = path.resolve();
@@ -25,6 +26,8 @@ low(adapter)
     return db;
   })
   .then((db) => {
+    app.use("/user", userApp({ db }));
+
     server.listen(PORT, () => {
       console.log(`Serving at http://localhost:${PORT}`);
     });
