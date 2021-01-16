@@ -1,18 +1,54 @@
-import Store from "./store.js";
+import { Server, Socket } from "socket.io";
+import Store, { Database } from "./store";
+import { IGame } from "./game";
+
+interface Dependencies {
+  socket: Socket;
+  io: Server;
+  db: Database;
+}
+
+type Handler = (data: any) => void;
+
+const nullGame: IGame = {
+  groupID: "",
+  addUser: () => {},
+  getUsers: () => [],
+  getTeamMembers: () => [],
+  addSuggestion: () => {},
+  countSuggestions: () => 0,
+  getOptions: () => ({ teams: 2, turnDurationSeconds: 60 }),
+  getCurrentTeam: () => null,
+  getCurrentDescriber: () => null,
+  getCurrentTurnDetails: () => null,
+  getScores: () => [],
+  getNextSuggestion: () => null,
+  endTurn: () => {},
+  start: () => {},
+  guessCorrectly: (name: string) => {},
+  skip: (name: string) => {},
+};
 
 export default class Client {
-  constructor({ io, socket, db, store }) {
+  sock: Socket;
+  io: Server;
+  db: Database;
+  store: Store;
+  room: string | null;
+  game: IGame;
+
+  constructor({ io, socket, db, store }: Dependencies & { store: Store }) {
     this.sock = socket;
     this.io = io;
     this.db = db;
     this.store = store;
     this.room = null;
-    this.game = null;
+    this.game = nullGame;
   }
 
-  static prepare({ io, socket, db }) {
+  static prepare({ io, socket, db }: Dependencies) {
     const client = new this({ io, socket, db, store: new Store(db) });
-    [
+    const handlers: [string, Handler][] = [
       ["START_GROUP", client.startGroup],
       ["JOIN_GROUP", client.joinGroup],
       ["SET_USERNAME", client.setUsername],
@@ -22,16 +58,19 @@ export default class Client {
       ["GUESS_CORRECTLY", client.guessCorrectly],
       ["SKIP", client.skip],
       ["END_TURN", client.nextTurn],
-    ].forEach(([name, handler]) => client.registerHandler(name, handler));
+    ];
+    handlers.forEach(([name, handler]) =>
+      client.registerHandler(name, handler)
+    );
     return client;
   }
 
-  replyOne(messageType, data) {
+  replyOne(messageType: string, data: object) {
     console.log(`[${this.sock.id}] sending ${messageType}`);
     this.sock.emit(messageType, data);
   }
 
-  replyAll(messageType, data) {
+  replyAll(messageType: string, data: object | null) {
     if (this.room) {
       console.log(`[${this.sock.id}] sending ${messageType} to ${this.room}`);
       this.io.to(this.room).emit(messageType, data);
@@ -52,7 +91,7 @@ export default class Client {
     this.joinGroup({ groupID: group.id });
   }
 
-  async joinGroup({ groupID }) {
+  async joinGroup({ groupID }: { groupID: string }) {
     if (this.room === null) {
       this.room = `group:${groupID}`;
       this.game = await this.store.loadGame({ groupID });
@@ -65,7 +104,7 @@ export default class Client {
     }
   }
 
-  setUsername({ id, username }) {
+  setUsername({ id, username }: { id: string; username: string }) {
     this.game.addUser({ id, username });
     this.replyAll("USER_LIST", {
       users: this.game.getUsers(),
@@ -73,7 +112,7 @@ export default class Client {
     });
   }
 
-  addSuggestion({ suggestion }) {
+  addSuggestion({ suggestion }: { suggestion: string }) {
     this.reload();
     this.game.addSuggestion({ suggestion });
     this.replyAll("NEW_SUGGESTION", { count: this.game.countSuggestions() });
@@ -97,13 +136,13 @@ export default class Client {
     this.replyAll("LATEST_SCORES", this.game.getScores());
   }
 
-  guessCorrectly({ name }) {
+  guessCorrectly({ name }: { name: string }) {
     this.game.guessCorrectly(name);
     this._notifyScores();
     this.requestSuggestion();
   }
 
-  skip({ name }) {
+  skip({ name }: { name: string }) {
     this.game.skip(name);
     this._notifyScores();
     this.requestSuggestion();
@@ -114,7 +153,7 @@ export default class Client {
     this.replyAll("NEW_TURN", this.game.getCurrentTurnDetails());
   }
 
-  registerHandler(messageType, handler) {
+  registerHandler(messageType: string, handler: Handler) {
     this.sock.on(messageType, async (data) => {
       console.log(`[${this.sock.id}] incoming ${messageType}`);
       try {

@@ -1,6 +1,36 @@
+interface User {
+  id: string;
+  username: string;
+}
+
+interface Team {
+  name: string;
+  members: User[];
+  currentDescriberIndex: number;
+  guessedCorrectly: number;
+  skips: number;
+}
+
+interface GameOptions {
+  teams: number;
+  turnDurationSeconds: number;
+}
+
+export interface State {
+  round: number;
+  users: User[];
+  teams: Team[];
+  suggestions: { name: string }[];
+  options: GameOptions;
+  currentTeamIndex: number;
+  availableSuggestions: { name: string; skipped: boolean }[];
+}
+
+type ChangeHandler = (state: State) => void;
+
 const DEFAULT_TEAMS = 2;
 
-const initialState = () => ({
+const initialState = (): State => ({
   round: 0,
   users: [],
   teams: Array.from({ length: DEFAULT_TEAMS }).map((_, teamIdx) => ({
@@ -19,12 +49,12 @@ const initialState = () => ({
   availableSuggestions: [],
 });
 
-const addMember = (member, team) => ({
+const addMember = (member: User, team: Team) => ({
   ...team,
   members: [...team.members, member],
 });
 
-const addUser = ({ username, id }, state) => {
+const addUser = ({ username, id }: User, state: State) => {
   const user = { id, username };
   const teamToJoin = state.users.length % state.options.teams;
   const newUsers = [...state.users.filter((u) => u.id !== id), user];
@@ -37,21 +67,57 @@ const addUser = ({ username, id }, state) => {
   };
 };
 
-export default class Game {
-  #state;
-  #handleChange;
+export interface IGame {
+  groupID: string;
+  addUser: (user: User) => void;
+  getUsers: () => User[];
+  getTeamMembers: () => { name: string; members: User[] }[];
+  addSuggestion: (data: { suggestion: string }) => void;
+  countSuggestions: () => number;
+  getOptions: () => GameOptions;
+  getCurrentTeam: () => Team | null;
+  getCurrentDescriber: () => User | null;
+  getCurrentTurnDetails: () => {
+    round: number;
+    duration: number;
+    describer: User;
+  } | null;
+  getScores: () => {
+    name: string;
+    correct: number;
+    skips: number;
+  }[];
+  getNextSuggestion: () => { name: string } | null;
+  endTurn: () => void;
+  start: () => void;
+  guessCorrectly: (name: string) => void;
+  skip: (name: string) => void;
+}
 
-  static resume({ state, groupID, onChange }) {
+export default class Game implements IGame {
+  #state: State;
+  #handleChange: () => void;
+  groupID: string;
+
+  static resume({
+    state,
+    groupID,
+    onChange,
+  }: {
+    state?: State;
+    groupID: string;
+    onChange: ChangeHandler;
+  }) {
     return new this(state || initialState(), groupID, onChange);
   }
 
-  constructor(state, groupID, onChange) {
+  constructor(state: State, groupID: string, onChange: ChangeHandler) {
     this.#state = state;
     this.groupID = groupID;
     this.#handleChange = () => onChange(this.#state);
   }
 
-  addUser(user) {
+  addUser(user: User) {
     if (user?.username?.length) {
       this.#state = addUser(user, this.#state);
       this.#handleChange();
@@ -70,7 +136,7 @@ export default class Game {
     }));
   }
 
-  addSuggestion({ suggestion }) {
+  addSuggestion({ suggestion }: { suggestion: string }) {
     if (suggestion && suggestion.length) {
       this.#state.suggestions = [
         ...this.#state.suggestions,
@@ -146,7 +212,7 @@ export default class Game {
     this.#handleChange();
   }
 
-  _startRound(round) {
+  _startRound(round: number) {
     this.#state.round = round;
     this.#state.availableSuggestions = this.#state.suggestions.map((s) => ({
       ...s,
@@ -160,7 +226,7 @@ export default class Game {
     this.#handleChange();
   }
 
-  guessCorrectly(name) {
+  guessCorrectly(name: string) {
     this.#state.availableSuggestions = this.#state.availableSuggestions.filter(
       (s) => s.name !== name,
     );
@@ -169,7 +235,7 @@ export default class Game {
     console.log("correct", name);
   }
 
-  skip(name) {
+  skip(name: string) {
     this.#state.availableSuggestions = this.#state.availableSuggestions.map(
       (s) => (s.name === name ? { ...s, skipped: true } : s),
     );
