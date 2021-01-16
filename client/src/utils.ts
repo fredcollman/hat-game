@@ -1,4 +1,4 @@
-import { GroupState, User } from "./game";
+import { Describer, GroupState, User } from "./game";
 
 export interface Message {
   type: string;
@@ -8,8 +8,10 @@ export interface Message {
 export const currentPlayer = (state: GroupState) =>
   state.users.find((u) => u.clientID === state.clientID);
 
-export const isThisPlayer = (state: GroupState, player: User | null) =>
-  player && player?.clientID === currentPlayer(state)?.clientID;
+export const isThisPlayer = (
+  state: GroupState,
+  player: User | Describer | null,
+) => player && player?.clientID === currentPlayer(state)?.clientID;
 
 export const isThisTeam = (state: GroupState, teamName: string) => {
   const team = state.teams.find((t) => t.name === teamName);

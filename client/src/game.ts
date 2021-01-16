@@ -1,5 +1,12 @@
 export interface User {
   clientID: string;
+  id: string;
+  username: string;
+}
+
+export interface Describer {
+  // TODO: should be the same as User?
+  clientID: string;
   username: string;
   team: string;
 }
@@ -46,7 +53,7 @@ export interface ConfigureGamePhase extends GroupState, GameOptions {
 
 export interface PlayPhase extends GroupState, GameOptions {
   phase: "PLAY";
-  describer: User | null;
+  describer: Describer | null;
   round: number;
   currentSuggestion: string | null;
   turnDurationSeconds: number;
