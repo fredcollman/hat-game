@@ -1,5 +1,10 @@
 import { GroupState, User } from "./game";
 
+export interface Message {
+  type: string;
+  data: any;
+}
+
 export const currentPlayer = (state: GroupState) =>
   state.users.find((u) => u.clientID === state.clientID);
 

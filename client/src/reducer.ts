@@ -6,7 +6,7 @@ import {
   SignUpPhase,
   State,
 } from "./game";
-import { assertNever } from "./utils";
+import { assertNever, Message } from "./utils";
 
 export const initialize = (): State => ({
   phase: "CHOOSE_GROUP",
@@ -14,11 +14,6 @@ export const initialize = (): State => ({
   turnDurationSeconds: 60,
   numTeams: 2,
 });
-
-interface Message {
-  type: string;
-  data: any;
-}
 
 const reduceChooseGroup = (
   state: ChooseGroupPhase,

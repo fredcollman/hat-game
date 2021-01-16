@@ -7,6 +7,7 @@ import useSocket from "./useSocket";
 import Layout from "./Layout";
 import CurrentPhase from "./CurrentPhase";
 import reducer, { initialize } from "./reducer";
+import { DispatchProvider } from "./useDispatch";
 
 const useDispatcher = () => {
   const socket = useSocket();
@@ -22,14 +23,16 @@ const useDispatcher = () => {
     }
   }, [socket]);
 
-  return state;
+  return { state, dispatch };
 };
 
 const Main = () => {
-  const state = useDispatcher();
+  const { state, dispatch } = useDispatcher();
   return (
     <Layout>
-      <CurrentPhase state={state} />
+      <DispatchProvider dispatch={dispatch}>
+        <CurrentPhase state={state} />
+      </DispatchProvider>
     </Layout>
   );
 };
