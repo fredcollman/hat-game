@@ -65,8 +65,8 @@ export default class Client {
     }
   }
 
-  setUsername({ username }) {
-    this.game.addUser({ clientID: this.sock.id, username });
+  setUsername({ id, username }) {
+    this.game.addUser({ clientID: this.sock.id, username, id });
     this.replyAll("USER_LIST", {
       users: this.game.getUsers(),
       teams: this.game.getTeamMembers(),

@@ -24,13 +24,10 @@ const addMember = (member, team) => ({
   members: [...team.members, member],
 });
 
-const addUser = ({ clientID, username }, state) => {
-  const user = { clientID, username };
+const addUser = ({ clientID, username, id }, state) => {
+  const user = { id, clientID, username };
   const teamToJoin = state.users.length % state.options.teams;
-  const newUsers = [
-    ...state.users.filter((u) => u.clientID !== clientID),
-    user,
-  ];
+  const newUsers = [...state.users.filter((u) => u.id !== id), user];
   return {
     ...state,
     users: newUsers,
