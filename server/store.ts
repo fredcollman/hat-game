@@ -40,6 +40,17 @@ export default class Store {
     return this.#db.get("groups").push({ id, game }).last().write();
   }
 
+  async joinGroup({ userID, groupID }: { userID: string; groupID: string }) {
+    const user = await this.findUserByID(userID);
+    return this.#db
+      .get("groups")
+      .find({ id: groupID })
+      .tap((group) => {
+        group.game = addUser(user, group.game);
+      })
+      .write();
+  }
+
   async loadGame({ groupID }: { groupID: string }) {
     const group = await this.#db.get("groups").find({ id: groupID }).value();
     const onChange = (state: State) => {
