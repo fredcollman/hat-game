@@ -1,10 +1,12 @@
 import express from "express";
 import http from "http";
 import path from "path";
+import { v4 } from "uuid";
 import { Server } from "socket.io";
 import low from "lowdb";
 import FileAsync from "lowdb/adapters/FileAsync.js";
 import Client from "./client";
+import groupApp from "./group";
 import userApp from "./user";
 
 const PORT = 3001;
@@ -13,6 +15,17 @@ const rootDir = path.resolve();
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
+
+app.use((req, res, next) => {
+  const id = v4();
+  console.log(`[r:${id}] start ${req.method} ${req.originalUrl}`);
+  res.on("finish", () => {
+    console.log(
+      `[r:${id}] end ${req.method} ${req.originalUrl} ${res.statusCode}`,
+    );
+  });
+  next();
+});
 
 app.use(express.static(path.join(rootDir, "client", "build")));
 app.get("/", function (req, res) {
@@ -27,6 +40,7 @@ low(adapter)
   })
   .then((db) => {
     app.use("/user", userApp({ db }));
+    app.use("/group", groupApp({ db }));
 
     server.listen(PORT, () => {
       console.log(`Serving at http://localhost:${PORT}`);

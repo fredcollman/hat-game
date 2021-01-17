@@ -50,4 +50,9 @@ export default class Store {
   async reload(game: IGame) {
     return this.loadGame({ groupID: game.groupID });
   }
+
+  async findGroupByID(id: string) {
+    const group = await this.#db.get("groups").find({ id }).value();
+    return group;
+  }
 }
