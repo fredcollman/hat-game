@@ -23,7 +23,6 @@ const RoundZero = ({ state }: Props) => {
   } = state;
 
   useEffect(() => {
-    console.log(perform);
     if (groupID) {
       perform(loadGroupInfo(groupID));
     }

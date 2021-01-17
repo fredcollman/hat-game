@@ -7,7 +7,7 @@ export interface Describer extends User {
   team: string;
 }
 
-interface Team {
+export interface Team {
   name: string;
   members: User[];
 }

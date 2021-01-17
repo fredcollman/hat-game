@@ -1,12 +1,24 @@
 const API_ROOT_URL = process.env.PUBLIC_URL;
 
-interface RetrieveGroupResponse {
+export interface RetrieveGroupResponse {
   id: string;
   game: {
     teams: {
       name: string;
-      members: {}[];
+      members: {
+        id: string;
+        username: string;
+      }[];
     }[];
+    users: {
+      id: string;
+      username: string;
+    }[];
+    options: {
+      teams: number;
+      turnDurationSeconds: number;
+    };
+    availableSuggestions: [];
   };
 }
 

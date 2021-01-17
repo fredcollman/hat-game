@@ -6,6 +6,7 @@ import {
   SignUpPhase,
   State,
 } from "./game";
+import { RetrievedGroupMessage } from "./actions";
 import { assertNever, Message } from "./utils";
 
 export const initialize = (): State => ({
@@ -85,8 +86,21 @@ const reduceConfigureGame = (
         phase: "PLAY",
       };
     case "RETRIEVED_GROUP":
-      // TODO: incorporate results into state
-      return { ...state };
+      const {
+        teams,
+        users,
+        turnDurationSeconds,
+        numTeams,
+        suggestionCount,
+      } = data as RetrievedGroupMessage;
+      return {
+        ...state,
+        teams,
+        users,
+        turnDurationSeconds,
+        numTeams,
+        suggestionCount,
+      };
     default:
       console.warn("unhandled", type);
       return state;
