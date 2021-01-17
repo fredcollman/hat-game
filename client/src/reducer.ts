@@ -10,25 +10,24 @@ import { RetrievedGroupMessage } from "./actions";
 import { assertNever, Message } from "./utils";
 
 export const initialize = (): State => ({
-  phase: "CHOOSE_GROUP",
-  turnDurationSeconds: 60,
-  numTeams: 2,
+  phase: "SIGN_UP",
 });
 
 const reduceChooseGroup = (
   state: ChooseGroupPhase,
   { type, data }: Message,
-): ChooseGroupPhase | SignUpPhase => {
+): ChooseGroupPhase | ConfigureGamePhase => {
   switch (type) {
     case "JOINED_GROUP":
       return {
         ...state,
         groupID: data.groupID,
-        userID: null,
-        users: data.users,
         turnDurationSeconds: data?.options?.turnDurationSeconds,
         numTeams: data?.options?.teams,
-        phase: "SIGN_UP",
+        users: [],
+        teams: [],
+        suggestionCount: 0,
+        phase: "CONFIGURE_GAME",
       };
     default:
       console.warn("unhandled", type);
@@ -39,15 +38,13 @@ const reduceChooseGroup = (
 const reduceSignUp = (
   state: SignUpPhase,
   { type, data }: Message,
-): SignUpPhase | ConfigureGamePhase => {
+): SignUpPhase | ChooseGroupPhase => {
   switch (type) {
     case "CREATED_USER":
       return {
         ...state,
         userID: data.id,
-        teams: [],
-        suggestionCount: 0,
-        phase: "CONFIGURE_GAME",
+        phase: "CHOOSE_GROUP",
       };
     default:
       console.warn("unhandled", type);

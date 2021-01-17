@@ -30,7 +30,7 @@ type ChangeHandler = (state: State) => void;
 
 const DEFAULT_TEAMS = 2;
 
-const initialState = (): State => ({
+export const initialState = (): State => ({
   round: 0,
   users: [],
   teams: Array.from({ length: DEFAULT_TEAMS }).map((_, teamIdx) => ({

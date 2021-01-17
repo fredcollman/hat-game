@@ -1,13 +1,13 @@
 import lowdb from "lowdb";
 import { v4 } from "uuid";
 import { randomID } from "./random";
-import Game, { IGame, State } from "./game";
+import Game, { IGame, initialState, State } from "./game";
 
 interface User {}
 
 interface Group {
   id: string;
-  game?: State;
+  game: State;
 }
 
 interface Schema {
@@ -32,7 +32,8 @@ export default class Store {
   async addGroup() {
     const id = randomID();
     console.log("creating group", id);
-    return this.#db.get("groups").push({ id }).last().write();
+    const game = initialState();
+    return this.#db.get("groups").push({ id, game }).last().write();
   }
 
   async loadGame({ groupID }: { groupID: string }) {
