@@ -84,6 +84,9 @@ const reduceConfigureGame = (
         scores: [],
         phase: "PLAY",
       };
+    case "RETRIEVED_GROUP":
+      // TODO: incorporate results into state
+      return { ...state };
     default:
       console.warn("unhandled", type);
       return state;
