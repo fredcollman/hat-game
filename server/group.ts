@@ -1,6 +1,6 @@
 import express, { Router } from "express";
 import Store, { Database } from "./store";
-import { State } from "./game";
+import { summariseConfiguration } from "./game";
 
 // TODO: keep in sync with client/src/api.ts
 interface User {
@@ -27,15 +27,6 @@ interface RetrieveGroupResponse {
   } | null;
 }
 
-const convertGame = (game: State) => {
-  return {
-    teams: game.teams,
-    users: game.users,
-    options: game.options,
-    suggestionCount: game.suggestions.length,
-  };
-};
-
 const makeRouter = ({ db }: { db: Database }) => {
   const router = Router();
   const store = new Store(db);
@@ -46,7 +37,7 @@ const makeRouter = ({ db }: { db: Database }) => {
     const data = await store.findGroupByID(id);
     const dto: RetrieveGroupResponse = {
       id: data.id,
-      game: data.game ? convertGame(data.game) : null,
+      game: data.game ? summariseConfiguration(data.game) : null,
     };
     res.send(dto);
   });

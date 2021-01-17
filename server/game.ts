@@ -244,3 +244,12 @@ export default class Game implements IGame {
     console.log("skipped", name);
   }
 }
+
+export const summariseConfiguration = (game: State) => {
+  return {
+    teams: game.teams,
+    users: game.users,
+    options: game.options,
+    suggestionCount: game.suggestions.length,
+  };
+};
