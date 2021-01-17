@@ -6,6 +6,7 @@ import {
   SignUpPhase,
   State,
 } from "./game";
+import { RetrievedGroupMessage } from "./actions";
 import { assertNever, Message } from "./utils";
 
 export const initialize = (): State => ({
@@ -40,21 +41,13 @@ const reduceSignUp = (
   { type, data }: Message,
 ): SignUpPhase | ConfigureGamePhase => {
   switch (type) {
-    case "USER_LIST":
-      return {
-        ...state,
-        users: data.users,
-        teams: data.teams,
-        suggestionCount: 0,
-        phase: "CONFIGURE_GAME",
-      };
     case "CREATED_USER":
       return {
         ...state,
         userID: data.id,
-        // teams: [],
-        // suggestionCount: 0,
-        // phase: "CONFIGURE_GAME", // TODO: restore this
+        teams: [],
+        suggestionCount: 0,
+        phase: "CONFIGURE_GAME",
       };
     default:
       console.warn("unhandled", type);
@@ -83,6 +76,22 @@ const reduceConfigureGame = (
         currentSuggestion: null,
         scores: [],
         phase: "PLAY",
+      };
+    case "RETRIEVED_GROUP":
+      const {
+        teams,
+        users,
+        turnDurationSeconds,
+        numTeams,
+        suggestionCount,
+      } = data as RetrievedGroupMessage;
+      return {
+        ...state,
+        teams,
+        users,
+        turnDurationSeconds,
+        numTeams,
+        suggestionCount,
       };
     default:
       console.warn("unhandled", type);

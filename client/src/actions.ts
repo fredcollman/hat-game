@@ -1,5 +1,6 @@
 import { Action } from "./usePerform";
-import { createUser } from "./api";
+import { createUser, retrieveGroup } from "./api";
+import { Team, User } from "./game";
 
 export const addUser = (username: string): Action<void> =>
   async ({
@@ -14,4 +15,37 @@ export const addUser = (username: string): Action<void> =>
       });
       socket.emit("SET_USERNAME", user);
     }
+  };
+
+export interface RetrievedGroupMessage {
+  teams: Team[];
+  users: User[];
+  turnDurationSeconds: number;
+  numTeams: number;
+  suggestionCount: number;
+}
+
+export const loadGroupInfo = (groupID: string): Action<void> =>
+  async ({
+    socket,
+    dispatch,
+  }) => {
+    const result = await retrieveGroup(groupID);
+    const data: RetrievedGroupMessage = {
+      teams: result.game.teams.map((t) => ({
+        name: t.name,
+        members: t.members,
+      })),
+      users: result.game.users.map((u) => ({
+        id: u.id,
+        username: u.username,
+      })),
+      turnDurationSeconds: result.game.options.turnDurationSeconds,
+      numTeams: result.game.options.teams,
+      suggestionCount: result.game.suggestionCount,
+    };
+    dispatch({
+      type: "RETRIEVED_GROUP",
+      data,
+    });
   };
