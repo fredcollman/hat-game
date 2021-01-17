@@ -48,5 +48,4 @@ export const loadGroupInfo = (groupID: string): Action<void> =>
       type: "RETRIEVED_GROUP",
       data,
     });
-    console.log("load group info", result.game);
   };

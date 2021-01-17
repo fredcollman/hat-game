@@ -41,21 +41,13 @@ const reduceSignUp = (
   { type, data }: Message,
 ): SignUpPhase | ConfigureGamePhase => {
   switch (type) {
-    case "USER_LIST":
-      return {
-        ...state,
-        users: data.users,
-        teams: data.teams,
-        suggestionCount: 0,
-        phase: "CONFIGURE_GAME",
-      };
     case "CREATED_USER":
       return {
         ...state,
         userID: data.id,
-        // teams: [],
-        // suggestionCount: 0,
-        // phase: "CONFIGURE_GAME", // TODO: restore this
+        teams: [],
+        suggestionCount: 0,
+        phase: "CONFIGURE_GAME",
       };
     default:
       console.warn("unhandled", type);
