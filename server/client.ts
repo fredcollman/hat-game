@@ -86,8 +86,8 @@ export default class Client {
     }
   }
 
-  async startGroup() {
-    const group = await this.store.addGroup();
+  async startGroup({ userID }: { userID: string }) {
+    const group = await this.store.addGroup(userID);
     this.joinGroup({ groupID: group.id });
   }
 

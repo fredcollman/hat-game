@@ -54,7 +54,7 @@ const addMember = (member: User, team: Team) => ({
   members: [...team.members, member],
 });
 
-const addUser = ({ username, id }: User, state: State) => {
+export const addUser = ({ username, id }: User, state: State) => {
   const user = { id, username };
   const teamToJoin = state.users.length % state.options.teams;
   const newUsers = [...state.users.filter((u) => u.id !== id), user];

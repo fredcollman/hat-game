@@ -1,9 +1,12 @@
 import lowdb from "lowdb";
 import { v4 } from "uuid";
 import { randomID } from "./random";
-import Game, { IGame, initialState, State } from "./game";
+import Game, { addUser, IGame, initialState, State } from "./game";
 
-interface User {}
+interface User {
+  id: string;
+  username: string;
+}
 
 interface Group {
   id: string;
@@ -29,10 +32,11 @@ export default class Store {
     return this.#db.get("users").push({ id, username }).last().write();
   }
 
-  async addGroup() {
+  async addGroup(userID: string) {
+    const user = await this.findUserByID(userID);
     const id = randomID();
     console.log("creating group", id);
-    const game = initialState();
+    const game = addUser(user, initialState());
     return this.#db.get("groups").push({ id, game }).last().write();
   }
 
@@ -55,5 +59,10 @@ export default class Store {
   async findGroupByID(id: string) {
     const group = await this.#db.get("groups").find({ id }).value();
     return group;
+  }
+
+  async findUserByID(id: string) {
+    const user = await this.#db.get("users").find({ id }).value();
+    return user;
   }
 }
