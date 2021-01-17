@@ -42,7 +42,7 @@ export const loadGroupInfo = (groupID: string): Action<void> =>
       })),
       turnDurationSeconds: result.game.options.turnDurationSeconds,
       numTeams: result.game.options.teams,
-      suggestionCount: result.game.availableSuggestions.length,
+      suggestionCount: result.game.suggestionCount,
     };
     dispatch({
       type: "RETRIEVED_GROUP",

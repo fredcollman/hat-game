@@ -18,8 +18,8 @@ export interface RetrieveGroupResponse {
       teams: number;
       turnDurationSeconds: number;
     };
-    availableSuggestions: [];
-  };
+    suggestionCount: number;
+  }; // TODO: game could technically be null
 }
 
 export const createUser = async (username: string) => {
