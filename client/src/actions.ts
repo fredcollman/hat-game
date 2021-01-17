@@ -49,3 +49,22 @@ export const loadGroupInfo = (groupID: string): Action<void> =>
       data,
     });
   };
+
+export const startGroup = (userID: string): Action<void> =>
+  async ({
+    socket,
+    dispatch,
+  }) => {
+    socket.emit("START_GROUP", { userID });
+  };
+
+export const joinGroup = ({
+  userID,
+  groupID,
+}: {
+  userID: string;
+  groupID: string;
+}): Action<void> =>
+  async ({ socket, dispatch }) => {
+    socket.emit("JOIN_GROUP", { userID, groupID: groupID.toUpperCase() });
+  };

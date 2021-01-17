@@ -21,7 +21,7 @@ interface TeamScore {
 export interface GroupState {
   groupID: string | null;
   teams: Team[];
-  userID: string | null;
+  userID: string;
   users: User[];
 }
 
@@ -32,7 +32,7 @@ export interface GameOptions {
 
 export interface ChooseGroupPhase {
   phase: "CHOOSE_GROUP";
-  userID: string | null;
+  userID: string;
 }
 
 export interface SignUpPhase {

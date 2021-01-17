@@ -1,14 +1,26 @@
 import { FormEvent } from "react";
 import BasicForm from "./BasicForm";
-import useSender from "./useSender";
+import { ChooseGroupPhase } from "./game";
+import usePerform from "./usePerform";
+import { joinGroup, startGroup } from "./actions";
 
-const SelectGroup = () => {
-  const startGroup = useSender("START_GROUP");
-  const joinGroup = useSender("JOIN_GROUP");
+interface Props {
+  state: ChooseGroupPhase;
+}
+
+const SelectGroup = ({ state }: Props) => {
+  const perform = usePerform();
+  const { userID } = state;
+
+  const handleClick = () => {
+    perform(startGroup(userID));
+  };
+
   const handleSubmit = (e: FormEvent) => {
     const form = e.target as HTMLFormElement;
-    joinGroup({ groupID: form["groupID"].value.toUpperCase() });
+    perform(joinGroup({ userID, groupID: form["groupID"].value }));
   };
+
   return (
     <div className="center-text">
       <section>
@@ -23,7 +35,7 @@ const SelectGroup = () => {
       </section>
       <section>
         <h2>Start a new group</h2>
-        <button type="button" onClick={() => startGroup()}>
+        <button type="button" onClick={handleClick}>
           Start
         </button>
       </section>
