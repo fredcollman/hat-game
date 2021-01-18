@@ -148,15 +148,6 @@ export default class Game {
     }
   }
 
-  getUsers() {
-    return getUsers(this.#state);
-  }
-
-  getTeamMembers() {
-    console.log(this.#state);
-    return getTeamMembers(this.#state);
-  }
-
   addSuggestion({ suggestion }: { suggestion: string }) {
     if (suggestion && suggestion.length) {
       this.#state.suggestions = [
@@ -165,34 +156,6 @@ export default class Game {
       ];
       this.#handleChange();
     }
-  }
-
-  countSuggestions() {
-    return countSuggestions(this.#state);
-  }
-
-  getOptions() {
-    return this.#state.options;
-  }
-
-  getCurrentTeam() {
-    return getCurrentTeam(this.#state);
-  }
-
-  getCurrentDescriber() {
-    return getCurrentDescriber(this.#state);
-  }
-
-  getCurrentTurnDetails() {
-    return getCurrentTurnDetails(this.#state);
-  }
-
-  getScores() {
-    return getScores(this.#state);
-  }
-
-  getNextSuggestion() {
-    return getNextSuggestion(this.#state);
   }
 
   endTurn() {
@@ -232,7 +195,7 @@ export default class Game {
     this.#state.availableSuggestions = this.#state.availableSuggestions.filter(
       (s) => s.name !== name,
     );
-    this.getCurrentTeam().guessedCorrectly++;
+    getCurrentTeam(this.#state).guessedCorrectly++;
     this.#handleChange();
     console.log("correct", name);
   }
@@ -241,7 +204,7 @@ export default class Game {
     this.#state.availableSuggestions = this.#state.availableSuggestions.map(
       (s) => (s.name === name ? { ...s, skipped: true } : s),
     );
-    this.getCurrentTeam().skips++;
+    getCurrentTeam(this.#state).skips++;
     this.#handleChange();
     console.log("skipped", name);
   }
