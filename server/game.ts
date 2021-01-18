@@ -67,6 +67,17 @@ export const addUser = ({ username, id }: User, state: State) => {
   };
 };
 
+export const getUsers = (state: State) => {
+  return [...state.users];
+};
+
+export const getTeamMembers = (state: State) => {
+  return state.teams.map(({ name, members }) => ({
+    name,
+    members,
+  }));
+};
+
 export interface IGame {
   groupID: string;
   addUser: (user: User) => void;
@@ -125,15 +136,12 @@ export default class Game implements IGame {
   }
 
   getUsers() {
-    return this.#state.users;
+    return getUsers(this.#state);
   }
 
   getTeamMembers() {
     console.log(this.#state);
-    return this.#state.teams.map(({ name, members }) => ({
-      name,
-      members,
-    }));
+    return getTeamMembers(this.#state);
   }
 
   addSuggestion({ suggestion }: { suggestion: string }) {

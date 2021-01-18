@@ -4,7 +4,6 @@ import { Team, User } from "./game";
 
 export const addUser = (username: string): Action<void> =>
   async ({
-    socket,
     dispatch,
   }) => {
     if (username && username.length) {
@@ -13,7 +12,6 @@ export const addUser = (username: string): Action<void> =>
         type: "CREATED_USER",
         data: user,
       });
-      socket.emit("SET_USERNAME", user);
     }
   };
 
@@ -27,7 +25,6 @@ export interface RetrievedGroupMessage {
 
 export const loadGroupInfo = (groupID: string): Action<void> =>
   async ({
-    socket,
     dispatch,
   }) => {
     const result = await retrieveGroup(groupID);
@@ -53,7 +50,6 @@ export const loadGroupInfo = (groupID: string): Action<void> =>
 export const startGroup = (userID: string): Action<void> =>
   async ({
     socket,
-    dispatch,
   }) => {
     socket.emit("START_GROUP", { userID });
   };
@@ -65,6 +61,6 @@ export const joinGroup = ({
   userID: string;
   groupID: string;
 }): Action<void> =>
-  async ({ socket, dispatch }) => {
+  async ({ socket }) => {
     socket.emit("JOIN_GROUP", { userID, groupID: groupID.toUpperCase() });
   };

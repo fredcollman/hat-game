@@ -22,8 +22,9 @@ const reduceChooseGroup = (
       return {
         ...state,
         groupID: data.groupID,
-        turnDurationSeconds: data?.options?.turnDurationSeconds,
-        numTeams: data?.options?.teams,
+        // TODO: move defaults out of here
+        turnDurationSeconds: 60,
+        numTeams: 2,
         users: [],
         teams: [],
         suggestionCount: 0,
@@ -57,7 +58,7 @@ const reduceConfigureGame = (
   { type, data }: Message,
 ): ConfigureGamePhase | PlayPhase => {
   switch (type) {
-    case "USER_LIST":
+    case "NEW_PLAYER":
       return {
         ...state,
         users: data.users,

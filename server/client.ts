@@ -1,6 +1,6 @@
 import { Server, Socket } from "socket.io";
 import Store, { Database } from "./store";
-import { IGame } from "./game";
+import { getTeamMembers, getUsers, IGame } from "./game";
 
 interface Dependencies {
   socket: Socket;
@@ -91,8 +91,12 @@ export default class Client {
   }
 
   async joinGroup({ userID, groupID }: { userID: string; groupID: string }) {
-    await this.store.joinGroup({ userID, groupID });
+    const group = await this.store.joinGroup({ userID, groupID });
     this._configureGroup(groupID);
+    this.replyAll("NEW_PLAYER", {
+      users: getUsers(group.game),
+      teams: getTeamMembers(group.game),
+    });
   }
 
   _configureGroup(groupID: string) {
