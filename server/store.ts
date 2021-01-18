@@ -51,7 +51,7 @@ export default class Store {
       .write();
   }
 
-  async loadGame({ groupID }: { groupID: string }) {
+  async loadGame(groupID: string) {
     const group = await this.#db.get("groups").find({ id: groupID }).value();
     const onChange = (state: State) => {
       this.#db
@@ -64,7 +64,7 @@ export default class Store {
   }
 
   async reload(game: IGame) {
-    return this.loadGame({ groupID: game.groupID });
+    return this.loadGame(game.groupID);
   }
 
   async findGroupByID(id: string) {

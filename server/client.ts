@@ -105,20 +105,23 @@ export default class Client {
   }
 
   async addSuggestion({ suggestion }: { suggestion: string }) {
-    this.game = await this.store.reload(this.game);
-    this.game.addSuggestion({ suggestion });
-    this.replyAll("NEW_SUGGESTION", { count: this.game.countSuggestions() });
+    const game = await this.store.reload(this.game);
+    this.game = game;
+    game.addSuggestion({ suggestion });
+    this.replyAll("NEW_SUGGESTION", { count: game.countSuggestions() });
   }
 
   async startGame() {
-    this.game = await this.store.reload(this.game);
-    this.game.start();
-    this.replyAll("NEW_TURN", this.game.getCurrentTurnDetails());
+    const game = await this.store.reload(this.game);
+    this.game = game;
+    game.start();
+    this.replyAll("NEW_TURN", game.getCurrentTurnDetails());
   }
 
   async requestSuggestion() {
-    this.game = await this.store.reload(this.game);
-    const suggestion = this.game.getNextSuggestion();
+    const game = await this.store.reload(this.game);
+    this.game = game;
+    const suggestion = game.getNextSuggestion();
     if (suggestion) {
       this.replyOne("NEXT_SUGGESTION", { name: suggestion.name });
     } else {
@@ -126,28 +129,31 @@ export default class Client {
     }
   }
 
-  _notifyScores() {
-    this.replyAll("LATEST_SCORES", this.game.getScores());
+  _notifyScores(game: IGame) {
+    this.replyAll("LATEST_SCORES", game.getScores());
   }
 
   async guessCorrectly({ name }: { name: string }) {
-    this.game = await this.store.reload(this.game);
-    this.game.guessCorrectly(name);
-    this._notifyScores();
+    const game = await this.store.reload(this.game);
+    this.game = game;
+    game.guessCorrectly(name);
+    this._notifyScores(game);
     this.requestSuggestion();
   }
 
   async skip({ name }: { name: string }) {
-    this.game = await this.store.reload(this.game);
-    this.game.skip(name);
-    this._notifyScores();
+    const game = await this.store.reload(this.game);
+    this.game = game;
+    game.skip(name);
+    this._notifyScores(game);
     this.requestSuggestion();
   }
 
   async nextTurn() {
-    this.game = await this.store.reload(this.game);
-    this.game.endTurn();
-    this.replyAll("NEW_TURN", this.game.getCurrentTurnDetails());
+    const game = await this.store.reload(this.game);
+    this.game = game;
+    game.endTurn();
+    this.replyAll("NEW_TURN", game.getCurrentTurnDetails());
   }
 
   registerHandler(messageType: string, handler: Handler) {
