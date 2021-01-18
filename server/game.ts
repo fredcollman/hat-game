@@ -114,6 +114,8 @@ export const getCurrentTurnDetails = (state: State) => {
   };
 };
 
+export const countSuggestions = (state: State) => state.suggestions.length;
+
 export default class Game {
   #state: State;
   #handleChange: () => void;
@@ -166,7 +168,7 @@ export default class Game {
   }
 
   countSuggestions() {
-    return this.#state.suggestions.length;
+    return countSuggestions(this.#state);
   }
 
   getOptions() {
@@ -253,3 +255,15 @@ export const summariseConfiguration = (game: State) => {
     suggestionCount: game.suggestions.length,
   };
 };
+
+export const addSuggestion = (suggestion: string) =>
+  (game: Game) => game.addSuggestion({ suggestion });
+
+export const start = (game: Game) => game.start();
+
+export const guessCorrectly = (name: string) =>
+  (game: Game) => game.guessCorrectly(name);
+
+export const skip = (name: string) => (game: Game) => game.skip(name);
+
+export const endTurn = (game: Game) => game.endTurn();

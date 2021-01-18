@@ -1,11 +1,17 @@
 import { Server, Socket } from "socket.io";
 import Store, { Database } from "./store";
 import Game, {
+  addSuggestion,
+  countSuggestions,
+  endTurn,
   getCurrentTurnDetails,
   getNextSuggestion,
   getScores,
   getTeamMembers,
   getUsers,
+  guessCorrectly,
+  skip,
+  start,
 } from "./game";
 
 interface Dependencies {
@@ -91,13 +97,15 @@ export default class Client {
 
   async addSuggestion({ suggestion }: { suggestion: string }) {
     const game = await this.store.loadGame(this.groupID);
-    game.addSuggestion({ suggestion });
-    this.replyAll("NEW_SUGGESTION", { count: game.countSuggestions() });
+    addSuggestion(suggestion)(game);
+    this.replyAll("NEW_SUGGESTION", {
+      count: countSuggestions(game.getState()),
+    });
   }
 
   async startGame() {
     const game = await this.store.loadGame(this.groupID);
-    game.start();
+    start(game);
     this.replyAll("NEW_TURN", getCurrentTurnDetails(game.getState()));
   }
 
@@ -117,21 +125,21 @@ export default class Client {
 
   async guessCorrectly({ name }: { name: string }) {
     const game = await this.store.loadGame(this.groupID);
-    game.guessCorrectly(name);
+    guessCorrectly(name)(game);
     this._notifyScores(game);
     this.requestSuggestion();
   }
 
   async skip({ name }: { name: string }) {
     const game = await this.store.loadGame(this.groupID);
-    game.skip(name);
+    skip(name)(game);
     this._notifyScores(game);
     this.requestSuggestion();
   }
 
   async nextTurn() {
     const game = await this.store.loadGame(this.groupID);
-    game.endTurn();
+    endTurn(game);
     this.replyAll("NEW_TURN", getCurrentTurnDetails(game.getState()));
   }
 
