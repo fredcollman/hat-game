@@ -80,9 +80,7 @@ export default class Client {
   }
 
   async reload() {
-    if (this.game) {
-      this.game = await this.store.reload(this.game);
-    }
+    this.game = await this.store.reload(this.game);
   }
 
   async startGroup({ userID }: { userID: string }) {
@@ -102,6 +100,7 @@ export default class Client {
   _configureGroup(groupID: string) {
     if (this.room === null) {
       this.room = `group:${groupID}`;
+      this.game.groupID = groupID; // nasty, but needed for subsequent reloads to work
       this.sock.join(this.room);
       this.replyOne("JOINED_GROUP", {
         groupID,
