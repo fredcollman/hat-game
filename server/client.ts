@@ -15,7 +15,6 @@ export default class Client {
   io: Server;
   db: Database;
   store: Store;
-  room: string | null;
   groupID: string;
 
   constructor({ io, socket, db, store }: Dependencies & { store: Store }) {
@@ -23,7 +22,6 @@ export default class Client {
     this.io = io;
     this.db = db;
     this.store = store;
-    this.room = null;
     this.groupID = ""; // TODO: does it matter that this could be invalid?
   }
 
@@ -51,9 +49,10 @@ export default class Client {
   }
 
   replyAll(messageType: string, data: object | null) {
-    if (this.room) {
-      console.log(`[${this.sock.id}] sending ${messageType} to ${this.room}`);
-      this.io.to(this.room).emit(messageType, data);
+    const room = this.groupID.length ? `group:${this.groupID}` : null;
+    if (room) {
+      console.log(`[${this.sock.id}] sending ${messageType} to ${room}`);
+      this.io.to(room).emit(messageType, data);
     } else {
       console.log(`[${this.sock.id}] sending ${messageType} to all`);
       this.io.emit(messageType, data);
@@ -75,10 +74,9 @@ export default class Client {
   }
 
   _configureGroup(groupID: string) {
-    if (this.room === null) {
-      this.room = `group:${groupID}`;
+    if (this.groupID !== groupID) {
       this.groupID = groupID;
-      this.sock.join(this.room);
+      this.sock.join(`group:${groupID}`);
       this.replyOne("JOINED_GROUP", {
         groupID,
       });
