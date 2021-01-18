@@ -10,23 +10,12 @@ interface Dependencies {
 
 type Handler = (data: any) => void;
 
-const nullGame: IGame = {
+interface GameShell {
+  groupID: string;
+}
+
+const nullGame: GameShell = {
   groupID: "",
-  addUser: () => {},
-  getUsers: () => [],
-  getTeamMembers: () => [],
-  addSuggestion: () => {},
-  countSuggestions: () => 0,
-  getOptions: () => ({ teams: 2, turnDurationSeconds: 60 }),
-  getCurrentTeam: () => null,
-  getCurrentDescriber: () => null,
-  getCurrentTurnDetails: () => null,
-  getScores: () => [],
-  getNextSuggestion: () => null,
-  endTurn: () => {},
-  start: () => {},
-  guessCorrectly: (name: string) => {},
-  skip: (name: string) => {},
 };
 
 export default class Client {
@@ -35,7 +24,7 @@ export default class Client {
   db: Database;
   store: Store;
   room: string | null;
-  game: IGame;
+  game: GameShell;
 
   constructor({ io, socket, db, store }: Dependencies & { store: Store }) {
     this.sock = socket;
@@ -105,21 +94,21 @@ export default class Client {
   }
 
   async addSuggestion({ suggestion }: { suggestion: string }) {
-    const game = await this.store.reload(this.game);
+    const game = await this.store.loadGame(this.game.groupID);
     this.game = game;
     game.addSuggestion({ suggestion });
     this.replyAll("NEW_SUGGESTION", { count: game.countSuggestions() });
   }
 
   async startGame() {
-    const game = await this.store.reload(this.game);
+    const game = await this.store.loadGame(this.game.groupID);
     this.game = game;
     game.start();
     this.replyAll("NEW_TURN", game.getCurrentTurnDetails());
   }
 
   async requestSuggestion() {
-    const game = await this.store.reload(this.game);
+    const game = await this.store.loadGame(this.game.groupID);
     this.game = game;
     const suggestion = game.getNextSuggestion();
     if (suggestion) {
@@ -134,7 +123,7 @@ export default class Client {
   }
 
   async guessCorrectly({ name }: { name: string }) {
-    const game = await this.store.reload(this.game);
+    const game = await this.store.loadGame(this.game.groupID);
     this.game = game;
     game.guessCorrectly(name);
     this._notifyScores(game);
@@ -142,7 +131,7 @@ export default class Client {
   }
 
   async skip({ name }: { name: string }) {
-    const game = await this.store.reload(this.game);
+    const game = await this.store.loadGame(this.game.groupID);
     this.game = game;
     game.skip(name);
     this._notifyScores(game);
@@ -150,7 +139,7 @@ export default class Client {
   }
 
   async nextTurn() {
-    const game = await this.store.reload(this.game);
+    const game = await this.store.loadGame(this.game.groupID);
     this.game = game;
     game.endTurn();
     this.replyAll("NEW_TURN", game.getCurrentTurnDetails());
