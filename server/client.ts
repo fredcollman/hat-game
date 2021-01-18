@@ -84,11 +84,13 @@ export default class Client {
   }
 
   async startGroup({ userID }: { userID: string }) {
+    this.game = await this.store.reload(this.game);
     const group = await this.store.addGroup(userID);
     this._configureGroup(group.id);
   }
 
   async joinGroup({ userID, groupID }: { userID: string; groupID: string }) {
+    this.game = await this.store.reload(this.game);
     const group = await this.store.joinGroup({ userID, groupID });
     this._configureGroup(groupID);
     this.replyAll("NEW_PLAYER", {
@@ -108,18 +110,20 @@ export default class Client {
     }
   }
 
-  addSuggestion({ suggestion }: { suggestion: string }) {
-    this.reload();
+  async addSuggestion({ suggestion }: { suggestion: string }) {
+    this.game = await this.store.reload(this.game);
     this.game.addSuggestion({ suggestion });
     this.replyAll("NEW_SUGGESTION", { count: this.game.countSuggestions() });
   }
 
-  startGame() {
+  async startGame() {
+    this.game = await this.store.reload(this.game);
     this.game.start();
     this.replyAll("NEW_TURN", this.game.getCurrentTurnDetails());
   }
 
-  requestSuggestion() {
+  async requestSuggestion() {
+    this.game = await this.store.reload(this.game);
     const suggestion = this.game.getNextSuggestion();
     if (suggestion) {
       this.replyOne("NEXT_SUGGESTION", { name: suggestion.name });
@@ -132,19 +136,22 @@ export default class Client {
     this.replyAll("LATEST_SCORES", this.game.getScores());
   }
 
-  guessCorrectly({ name }: { name: string }) {
+  async guessCorrectly({ name }: { name: string }) {
+    this.game = await this.store.reload(this.game);
     this.game.guessCorrectly(name);
     this._notifyScores();
     this.requestSuggestion();
   }
 
-  skip({ name }: { name: string }) {
+  async skip({ name }: { name: string }) {
+    this.game = await this.store.reload(this.game);
     this.game.skip(name);
     this._notifyScores();
     this.requestSuggestion();
   }
 
-  nextTurn() {
+  async nextTurn() {
+    this.game = await this.store.reload(this.game);
     this.game.endTurn();
     this.replyAll("NEW_TURN", this.game.getCurrentTurnDetails());
   }
@@ -153,7 +160,6 @@ export default class Client {
     this.sock.on(messageType, async (data) => {
       console.log(`[${this.sock.id}] incoming ${messageType}`);
       try {
-        await this.reload();
         handler.call(this, data);
       } catch (e) {
         console.error(
