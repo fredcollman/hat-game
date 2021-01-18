@@ -114,34 +114,7 @@ export const getCurrentTurnDetails = (state: State) => {
   };
 };
 
-export interface IGame {
-  groupID: string;
-  addUser: (user: User) => void;
-  getUsers: () => User[];
-  getTeamMembers: () => { name: string; members: User[] }[];
-  addSuggestion: (data: { suggestion: string }) => void;
-  countSuggestions: () => number;
-  getOptions: () => GameOptions;
-  getCurrentTeam: () => Team | null;
-  getCurrentDescriber: () => User | null;
-  getCurrentTurnDetails: () => {
-    round: number;
-    duration: number;
-    describer: User;
-  } | null;
-  getScores: () => {
-    name: string;
-    correct: number;
-    skips: number;
-  }[];
-  getNextSuggestion: () => { name: string } | null;
-  endTurn: () => void;
-  start: () => void;
-  guessCorrectly: (name: string) => void;
-  skip: (name: string) => void;
-}
-
-export default class Game implements IGame {
+export default class Game {
   #state: State;
   #handleChange: () => void;
   groupID: string;
@@ -163,6 +136,8 @@ export default class Game implements IGame {
     this.groupID = groupID;
     this.#handleChange = () => onChange(this.#state);
   }
+
+  getState = () => this.#state;
 
   addUser(user: User) {
     if (user?.username?.length) {

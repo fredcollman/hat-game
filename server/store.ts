@@ -1,7 +1,7 @@
 import lowdb from "lowdb";
 import { v4 } from "uuid";
 import { randomID } from "./random";
-import Game, { addUser, IGame, initialState, State } from "./game";
+import Game, { addUser, initialState, State } from "./game";
 
 interface User {
   id: string;
@@ -61,10 +61,6 @@ export default class Store {
         .write();
     };
     return Game.resume({ state: group?.game, groupID, onChange });
-  }
-
-  async reload(game: IGame) {
-    return this.loadGame(game.groupID);
   }
 
   async findGroupByID(id: string) {

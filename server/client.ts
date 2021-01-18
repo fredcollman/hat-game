@@ -1,6 +1,12 @@
 import { Server, Socket } from "socket.io";
 import Store, { Database } from "./store";
-import { getTeamMembers, getUsers, IGame } from "./game";
+import Game, {
+  getCurrentTurnDetails,
+  getNextSuggestion,
+  getScores,
+  getTeamMembers,
+  getUsers,
+} from "./game";
 
 interface Dependencies {
   socket: Socket;
@@ -92,12 +98,12 @@ export default class Client {
   async startGame() {
     const game = await this.store.loadGame(this.groupID);
     game.start();
-    this.replyAll("NEW_TURN", game.getCurrentTurnDetails());
+    this.replyAll("NEW_TURN", getCurrentTurnDetails(game.getState()));
   }
 
   async requestSuggestion() {
     const game = await this.store.loadGame(this.groupID);
-    const suggestion = game.getNextSuggestion();
+    const suggestion = getNextSuggestion(game.getState());
     if (suggestion) {
       this.replyOne("NEXT_SUGGESTION", { name: suggestion.name });
     } else {
@@ -105,8 +111,8 @@ export default class Client {
     }
   }
 
-  _notifyScores(game: IGame) {
-    this.replyAll("LATEST_SCORES", game.getScores());
+  _notifyScores(game: Game) {
+    this.replyAll("LATEST_SCORES", getScores(game.getState()));
   }
 
   async guessCorrectly({ name }: { name: string }) {
@@ -126,7 +132,7 @@ export default class Client {
   async nextTurn() {
     const game = await this.store.loadGame(this.groupID);
     game.endTurn();
-    this.replyAll("NEW_TURN", game.getCurrentTurnDetails());
+    this.replyAll("NEW_TURN", getCurrentTurnDetails(game.getState()));
   }
 
   registerHandler(messageType: string, handler: Handler) {
