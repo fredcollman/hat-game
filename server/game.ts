@@ -78,6 +78,42 @@ export const getTeamMembers = (state: State) => {
   }));
 };
 
+export const getScores = (state: State) => {
+  return state.teams.map((t) => ({
+    name: t.name,
+    correct: t.guessedCorrectly,
+    skips: t.skips,
+  }));
+};
+
+export const getNextSuggestion = (state: State) => {
+  const nonSkipped = state.availableSuggestions.filter((s) => !s.skipped);
+  const randomIndex = Math.floor(Math.random() * nonSkipped.length);
+  return nonSkipped[randomIndex];
+};
+
+const getCurrentTeam = (state: State) => {
+  return state.teams[state.currentTeamIndex];
+};
+
+const getCurrentDescriber = (state: State) => {
+  const team = getCurrentTeam(state);
+  const { id, username } = team.members[team.currentDescriberIndex];
+  return {
+    id,
+    username,
+    team: team.name,
+  };
+};
+
+export const getCurrentTurnDetails = (state: State) => {
+  return {
+    round: state.round,
+    duration: state.options.turnDurationSeconds,
+    describer: getCurrentDescriber(state),
+  };
+};
+
 export interface IGame {
   groupID: string;
   addUser: (user: User) => void;
@@ -163,42 +199,23 @@ export default class Game implements IGame {
   }
 
   getCurrentTeam() {
-    return this.#state.teams[this.#state.currentTeamIndex];
+    return getCurrentTeam(this.#state);
   }
 
   getCurrentDescriber() {
-    const team = this.getCurrentTeam();
-    const { id, username } = team.members[team.currentDescriberIndex];
-    return {
-      id,
-
-      username,
-      team: team.name,
-    };
+    return getCurrentDescriber(this.#state);
   }
 
   getCurrentTurnDetails() {
-    return {
-      round: this.#state.round,
-      duration: this.#state.options.turnDurationSeconds,
-      describer: this.getCurrentDescriber(),
-    };
+    return getCurrentTurnDetails(this.#state);
   }
 
   getScores() {
-    return this.#state.teams.map((t) => ({
-      name: t.name,
-      correct: t.guessedCorrectly,
-      skips: t.skips,
-    }));
+    return getScores(this.#state);
   }
 
   getNextSuggestion() {
-    const nonSkipped = this.#state.availableSuggestions.filter(
-      (s) => !s.skipped,
-    );
-    const randomIndex = Math.floor(Math.random() * nonSkipped.length);
-    return nonSkipped[randomIndex];
+    return getNextSuggestion(this.#state);
   }
 
   endTurn() {
