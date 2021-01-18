@@ -79,18 +79,12 @@ export default class Client {
     }
   }
 
-  async reload() {
-    this.game = await this.store.reload(this.game);
-  }
-
   async startGroup({ userID }: { userID: string }) {
-    this.game = await this.store.reload(this.game);
     const group = await this.store.addGroup(userID);
     this._configureGroup(group.id);
   }
 
   async joinGroup({ userID, groupID }: { userID: string; groupID: string }) {
-    this.game = await this.store.reload(this.game);
     const group = await this.store.joinGroup({ userID, groupID });
     this._configureGroup(groupID);
     this.replyAll("NEW_PLAYER", {
