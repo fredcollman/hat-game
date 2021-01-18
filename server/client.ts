@@ -10,21 +10,13 @@ interface Dependencies {
 
 type Handler = (data: any) => void;
 
-interface GameShell {
-  groupID: string;
-}
-
-const nullGame: GameShell = {
-  groupID: "",
-};
-
 export default class Client {
   sock: Socket;
   io: Server;
   db: Database;
   store: Store;
   room: string | null;
-  game: GameShell;
+  groupID: string;
 
   constructor({ io, socket, db, store }: Dependencies & { store: Store }) {
     this.sock = socket;
@@ -32,7 +24,7 @@ export default class Client {
     this.db = db;
     this.store = store;
     this.room = null;
-    this.game = nullGame;
+    this.groupID = ""; // TODO: does it matter that this could be invalid?
   }
 
   static prepare({ io, socket, db }: Dependencies) {
@@ -85,7 +77,7 @@ export default class Client {
   _configureGroup(groupID: string) {
     if (this.room === null) {
       this.room = `group:${groupID}`;
-      this.game.groupID = groupID; // nasty, but needed for subsequent reloads to work
+      this.groupID = groupID;
       this.sock.join(this.room);
       this.replyOne("JOINED_GROUP", {
         groupID,
@@ -94,22 +86,19 @@ export default class Client {
   }
 
   async addSuggestion({ suggestion }: { suggestion: string }) {
-    const game = await this.store.loadGame(this.game.groupID);
-    this.game = game;
+    const game = await this.store.loadGame(this.groupID);
     game.addSuggestion({ suggestion });
     this.replyAll("NEW_SUGGESTION", { count: game.countSuggestions() });
   }
 
   async startGame() {
-    const game = await this.store.loadGame(this.game.groupID);
-    this.game = game;
+    const game = await this.store.loadGame(this.groupID);
     game.start();
     this.replyAll("NEW_TURN", game.getCurrentTurnDetails());
   }
 
   async requestSuggestion() {
-    const game = await this.store.loadGame(this.game.groupID);
-    this.game = game;
+    const game = await this.store.loadGame(this.groupID);
     const suggestion = game.getNextSuggestion();
     if (suggestion) {
       this.replyOne("NEXT_SUGGESTION", { name: suggestion.name });
@@ -123,24 +112,21 @@ export default class Client {
   }
 
   async guessCorrectly({ name }: { name: string }) {
-    const game = await this.store.loadGame(this.game.groupID);
-    this.game = game;
+    const game = await this.store.loadGame(this.groupID);
     game.guessCorrectly(name);
     this._notifyScores(game);
     this.requestSuggestion();
   }
 
   async skip({ name }: { name: string }) {
-    const game = await this.store.loadGame(this.game.groupID);
-    this.game = game;
+    const game = await this.store.loadGame(this.groupID);
     game.skip(name);
     this._notifyScores(game);
     this.requestSuggestion();
   }
 
   async nextTurn() {
-    const game = await this.store.loadGame(this.game.groupID);
-    this.game = game;
+    const game = await this.store.loadGame(this.groupID);
     game.endTurn();
     this.replyAll("NEW_TURN", game.getCurrentTurnDetails());
   }
