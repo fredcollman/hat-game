@@ -30,7 +30,7 @@ type ChangeHandler = (state: State) => void;
 
 const DEFAULT_TEAMS = 2;
 
-const initialState = (): State => ({
+export const initialState = (): State => ({
   round: 0,
   users: [],
   teams: Array.from({ length: DEFAULT_TEAMS }).map((_, teamIdx) => ({
@@ -54,7 +54,7 @@ const addMember = (member: User, team: Team) => ({
   members: [...team.members, member],
 });
 
-const addUser = ({ username, id }: User, state: State) => {
+export const addUser = ({ username, id }: User, state: State) => {
   const user = { id, username };
   const teamToJoin = state.users.length % state.options.teams;
   const newUsers = [...state.users.filter((u) => u.id !== id), user];
@@ -65,6 +65,17 @@ const addUser = ({ username, id }: User, state: State) => {
       idx === teamToJoin ? addMember(user, team) : team
     ),
   };
+};
+
+export const getUsers = (state: State) => {
+  return [...state.users];
+};
+
+export const getTeamMembers = (state: State) => {
+  return state.teams.map(({ name, members }) => ({
+    name,
+    members,
+  }));
 };
 
 export interface IGame {
@@ -125,15 +136,12 @@ export default class Game implements IGame {
   }
 
   getUsers() {
-    return this.#state.users;
+    return getUsers(this.#state);
   }
 
   getTeamMembers() {
     console.log(this.#state);
-    return this.#state.teams.map(({ name, members }) => ({
-      name,
-      members,
-    }));
+    return getTeamMembers(this.#state);
   }
 
   addSuggestion({ suggestion }: { suggestion: string }) {

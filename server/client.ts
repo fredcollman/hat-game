@@ -1,6 +1,6 @@
 import { Server, Socket } from "socket.io";
 import Store, { Database } from "./store";
-import { IGame } from "./game";
+import { getTeamMembers, getUsers, IGame } from "./game";
 
 interface Dependencies {
   socket: Socket;
@@ -51,7 +51,6 @@ export default class Client {
     const handlers: [string, Handler][] = [
       ["START_GROUP", client.startGroup],
       ["JOIN_GROUP", client.joinGroup],
-      ["SET_USERNAME", client.setUsername],
       ["ADD_SUGGESTION", client.addSuggestion],
       ["START_GAME", client.startGame],
       ["REQUEST_SUGGESTION", client.requestSuggestion],
@@ -86,30 +85,28 @@ export default class Client {
     }
   }
 
-  async startGroup() {
-    const group = await this.store.addGroup();
-    this.joinGroup({ groupID: group.id });
+  async startGroup({ userID }: { userID: string }) {
+    const group = await this.store.addGroup(userID);
+    this._configureGroup(group.id);
   }
 
-  async joinGroup({ groupID }: { groupID: string }) {
+  async joinGroup({ userID, groupID }: { userID: string; groupID: string }) {
+    const group = await this.store.joinGroup({ userID, groupID });
+    this._configureGroup(groupID);
+    this.replyAll("NEW_PLAYER", {
+      users: getUsers(group.game),
+      teams: getTeamMembers(group.game),
+    });
+  }
+
+  _configureGroup(groupID: string) {
     if (this.room === null) {
       this.room = `group:${groupID}`;
-      this.game = await this.store.loadGame({ groupID });
       this.sock.join(this.room);
       this.replyOne("JOINED_GROUP", {
         groupID,
-        users: this.game.getUsers(),
-        options: this.game.getOptions(),
       });
     }
-  }
-
-  setUsername({ id, username }: { id: string; username: string }) {
-    this.game.addUser({ id, username });
-    this.replyAll("USER_LIST", {
-      users: this.game.getUsers(),
-      teams: this.game.getTeamMembers(),
-    });
   }
 
   addSuggestion({ suggestion }: { suggestion: string }) {

@@ -13,7 +13,7 @@ interface Props {
 const CurrentPhase = ({ state }: Props) => {
   switch (state.phase) {
     case "CHOOSE_GROUP":
-      return <SelectGroup />;
+      return <SelectGroup state={state} />;
     case "SIGN_UP":
       return <Signup />;
     case "CONFIGURE_GAME":

@@ -1,13 +1,16 @@
 import lowdb from "lowdb";
 import { v4 } from "uuid";
 import { randomID } from "./random";
-import Game, { IGame, State } from "./game";
+import Game, { addUser, IGame, initialState, State } from "./game";
 
-interface User {}
+interface User {
+  id: string;
+  username: string;
+}
 
 interface Group {
   id: string;
-  game?: State;
+  game: State;
 }
 
 interface Schema {
@@ -29,10 +32,23 @@ export default class Store {
     return this.#db.get("users").push({ id, username }).last().write();
   }
 
-  async addGroup() {
+  async addGroup(userID: string) {
+    const user = await this.findUserByID(userID);
     const id = randomID();
     console.log("creating group", id);
-    return this.#db.get("groups").push({ id }).last().write();
+    const game = addUser(user, initialState());
+    return this.#db.get("groups").push({ id, game }).last().write();
+  }
+
+  async joinGroup({ userID, groupID }: { userID: string; groupID: string }) {
+    const user = await this.findUserByID(userID);
+    return this.#db
+      .get("groups")
+      .find({ id: groupID })
+      .tap((group) => {
+        group.game = addUser(user, group.game);
+      })
+      .write();
   }
 
   async loadGame({ groupID }: { groupID: string }) {
@@ -54,5 +70,10 @@ export default class Store {
   async findGroupByID(id: string) {
     const group = await this.#db.get("groups").find({ id }).value();
     return group;
+  }
+
+  async findUserByID(id: string) {
+    const user = await this.#db.get("users").find({ id }).value();
+    return user;
   }
 }
