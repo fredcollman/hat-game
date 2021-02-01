@@ -26,8 +26,6 @@ export interface State {
   availableSuggestions: { name: string; skipped: boolean }[];
 }
 
-type ChangeHandler = (state: State) => void;
-
 const DEFAULT_TEAMS = 2;
 
 export const initialState = (): State => ({
@@ -126,30 +124,6 @@ export const getCurrentTurnDetails = (state: State) => {
 };
 
 export const countSuggestions = (state: State) => state.suggestions.length;
-
-export default class Game {
-  #state: State;
-  groupID: string;
-
-  static resume({
-    state,
-    groupID,
-    onChange,
-  }: {
-    state?: State;
-    groupID: string;
-    onChange: ChangeHandler;
-  }) {
-    return new this(state || initialState(), groupID, onChange);
-  }
-
-  constructor(state: State, groupID: string, onChange: ChangeHandler) {
-    this.#state = state;
-    this.groupID = groupID;
-  }
-
-  getState = () => this.#state;
-}
 
 export const summariseConfiguration = (game: State) => {
   return {

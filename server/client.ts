@@ -111,8 +111,8 @@ export default class Client {
   }
 
   async requestSuggestion() {
-    const game = await this.store.loadGame(this.groupID);
-    const suggestion = getNextSuggestion(game.getState());
+    const state = await this.store.readGameState(this.groupID);
+    const suggestion = getNextSuggestion(state);
     if (suggestion) {
       this.replyOne("NEXT_SUGGESTION", { name: suggestion.name });
     } else {

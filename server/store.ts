@@ -1,7 +1,7 @@
 import lowdb from "lowdb";
 import { v4 } from "uuid";
 import { randomID } from "./random";
-import Game, { addUser, initialState, State } from "./game";
+import { addUser, initialState, State } from "./game";
 
 interface User {
   id: string;
@@ -51,17 +51,10 @@ export default class Store {
       .write();
   }
 
-  async loadGame(groupID: string) {
-    const group = await this.#db.get("groups").find({ id: groupID }).value();
-    const onChange = (state: State) => {
-      this.#db
-        .get("groups")
-        .find({ id: groupID })
-        .assign({ game: state })
-        .write();
-    };
-    return Game.resume({ state: group?.game, groupID, onChange });
-  }
+  readGameState = async (groupID: string) => {
+    const group = await this.findGroupByID(groupID);
+    return group?.game;
+  };
 
   async findGroupByID(id: string) {
     const group = await this.#db.get("groups").find({ id }).value();
