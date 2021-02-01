@@ -129,7 +129,6 @@ export const countSuggestions = (state: State) => state.suggestions.length;
 
 export default class Game {
   #state: State;
-  #handleChange: () => void;
   groupID: string;
 
   static resume({
@@ -147,37 +146,9 @@ export default class Game {
   constructor(state: State, groupID: string, onChange: ChangeHandler) {
     this.#state = state;
     this.groupID = groupID;
-    this.#handleChange = () => onChange(this.#state);
   }
 
   getState = () => this.#state;
-
-  addUser(user: User) {
-    if (user?.username?.length) {
-      this.#state = addUser(user, this.#state);
-      this.#handleChange();
-    }
-  }
-
-  endTurn() {
-    this.#state = endTurn(this.#state);
-    this.#handleChange();
-  }
-
-  start() {
-    this.#state = start(this.#state);
-    this.#handleChange();
-  }
-
-  guessCorrectly(name: string) {
-    this.#state = guessCorrectly(name)(this.#state);
-    this.#handleChange();
-  }
-
-  skip(name: string) {
-    this.#state = skip(name)(this.#state);
-    this.#handleChange();
-  }
 }
 
 export const summariseConfiguration = (game: State) => {
@@ -200,7 +171,7 @@ export const addSuggestion = (suggestion: string) =>
     return state;
   };
 
-const start = (state: State) => {
+export const start = (state: State) => {
   return incrementRound({
     ...state,
     currentTeamIndex: 0,
@@ -247,7 +218,7 @@ const updateCurrentTeam = (update: (team: Team) => Team) =>
     teams: teams.map((t, idx) => (idx === currentTeamIndex ? update(t) : t)),
   });
 
-const guessCorrectly = (name: string) =>
+export const guessCorrectly = (name: string) =>
   ({
     availableSuggestions,
     ...rest
@@ -260,7 +231,7 @@ const guessCorrectly = (name: string) =>
     });
   };
 
-const skip = (name: string) =>
+export const skip = (name: string) =>
   ({
     availableSuggestions,
     ...rest
@@ -275,7 +246,7 @@ const skip = (name: string) =>
     });
   };
 
-const endTurn = (state: State): State => {
+export const endTurn = (state: State): State => {
   console.log(state);
   let newState = state;
   newState = updateCurrentTeam(incrementDescriber)(newState);

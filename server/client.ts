@@ -1,13 +1,18 @@
 import { Server, Socket } from "socket.io";
 import Store, { Database } from "./store";
-import Game, {
+import {
   addSuggestion,
   countSuggestions,
+  endTurn,
   getCurrentTurnDetails,
   getNextSuggestion,
   getScores,
   getTeamMembers,
   getUsers,
+  guessCorrectly,
+  skip,
+  start,
+  State,
 } from "./game";
 
 interface Dependencies {
@@ -101,9 +106,8 @@ export default class Client {
   }
 
   async startGame() {
-    const game = await this.store.loadGame(this.groupID);
-    game.start();
-    this.replyAll("NEW_TURN", getCurrentTurnDetails(game.getState()));
+    const gameState = await this.store.withGame(this.groupID)(start);
+    this.replyAll("NEW_TURN", getCurrentTurnDetails(gameState));
   }
 
   async requestSuggestion() {
@@ -116,28 +120,27 @@ export default class Client {
     }
   }
 
-  _notifyScores(game: Game) {
-    this.replyAll("LATEST_SCORES", getScores(game.getState()));
+  _notifyScores(state: State) {
+    this.replyAll("LATEST_SCORES", getScores(state));
   }
 
   async guessCorrectly({ name }: { name: string }) {
-    const game = await this.store.loadGame(this.groupID);
-    game.guessCorrectly(name);
-    this._notifyScores(game);
+    const gameState = await this.store.withGame(this.groupID)(
+      guessCorrectly(name),
+    );
+    this._notifyScores(gameState);
     this.requestSuggestion();
   }
 
   async skip({ name }: { name: string }) {
-    const game = await this.store.loadGame(this.groupID);
-    game.skip(name);
-    this._notifyScores(game);
+    const gameState = await this.store.withGame(this.groupID)(skip(name));
+    this._notifyScores(gameState);
     this.requestSuggestion();
   }
 
   async nextTurn() {
-    const game = await this.store.loadGame(this.groupID);
-    game.endTurn();
-    this.replyAll("NEW_TURN", getCurrentTurnDetails(game.getState()));
+    const gameState = await this.store.withGame(this.groupID)(endTurn);
+    this.replyAll("NEW_TURN", getCurrentTurnDetails(gameState));
   }
 
   registerHandler(messageType: string, handler: Handler) {
