@@ -96,10 +96,11 @@ export default class Client {
   }
 
   async addSuggestion({ suggestion }: { suggestion: string }) {
-    const game = await this.store.loadGame(this.groupID);
-    addSuggestion(suggestion)(game);
+    const gameState = await this.store.withGame(this.groupID)(
+      addSuggestion(suggestion),
+    );
     this.replyAll("NEW_SUGGESTION", {
-      count: countSuggestions(game.getState()),
+      count: countSuggestions(gameState),
     });
   }
 

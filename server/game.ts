@@ -220,7 +220,15 @@ export const summariseConfiguration = (game: State) => {
 };
 
 export const addSuggestion = (suggestion: string) =>
-  (game: Game) => game.addSuggestion({ suggestion });
+  (state: State): State => {
+    if (suggestion && suggestion.length) {
+      return {
+        ...state,
+        suggestions: [...state.suggestions, { name: suggestion }],
+      };
+    }
+    return state;
+  };
 
 export const start = (game: Game) => game.start();
 
