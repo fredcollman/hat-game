@@ -1,6 +1,19 @@
 import { Server, Socket } from "socket.io";
 import Store, { Database } from "./store";
-import { getTeamMembers, getUsers, IGame } from "./game";
+import {
+  addSuggestion,
+  countSuggestions,
+  endTurn,
+  getCurrentTurnDetails,
+  getNextSuggestion,
+  getScores,
+  getTeamMembers,
+  getUsers,
+  guessCorrectly,
+  skip,
+  start,
+  State,
+} from "./game";
 
 interface Dependencies {
   socket: Socket;
@@ -10,40 +23,19 @@ interface Dependencies {
 
 type Handler = (data: any) => void;
 
-const nullGame: IGame = {
-  groupID: "",
-  addUser: () => {},
-  getUsers: () => [],
-  getTeamMembers: () => [],
-  addSuggestion: () => {},
-  countSuggestions: () => 0,
-  getOptions: () => ({ teams: 2, turnDurationSeconds: 60 }),
-  getCurrentTeam: () => null,
-  getCurrentDescriber: () => null,
-  getCurrentTurnDetails: () => null,
-  getScores: () => [],
-  getNextSuggestion: () => null,
-  endTurn: () => {},
-  start: () => {},
-  guessCorrectly: (name: string) => {},
-  skip: (name: string) => {},
-};
-
 export default class Client {
   sock: Socket;
   io: Server;
   db: Database;
   store: Store;
-  room: string | null;
-  game: IGame;
+  groupID: string;
 
   constructor({ io, socket, db, store }: Dependencies & { store: Store }) {
     this.sock = socket;
     this.io = io;
     this.db = db;
     this.store = store;
-    this.room = null;
-    this.game = nullGame;
+    this.groupID = ""; // TODO: does it matter that this could be invalid?
   }
 
   static prepare({ io, socket, db }: Dependencies) {
@@ -64,23 +56,24 @@ export default class Client {
     return client;
   }
 
+  mutate = async (mutation: (s: State) => State): Promise<State> => {
+    return await this.store.withGame(this.groupID)(mutation);
+  };
+
   replyOne(messageType: string, data: object) {
     console.log(`[${this.sock.id}] sending ${messageType}`);
     this.sock.emit(messageType, data);
   }
 
   replyAll(messageType: string, data: object | null) {
-    if (this.room) {
-      console.log(`[${this.sock.id}] sending ${messageType} to ${this.room}`);
-      this.io.to(this.room).emit(messageType, data);
+    const room = this.groupID.length ? `group:${this.groupID}` : null;
+    if (room) {
+      console.log(`[${this.sock.id}] sending ${messageType} to ${room}`);
+      this.io.to(room).emit(messageType, data);
     } else {
       console.log(`[${this.sock.id}] sending ${messageType} to all`);
       this.io.emit(messageType, data);
     }
-  }
-
-  async reload() {
-    this.game = await this.store.reload(this.game);
   }
 
   async startGroup({ userID }: { userID: string }) {
@@ -98,29 +91,30 @@ export default class Client {
   }
 
   _configureGroup(groupID: string) {
-    if (this.room === null) {
-      this.room = `group:${groupID}`;
-      this.game.groupID = groupID; // nasty, but needed for subsequent reloads to work
-      this.sock.join(this.room);
+    if (this.groupID !== groupID) {
+      this.groupID = groupID;
+      this.sock.join(`group:${groupID}`);
       this.replyOne("JOINED_GROUP", {
         groupID,
       });
     }
   }
 
-  addSuggestion({ suggestion }: { suggestion: string }) {
-    this.reload();
-    this.game.addSuggestion({ suggestion });
-    this.replyAll("NEW_SUGGESTION", { count: this.game.countSuggestions() });
+  async addSuggestion({ suggestion }: { suggestion: string }) {
+    const gameState = await this.mutate(addSuggestion(suggestion));
+    this.replyAll("NEW_SUGGESTION", {
+      count: countSuggestions(gameState),
+    });
   }
 
-  startGame() {
-    this.game.start();
-    this.replyAll("NEW_TURN", this.game.getCurrentTurnDetails());
+  async startGame() {
+    const gameState = await this.mutate(start);
+    this.replyAll("NEW_TURN", getCurrentTurnDetails(gameState));
   }
 
-  requestSuggestion() {
-    const suggestion = this.game.getNextSuggestion();
+  async requestSuggestion() {
+    const state = await this.store.readGameState(this.groupID);
+    const suggestion = getNextSuggestion(state);
     if (suggestion) {
       this.replyOne("NEXT_SUGGESTION", { name: suggestion.name });
     } else {
@@ -128,32 +122,31 @@ export default class Client {
     }
   }
 
-  _notifyScores() {
-    this.replyAll("LATEST_SCORES", this.game.getScores());
+  _notifyScores(state: State) {
+    this.replyAll("LATEST_SCORES", getScores(state));
   }
 
-  guessCorrectly({ name }: { name: string }) {
-    this.game.guessCorrectly(name);
-    this._notifyScores();
+  async guessCorrectly({ name }: { name: string }) {
+    const gameState = await this.mutate(guessCorrectly(name));
+    this._notifyScores(gameState);
     this.requestSuggestion();
   }
 
-  skip({ name }: { name: string }) {
-    this.game.skip(name);
-    this._notifyScores();
+  async skip({ name }: { name: string }) {
+    const gameState = await this.mutate(skip(name));
+    this._notifyScores(gameState);
     this.requestSuggestion();
   }
 
-  nextTurn() {
-    this.game.endTurn();
-    this.replyAll("NEW_TURN", this.game.getCurrentTurnDetails());
+  async nextTurn() {
+    const gameState = await this.mutate(endTurn);
+    this.replyAll("NEW_TURN", getCurrentTurnDetails(gameState));
   }
 
   registerHandler(messageType: string, handler: Handler) {
     this.sock.on(messageType, async (data) => {
       console.log(`[${this.sock.id}] incoming ${messageType}`);
       try {
-        await this.reload();
         handler.call(this, data);
       } catch (e) {
         console.error(

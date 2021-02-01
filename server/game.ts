@@ -26,8 +26,6 @@ export interface State {
   availableSuggestions: { name: string; skipped: boolean }[];
 }
 
-type ChangeHandler = (state: State) => void;
-
 const DEFAULT_TEAMS = 2;
 
 export const initialState = (): State => ({
@@ -54,6 +52,17 @@ const addMember = (member: User, team: Team) => ({
   members: [...team.members, member],
 });
 
+const incrementRound = (state: State) => {
+  return {
+    ...state,
+    round: state.round + 1,
+    availableSuggestions: state.suggestions.map((s) => ({
+      ...s,
+      skipped: false,
+    })),
+  };
+};
+
 export const addUser = ({ username, id }: User, state: State) => {
   const user = { id, username };
   const teamToJoin = state.users.length % state.options.teams;
@@ -78,180 +87,43 @@ export const getTeamMembers = (state: State) => {
   }));
 };
 
-export interface IGame {
-  groupID: string;
-  addUser: (user: User) => void;
-  getUsers: () => User[];
-  getTeamMembers: () => { name: string; members: User[] }[];
-  addSuggestion: (data: { suggestion: string }) => void;
-  countSuggestions: () => number;
-  getOptions: () => GameOptions;
-  getCurrentTeam: () => Team | null;
-  getCurrentDescriber: () => User | null;
-  getCurrentTurnDetails: () => {
-    round: number;
-    duration: number;
-    describer: User;
-  } | null;
-  getScores: () => {
-    name: string;
-    correct: number;
-    skips: number;
-  }[];
-  getNextSuggestion: () => { name: string } | null;
-  endTurn: () => void;
-  start: () => void;
-  guessCorrectly: (name: string) => void;
-  skip: (name: string) => void;
-}
+export const getScores = (state: State) => {
+  return state.teams.map((t) => ({
+    name: t.name,
+    correct: t.guessedCorrectly,
+    skips: t.skips,
+  }));
+};
 
-export default class Game implements IGame {
-  #state: State;
-  #handleChange: () => void;
-  groupID: string;
+export const getNextSuggestion = (state: State) => {
+  const nonSkipped = state.availableSuggestions.filter((s) => !s.skipped);
+  const randomIndex = Math.floor(Math.random() * nonSkipped.length);
+  return nonSkipped[randomIndex];
+};
 
-  static resume({
-    state,
-    groupID,
-    onChange,
-  }: {
-    state?: State;
-    groupID: string;
-    onChange: ChangeHandler;
-  }) {
-    return new this(state || initialState(), groupID, onChange);
-  }
+const getCurrentTeam = (state: State) => {
+  return state.teams[state.currentTeamIndex];
+};
 
-  constructor(state: State, groupID: string, onChange: ChangeHandler) {
-    this.#state = state;
-    this.groupID = groupID;
-    this.#handleChange = () => onChange(this.#state);
-  }
+const getCurrentDescriber = (state: State) => {
+  const team = getCurrentTeam(state);
+  const { id, username } = team.members[team.currentDescriberIndex];
+  return {
+    id,
+    username,
+    team: team.name,
+  };
+};
 
-  addUser(user: User) {
-    if (user?.username?.length) {
-      this.#state = addUser(user, this.#state);
-      this.#handleChange();
-    }
-  }
+export const getCurrentTurnDetails = (state: State) => {
+  return {
+    round: state.round,
+    duration: state.options.turnDurationSeconds,
+    describer: getCurrentDescriber(state),
+  };
+};
 
-  getUsers() {
-    return getUsers(this.#state);
-  }
-
-  getTeamMembers() {
-    console.log(this.#state);
-    return getTeamMembers(this.#state);
-  }
-
-  addSuggestion({ suggestion }: { suggestion: string }) {
-    if (suggestion && suggestion.length) {
-      this.#state.suggestions = [
-        ...this.#state.suggestions,
-        { name: suggestion },
-      ];
-      this.#handleChange();
-    }
-  }
-
-  countSuggestions() {
-    return this.#state.suggestions.length;
-  }
-
-  getOptions() {
-    return this.#state.options;
-  }
-
-  getCurrentTeam() {
-    return this.#state.teams[this.#state.currentTeamIndex];
-  }
-
-  getCurrentDescriber() {
-    const team = this.getCurrentTeam();
-    const { id, username } = team.members[team.currentDescriberIndex];
-    return {
-      id,
-
-      username,
-      team: team.name,
-    };
-  }
-
-  getCurrentTurnDetails() {
-    return {
-      round: this.#state.round,
-      duration: this.#state.options.turnDurationSeconds,
-      describer: this.getCurrentDescriber(),
-    };
-  }
-
-  getScores() {
-    return this.#state.teams.map((t) => ({
-      name: t.name,
-      correct: t.guessedCorrectly,
-      skips: t.skips,
-    }));
-  }
-
-  getNextSuggestion() {
-    const nonSkipped = this.#state.availableSuggestions.filter(
-      (s) => !s.skipped,
-    );
-    const randomIndex = Math.floor(Math.random() * nonSkipped.length);
-    return nonSkipped[randomIndex];
-  }
-
-  endTurn() {
-    console.log(this.#state);
-    const team = this.#state.teams[this.#state.currentTeamIndex];
-    team.currentDescriberIndex = (team.currentDescriberIndex + 1) %
-      team.members.length;
-    this.#state.currentTeamIndex = (this.#state.currentTeamIndex + 1) %
-      this.#state.teams.length;
-    this.#state.availableSuggestions = this.#state.availableSuggestions.map(
-      (s) => ({
-        ...s,
-        skipped: false,
-      }),
-    );
-    if (!this.#state.availableSuggestions.length) {
-      this._startRound(this.#state.round + 1);
-    }
-    this.#handleChange();
-  }
-
-  _startRound(round: number) {
-    this.#state.round = round;
-    this.#state.availableSuggestions = this.#state.suggestions.map((s) => ({
-      ...s,
-      skipped: false,
-    }));
-  }
-
-  start() {
-    this.#state.currentTeamIndex = 0;
-    this._startRound(1);
-    this.#handleChange();
-  }
-
-  guessCorrectly(name: string) {
-    this.#state.availableSuggestions = this.#state.availableSuggestions.filter(
-      (s) => s.name !== name,
-    );
-    this.getCurrentTeam().guessedCorrectly++;
-    this.#handleChange();
-    console.log("correct", name);
-  }
-
-  skip(name: string) {
-    this.#state.availableSuggestions = this.#state.availableSuggestions.map(
-      (s) => (s.name === name ? { ...s, skipped: true } : s),
-    );
-    this.getCurrentTeam().skips++;
-    this.#handleChange();
-    console.log("skipped", name);
-  }
-}
+export const countSuggestions = (state: State) => state.suggestions.length;
 
 export const summariseConfiguration = (game: State) => {
   return {
@@ -260,4 +132,101 @@ export const summariseConfiguration = (game: State) => {
     options: game.options,
     suggestionCount: game.suggestions.length,
   };
+};
+
+export const addSuggestion = (suggestion: string) =>
+  (state: State): State => {
+    if (suggestion && suggestion.length) {
+      return {
+        ...state,
+        suggestions: [...state.suggestions, { name: suggestion }],
+      };
+    }
+    return state;
+  };
+
+export const start = (state: State) => {
+  return incrementRound({
+    ...state,
+    currentTeamIndex: 0,
+  });
+};
+
+const markCorrectGuess = ({ guessedCorrectly, ...rest }: Team) => ({
+  ...rest,
+  guessedCorrectly: guessedCorrectly + 1,
+});
+
+const markSkip = ({ skips, ...rest }: Team) => ({
+  ...rest,
+  skips: skips + 1,
+});
+
+const incrementDescriber = (team: Team): Team => {
+  return {
+    ...team,
+    currentDescriberIndex: (team.currentDescriberIndex + 1) %
+      team.members.length,
+  };
+};
+
+const incrementTeam = (state: State): State => {
+  return {
+    ...state,
+    currentTeamIndex: (state.currentTeamIndex + 1) % state.teams.length,
+    availableSuggestions: state.availableSuggestions.map((s) => ({
+      ...s,
+      skipped: false,
+    })),
+  };
+};
+
+const updateCurrentTeam = (update: (team: Team) => Team) =>
+  ({
+    teams,
+    currentTeamIndex,
+    ...rest
+  }: State): State => ({
+    ...rest,
+    currentTeamIndex,
+    teams: teams.map((t, idx) => (idx === currentTeamIndex ? update(t) : t)),
+  });
+
+export const guessCorrectly = (name: string) =>
+  ({
+    availableSuggestions,
+    ...rest
+  }: State): State => {
+    console.log("correct", name);
+    const updateScore = updateCurrentTeam(markCorrectGuess);
+    return updateScore({
+      ...rest,
+      availableSuggestions: availableSuggestions.filter((s) => s.name !== name),
+    });
+  };
+
+export const skip = (name: string) =>
+  ({
+    availableSuggestions,
+    ...rest
+  }: State): State => {
+    console.log("skipped", name);
+    const updateScore = updateCurrentTeam(markSkip);
+    return updateScore({
+      ...rest,
+      availableSuggestions: availableSuggestions.map((s) =>
+        s.name === name ? { ...s, skipped: true } : s
+      ),
+    });
+  };
+
+export const endTurn = (state: State): State => {
+  console.log(state);
+  let newState = state;
+  newState = updateCurrentTeam(incrementDescriber)(newState);
+  if (!newState.availableSuggestions.length) {
+    newState = incrementRound(newState);
+  }
+  newState = incrementTeam(newState);
+  return newState;
 };
