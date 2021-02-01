@@ -160,7 +160,6 @@ export default class Game {
   }
 
   endTurn() {
-    console.log(this.#state);
     this.#state = endTurn(this.#state);
     this.#handleChange();
   }
@@ -227,7 +226,6 @@ const incrementDescriber = (team: Team): Team => {
 };
 
 const incrementTeam = (state: State): State => {
-  state.currentTeamIndex = (state.currentTeamIndex + 1) % state.teams.length;
   return {
     ...state,
     currentTeamIndex: (state.currentTeamIndex + 1) % state.teams.length,
@@ -249,40 +247,41 @@ const updateCurrentTeam = (update: (team: Team) => Team) =>
     teams: teams.map((t, idx) => (idx === currentTeamIndex ? update(t) : t)),
   });
 
-const removeAvailableSuggestion = (name: string) =>
+const guessCorrectly = (name: string) =>
   ({
     availableSuggestions,
     ...rest
   }: State): State => {
-    return {
+    console.log("correct", name);
+    const updateScore = updateCurrentTeam(markCorrectGuess);
+    return updateScore({
       ...rest,
       availableSuggestions: availableSuggestions.filter((s) => s.name !== name),
-    };
-  };
-
-const guessCorrectly = (name: string) =>
-  (state: State): State => {
-    console.log("correct", name);
-    const updateSuggestions = removeAvailableSuggestion(name);
-    const updateScore = updateCurrentTeam(markCorrectGuess);
-    return updateScore(updateSuggestions(state));
+    });
   };
 
 const skip = (name: string) =>
-  (state: State): State => {
+  ({
+    availableSuggestions,
+    ...rest
+  }: State): State => {
     console.log("skipped", name);
-    const updateSuggestions = removeAvailableSuggestion(name);
     const updateScore = updateCurrentTeam(markSkip);
-    return updateScore(updateSuggestions(state));
+    return updateScore({
+      ...rest,
+      availableSuggestions: availableSuggestions.map((s) =>
+        s.name === name ? { ...s, skipped: true } : s
+      ),
+    });
   };
 
 const endTurn = (state: State): State => {
   console.log(state);
   let newState = state;
   newState = updateCurrentTeam(incrementDescriber)(newState);
-  newState = incrementTeam(newState);
   if (!newState.availableSuggestions.length) {
     newState = incrementRound(newState);
   }
+  newState = incrementTeam(newState);
   return newState;
 };
