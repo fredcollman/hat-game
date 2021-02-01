@@ -1,13 +1,33 @@
 import { gql } from "apollo-server-express";
+import Store from "./store";
+
+type Context = { store: Store };
 
 export const typeDefs = gql`
+  type User {
+    username: String
+  }
+
+  type Team {
+    name: String
+  }
+
+  type Game {
+    round: Int
+    users: [User]
+    teams: [Team]
+  }
+
   type Query {
-    hello: String
+    game(id: String): Game
   }
 `;
 
 export const resolvers = {
   Query: {
-    hello: () => "Hello world!",
+    game: async (root: any, args: any, context: Context) => {
+      const state = await context.store.readGameState(args.id);
+      return state;
+    },
   },
 };

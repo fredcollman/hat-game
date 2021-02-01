@@ -8,6 +8,7 @@ import low from "lowdb";
 import FileAsync from "lowdb/adapters/FileAsync.js";
 import Client from "./client";
 import groupApp from "./group";
+import Store from "./store";
 import userApp from "./user";
 import { resolvers, typeDefs } from "./schema";
 
@@ -17,9 +18,6 @@ const rootDir = path.resolve();
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
-
-const apollo = new ApolloServer({ typeDefs, resolvers });
-apollo.applyMiddleware({ app });
 
 app.use((req, res, next) => {
   const id = v4();
@@ -46,6 +44,13 @@ low(adapter)
   .then((db) => {
     app.use("/user", userApp({ db }));
     app.use("/group", groupApp({ db }));
+
+    const apollo = new ApolloServer({
+      typeDefs,
+      resolvers,
+      context: () => ({ store: new Store(db) }),
+    });
+    apollo.applyMiddleware({ app });
 
     server.listen(PORT, () => {
       console.log(`Serving at http://localhost:${PORT}`);
