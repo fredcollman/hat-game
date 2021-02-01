@@ -3,15 +3,11 @@ import Store, { Database } from "./store";
 import Game, {
   addSuggestion,
   countSuggestions,
-  endTurn,
   getCurrentTurnDetails,
   getNextSuggestion,
   getScores,
   getTeamMembers,
   getUsers,
-  guessCorrectly,
-  skip,
-  start,
 } from "./game";
 
 interface Dependencies {
@@ -106,7 +102,7 @@ export default class Client {
 
   async startGame() {
     const game = await this.store.loadGame(this.groupID);
-    start(game);
+    game.start();
     this.replyAll("NEW_TURN", getCurrentTurnDetails(game.getState()));
   }
 
@@ -126,21 +122,21 @@ export default class Client {
 
   async guessCorrectly({ name }: { name: string }) {
     const game = await this.store.loadGame(this.groupID);
-    guessCorrectly(name)(game);
+    game.guessCorrectly(name);
     this._notifyScores(game);
     this.requestSuggestion();
   }
 
   async skip({ name }: { name: string }) {
     const game = await this.store.loadGame(this.groupID);
-    skip(name)(game);
+    game.skip(name);
     this._notifyScores(game);
     this.requestSuggestion();
   }
 
   async nextTurn() {
     const game = await this.store.loadGame(this.groupID);
-    endTurn(game);
+    game.endTurn();
     this.replyAll("NEW_TURN", getCurrentTurnDetails(game.getState()));
   }
 

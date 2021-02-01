@@ -54,6 +54,17 @@ const addMember = (member: User, team: Team) => ({
   members: [...team.members, member],
 });
 
+const incrementRound = (state: State) => {
+  return {
+    ...state,
+    round: state.round + 1,
+    availableSuggestions: state.suggestions.map((s) => ({
+      ...s,
+      skipped: false,
+    })),
+  };
+};
+
 export const addUser = ({ username, id }: User, state: State) => {
   const user = { id, username };
   const teamToJoin = state.users.length % state.options.teams;
@@ -148,16 +159,6 @@ export default class Game {
     }
   }
 
-  addSuggestion({ suggestion }: { suggestion: string }) {
-    if (suggestion && suggestion.length) {
-      this.#state.suggestions = [
-        ...this.#state.suggestions,
-        { name: suggestion },
-      ];
-      this.#handleChange();
-    }
-  }
-
   endTurn() {
     console.log(this.#state);
     const team = this.#state.teams[this.#state.currentTeamIndex];
@@ -172,22 +173,13 @@ export default class Game {
       }),
     );
     if (!this.#state.availableSuggestions.length) {
-      this._startRound(this.#state.round + 1);
+      this.#state = incrementRound(this.#state);
     }
     this.#handleChange();
   }
 
-  _startRound(round: number) {
-    this.#state.round = round;
-    this.#state.availableSuggestions = this.#state.suggestions.map((s) => ({
-      ...s,
-      skipped: false,
-    }));
-  }
-
   start() {
-    this.#state.currentTeamIndex = 0;
-    this._startRound(1);
+    this.#state = start(this.#state);
     this.#handleChange();
   }
 
@@ -230,11 +222,16 @@ export const addSuggestion = (suggestion: string) =>
     return state;
   };
 
-export const start = (game: Game) => game.start();
+const start = (state: State) => {
+  return incrementRound({
+    ...state,
+    currentTeamIndex: 0,
+  });
+};
 
-export const guessCorrectly = (name: string) =>
-  (game: Game) => game.guessCorrectly(name);
+// const guessCorrectly = (name: string) =>
+//   (game: Game) => game.guessCorrectly(name);
 
-export const skip = (name: string) => (game: Game) => game.skip(name);
+// const skip = (name: string) => (game: Game) => game.skip(name);
 
-export const endTurn = (game: Game) => game.endTurn();
+// const endTurn = (game: Game) => game.endTurn();
