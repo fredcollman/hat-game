@@ -74,13 +74,14 @@ export default class Store {
   }
 
   withGame = (groupID: string) =>
-    (callback: (game: State) => State) => {
-      return this.#db
+    async (callback: (game: State) => State) => {
+      const group = await this.#db
         .get("groups")
         .find({ id: groupID })
         .tap((group) => {
           group.game = callback(group.game);
         })
-        .write().game;
+        .write();
+      return group.game;
     };
 }
