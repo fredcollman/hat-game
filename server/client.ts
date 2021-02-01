@@ -56,6 +56,10 @@ export default class Client {
     return client;
   }
 
+  mutate = async (mutation: (s: State) => State): Promise<State> => {
+    return await this.store.withGame(this.groupID)(mutation);
+  };
+
   replyOne(messageType: string, data: object) {
     console.log(`[${this.sock.id}] sending ${messageType}`);
     this.sock.emit(messageType, data);
@@ -97,16 +101,14 @@ export default class Client {
   }
 
   async addSuggestion({ suggestion }: { suggestion: string }) {
-    const gameState = await this.store.withGame(this.groupID)(
-      addSuggestion(suggestion),
-    );
+    const gameState = await this.mutate(addSuggestion(suggestion));
     this.replyAll("NEW_SUGGESTION", {
       count: countSuggestions(gameState),
     });
   }
 
   async startGame() {
-    const gameState = await this.store.withGame(this.groupID)(start);
+    const gameState = await this.mutate(start);
     this.replyAll("NEW_TURN", getCurrentTurnDetails(gameState));
   }
 
@@ -125,21 +127,19 @@ export default class Client {
   }
 
   async guessCorrectly({ name }: { name: string }) {
-    const gameState = await this.store.withGame(this.groupID)(
-      guessCorrectly(name),
-    );
+    const gameState = await this.mutate(guessCorrectly(name));
     this._notifyScores(gameState);
     this.requestSuggestion();
   }
 
   async skip({ name }: { name: string }) {
-    const gameState = await this.store.withGame(this.groupID)(skip(name));
+    const gameState = await this.mutate(skip(name));
     this._notifyScores(gameState);
     this.requestSuggestion();
   }
 
   async nextTurn() {
-    const gameState = await this.store.withGame(this.groupID)(endTurn);
+    const gameState = await this.mutate(endTurn);
     this.replyAll("NEW_TURN", getCurrentTurnDetails(gameState));
   }
 
