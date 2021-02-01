@@ -161,20 +161,7 @@ export default class Game {
 
   endTurn() {
     console.log(this.#state);
-    const team = this.#state.teams[this.#state.currentTeamIndex];
-    team.currentDescriberIndex = (team.currentDescriberIndex + 1) %
-      team.members.length;
-    this.#state.currentTeamIndex = (this.#state.currentTeamIndex + 1) %
-      this.#state.teams.length;
-    this.#state.availableSuggestions = this.#state.availableSuggestions.map(
-      (s) => ({
-        ...s,
-        skipped: false,
-      }),
-    );
-    if (!this.#state.availableSuggestions.length) {
-      this.#state = incrementRound(this.#state);
-    }
+    this.#state = endTurn(this.#state);
     this.#handleChange();
   }
 
@@ -184,21 +171,13 @@ export default class Game {
   }
 
   guessCorrectly(name: string) {
-    this.#state.availableSuggestions = this.#state.availableSuggestions.filter(
-      (s) => s.name !== name,
-    );
-    getCurrentTeam(this.#state).guessedCorrectly++;
+    this.#state = guessCorrectly(name)(this.#state);
     this.#handleChange();
-    console.log("correct", name);
   }
 
   skip(name: string) {
-    this.#state.availableSuggestions = this.#state.availableSuggestions.map(
-      (s) => (s.name === name ? { ...s, skipped: true } : s),
-    );
-    getCurrentTeam(this.#state).skips++;
+    this.#state = skip(name)(this.#state);
     this.#handleChange();
-    console.log("skipped", name);
   }
 }
 
@@ -229,9 +208,81 @@ const start = (state: State) => {
   });
 };
 
-// const guessCorrectly = (name: string) =>
-//   (game: Game) => game.guessCorrectly(name);
+const markCorrectGuess = ({ guessedCorrectly, ...rest }: Team) => ({
+  ...rest,
+  guessedCorrectly: guessedCorrectly + 1,
+});
 
-// const skip = (name: string) => (game: Game) => game.skip(name);
+const markSkip = ({ skips, ...rest }: Team) => ({
+  ...rest,
+  skips: skips + 1,
+});
 
-// const endTurn = (game: Game) => game.endTurn();
+const incrementDescriber = (team: Team): Team => {
+  return {
+    ...team,
+    currentDescriberIndex: (team.currentDescriberIndex + 1) %
+      team.members.length,
+  };
+};
+
+const incrementTeam = (state: State): State => {
+  state.currentTeamIndex = (state.currentTeamIndex + 1) % state.teams.length;
+  return {
+    ...state,
+    currentTeamIndex: (state.currentTeamIndex + 1) % state.teams.length,
+    availableSuggestions: state.availableSuggestions.map((s) => ({
+      ...s,
+      skipped: false,
+    })),
+  };
+};
+
+const updateCurrentTeam = (update: (team: Team) => Team) =>
+  ({
+    teams,
+    currentTeamIndex,
+    ...rest
+  }: State): State => ({
+    ...rest,
+    currentTeamIndex,
+    teams: teams.map((t, idx) => (idx === currentTeamIndex ? update(t) : t)),
+  });
+
+const removeAvailableSuggestion = (name: string) =>
+  ({
+    availableSuggestions,
+    ...rest
+  }: State): State => {
+    return {
+      ...rest,
+      availableSuggestions: availableSuggestions.filter((s) => s.name !== name),
+    };
+  };
+
+const guessCorrectly = (name: string) =>
+  (state: State): State => {
+    console.log("correct", name);
+    const updateSuggestions = removeAvailableSuggestion(name);
+    const updateScore = updateCurrentTeam(markCorrectGuess);
+    return updateScore(updateSuggestions(state));
+  };
+
+const skip = (name: string) =>
+  (state: State): State => {
+    console.log("skipped", name);
+    const updateSuggestions = removeAvailableSuggestion(name);
+    const updateScore = updateCurrentTeam(markSkip);
+    return updateScore(updateSuggestions(state));
+  };
+
+const endTurn = (state: State): State => {
+  console.log(state);
+  let newState = state;
+  newState = updateCurrentTeam(incrementDescriber)(newState);
+  newState = incrementTeam(newState);
+  if (!newState.availableSuggestions.length) {
+    newState = incrementRound(newState);
+  }
+  return newState;
+};
