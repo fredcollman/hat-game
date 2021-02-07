@@ -1,6 +1,6 @@
 import { gql, PubSub } from "apollo-server-express";
 import Store from "./store";
-import { User } from "./game";
+import { addSuggestion, State, User } from "./game";
 
 type Context = { store: Store; user: User | null };
 
@@ -21,11 +21,17 @@ export const typeDefs = gql`
     turnDurationSeconds: Int!
   }
 
+  type Suggestions {
+    count: Int!
+    yours: [String!]!
+  }
+
   type Game {
     round: Int!
     users: [User!]!
     teams: [Team!]!
     options: Options!
+    suggestions: Suggestions
   }
 
   type Group {
@@ -47,6 +53,7 @@ export const typeDefs = gql`
     registerUser(username: String!): UserInfo
     startGroup: Group
     joinGroup(id: String!): Group
+    addSuggestion(groupID: String!, suggestion: String!): Game
   }
 
   type Subscription {
@@ -56,11 +63,17 @@ export const typeDefs = gql`
 
 const PLAYER_JOINED = "PLAYER_JOINED";
 
+const formatGame = (game: State, userID: String) => {
+  const suggestions = { count: game.suggestions.length, yours: [] };
+  return { ...game, suggestions };
+};
+
 export const resolvers = {
   Query: {
     game: async (root: any, args: any, context: Context) => {
+      if (!context.user) return; // TODO: what should we do here, throw an error instead?
       const state = await context.store.readGameState(args.id);
-      return state;
+      return formatGame(state, context.user.id);
     },
     hello: () => "server says yes",
   },
@@ -72,17 +85,24 @@ export const resolvers = {
       return data;
     },
     startGroup: async (root: any, args: any, context: Context) => {
-      if (!context.user) return; // TODO: what should we do here, throw an error instead?
+      if (!context.user) return;
       const data = await context.store.addGroup(context.user.id);
       return data;
     },
     joinGroup: async (root: any, args: any, context: Context) => {
-      if (!context.user) return; // TODO: what should we do here, throw an error instead?
+      if (!context.user) return;
       const data = await context.store.joinGroup({
         userID: context.user.id,
         groupID: args.id,
       });
       return data;
+    },
+    addSuggestion: async (root: any, args: any, context: Context) => {
+      if (!context.user) return;
+      const data = await context.store.withGame(args.groupID)(
+        addSuggestion(args.suggestion),
+      );
+      return formatGame(data, context.user.id);
     },
   },
   Subscription: {

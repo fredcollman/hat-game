@@ -40,6 +40,7 @@ export interface SignUpPhase {
 }
 
 export interface ConfigureGamePhase extends GroupState, GameOptions {
+  groupID: string;
   phase: "CONFIGURE_GAME";
   suggestionCount: number;
 }

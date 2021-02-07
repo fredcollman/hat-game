@@ -83,7 +83,7 @@ const RoundZero = ({ state }: Props) => {
   return (
     <>
       <GroupInfo state={state} />
-      <Suggestions count={suggestionCount} />
+      <Suggestions count={suggestionCount} groupID={groupID} />
       <StartGame
         suggestionCount={suggestionCount}
         numPlayers={numPlayers}
