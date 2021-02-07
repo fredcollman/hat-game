@@ -1,12 +1,12 @@
 import { Server } from "http";
-import { Application, Request } from "express";
+import { Application } from "express";
 import { ApolloServer } from "apollo-server-express";
 import { validate } from "uuid";
 import { resolvers, typeDefs } from "./schema";
 import Store, { Database } from "./store";
 
-const getUser = async ({ req, store }: { req: Request; store: Store }) => {
-  const auth = (req.headers && req.headers.authorization) || "";
+const resolveToken = async (auth: string | null | undefined, store: Store) => {
+  if (!auth) return null;
   const isUuid = validate(auth);
   if (!isUuid) return null;
   const user = await store.findUserByID(auth);
@@ -22,17 +22,28 @@ const apolloServer = ({
   db: Database;
   httpServer: Server;
 }) => {
+  const store = new Store(db);
   const apollo = new ApolloServer({
     typeDefs,
     resolvers,
     context: async ({ req, connection }) => {
-      const store = new Store(db);
-      if (req) {
-        const user = await getUser({ req, store });
+      if (connection) {
+        console.log("apollo subscription user", connection.context);
+        return { store, ...connection.context };
+      } else {
+        const user = await resolveToken(req?.headers?.authorization, store);
         console.log("apolloServer user", user);
         return { store, user };
       }
-      return { store, user: null };
+    },
+    subscriptions: {
+      onConnect: async (params, ws) => {
+        const { authToken } = params as {
+          authToken: string | null | undefined;
+        };
+        const user = await resolveToken(authToken, store);
+        return { user };
+      },
     },
   });
   apollo.applyMiddleware({ app });
