@@ -14,7 +14,7 @@ interface Props {
 }
 
 const GAME = gql`
-  query loadGame($groupID: String) {
+  query loadGame($groupID: String!) {
     game(id: $groupID) {
       round
       teams {
@@ -33,7 +33,7 @@ const GAME = gql`
   }
 `;
 
-interface GameQuery {
+interface GameQueryResult {
   game: {
     round: number;
     teams: {
@@ -50,7 +50,7 @@ const RoundZero = ({ state }: Props) => {
   const perform = usePerform();
   const startGame = useSender("START_GAME");
   const { suggestionCount, groupID } = state;
-  const result = useQuery<GameQuery>(GAME, { variables: { groupID } });
+  const result = useQuery<GameQueryResult>(GAME, { variables: { groupID } });
   console.log(result);
 
   useEffect(() => {

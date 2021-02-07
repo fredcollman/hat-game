@@ -1,7 +1,8 @@
 import { gql } from "@apollo/client";
 import { Action } from "./usePerform";
-import { createUser, retrieveGroup } from "./api";
+import { retrieveGroup } from "./api";
 import { Team, User } from "./game";
+import { setAuth } from "./auth";
 
 const ADD_USER = gql`
   mutation AddUser($username: String!) {
@@ -22,10 +23,11 @@ export const addUser = (username: string): Action<void> =>
         mutation: ADD_USER,
         variables: { username },
       });
-      console.log(mutated);
+      const user = mutated.data.registerUser;
+      setAuth(user);
       dispatch({
         type: "CREATED_USER",
-        data: mutated.data.registerUser,
+        data: user,
       });
     }
   };

@@ -3,14 +3,12 @@ import http from "http";
 import path from "path";
 import { v4 } from "uuid";
 import { Server } from "socket.io";
-import { ApolloServer } from "apollo-server-express";
 import low from "lowdb";
 import FileAsync from "lowdb/adapters/FileAsync.js";
 import Client from "./client";
 import groupApp from "./group";
-import Store from "./store";
 import userApp from "./user";
-import { resolvers, typeDefs } from "./schema";
+import apolloServer from "./apollo";
 
 const PORT = 3001;
 const rootDir = path.resolve();
@@ -45,12 +43,7 @@ low(adapter)
     app.use("/user", userApp({ db }));
     app.use("/group", groupApp({ db }));
 
-    const apollo = new ApolloServer({
-      typeDefs,
-      resolvers,
-      context: () => ({ store: new Store(db) }),
-    });
-    apollo.applyMiddleware({ app });
+    apolloServer({ app, db });
 
     server.listen(PORT, () => {
       console.log(`Serving at http://localhost:${PORT}`);

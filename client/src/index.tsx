@@ -1,16 +1,10 @@
 import React from "react";
 import ReactDOM from "react-dom";
-import { ApolloClient, ApolloProvider, InMemoryCache } from "@apollo/client";
+import { ApolloProvider } from "@apollo/client";
 import "./index.css";
 import App from "./App";
+import client from "./apollo";
 import reportWebVitals from "./reportWebVitals";
-
-const API_ROOT_URL = process.env.PUBLIC_URL;
-
-const client = new ApolloClient({
-  uri: `${API_ROOT_URL}/graphql`,
-  cache: new InMemoryCache(),
-});
 
 ReactDOM.render(
   <React.StrictMode>
