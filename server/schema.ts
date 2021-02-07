@@ -10,16 +10,24 @@ export const typeDefs = gql`
 
   type Team {
     name: String
+    members: [User]
+  }
+
+  type Options {
+    teams: Int
+    turnDurationSeconds: Int
   }
 
   type Game {
     round: Int
     users: [User]
     teams: [Team]
+    options: Options
   }
 
   type Query {
     game(id: String): Game
+    hello: String
   }
 `;
 
@@ -29,5 +37,6 @@ export const resolvers = {
       const state = await context.store.readGameState(args.id);
       return state;
     },
+    hello: () => "server says yes",
   },
 };

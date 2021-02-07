@@ -35,11 +35,15 @@ const makeRouter = ({ db }: { db: Database }) => {
   router.get("/:id", async (req, res) => {
     const { id } = req.params;
     const data = await store.findGroupByID(id);
-    const dto: RetrieveGroupResponse = {
-      id: data.id,
-      game: data.game ? summariseConfiguration(data.game) : null,
-    };
-    res.send(dto);
+    if (data) {
+      const dto: RetrieveGroupResponse = {
+        id: data.id,
+        game: data.game ? summariseConfiguration(data.game) : null,
+      };
+      res.send(dto);
+    } else {
+      res.sendStatus(404);
+    }
   });
 
   return router;
