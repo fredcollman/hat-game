@@ -14,8 +14,8 @@ const PORT = 3001;
 const rootDir = path.resolve();
 
 const app = express();
-const server = http.createServer(app);
-const io = new Server(server);
+const httpServer = http.createServer(app);
+const io = new Server(httpServer);
 
 app.use((req, res, next) => {
   const id = v4();
@@ -43,10 +43,13 @@ low(adapter)
     app.use("/user", userApp({ db }));
     app.use("/group", groupApp({ db }));
 
-    apolloServer({ app, db });
+    const apollo = apolloServer({ app, db, httpServer });
 
-    server.listen(PORT, () => {
-      console.log(`Serving at http://localhost:${PORT}`);
+    httpServer.listen(PORT, () => {
+      console.log(`Serving at http://localhost:${PORT}${apollo.graphqlPath}`);
+      console.log(
+        `Subscriptions ready at ws://localhost:${PORT}${apollo.subscriptionsPath}`,
+      );
     });
 
     io.on("connection", (socket) => {

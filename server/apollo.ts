@@ -1,3 +1,4 @@
+import { Server } from "http";
 import { Application, Request } from "express";
 import { ApolloServer } from "apollo-server-express";
 import { validate } from "uuid";
@@ -12,18 +13,30 @@ const getUser = async ({ req, store }: { req: Request; store: Store }) => {
   return user;
 };
 
-const apolloServer = ({ app, db }: { app: Application; db: Database }) => {
+const apolloServer = ({
+  app,
+  db,
+  httpServer,
+}: {
+  app: Application;
+  db: Database;
+  httpServer: Server;
+}) => {
   const apollo = new ApolloServer({
     typeDefs,
     resolvers,
-    context: async ({ req }) => {
+    context: async ({ req, connection }) => {
       const store = new Store(db);
-      const user = await getUser({ req, store });
-      console.log("apolloServer user", user);
-      return { store, user };
+      if (req) {
+        const user = await getUser({ req, store });
+        console.log("apolloServer user", user);
+        return { store, user };
+      }
+      return { store, user: null };
     },
   });
   apollo.applyMiddleware({ app });
+  apollo.installSubscriptionHandlers(httpServer);
   return apollo;
 };
 

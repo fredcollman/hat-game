@@ -1,7 +1,10 @@
+import { PubSub } from "apollo-server-express";
 import { gql } from "apollo-server-express";
 import Store from "./store";
 
 type Context = { store: Store };
+
+const pubsub = new PubSub();
 
 export const typeDefs = gql`
   type User {
@@ -38,7 +41,13 @@ export const typeDefs = gql`
   type Mutation {
     registerUser(username: String!): UserInfo
   }
+
+  type Subscription {
+    playerJoined: User!
+  }
 `;
+
+const PLAYER_JOINED = "PLAYER_JOINED";
 
 export const resolvers = {
   Query: {
@@ -52,7 +61,13 @@ export const resolvers = {
     registerUser: async (root: any, args: any, context: Context) => {
       const { username } = args;
       const data = await context.store.addUser({ username });
+      pubsub.publish(PLAYER_JOINED, { playerJoined: data });
       return data;
+    },
+  },
+  Subscription: {
+    playerJoined: {
+      subscribe: () => pubsub.asyncIterator([PLAYER_JOINED]),
     },
   },
 };
