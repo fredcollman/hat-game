@@ -5,29 +5,38 @@ type Context = { store: Store };
 
 export const typeDefs = gql`
   type User {
-    username: String
+    username: String!
   }
 
   type Team {
-    name: String
-    members: [User]
+    name: String!
+    members: [User!]!
   }
 
   type Options {
-    teams: Int
-    turnDurationSeconds: Int
+    teams: Int!
+    turnDurationSeconds: Int!
   }
 
   type Game {
-    round: Int
-    users: [User]
-    teams: [Team]
-    options: Options
+    round: Int!
+    users: [User!]!
+    teams: [Team!]!
+    options: Options!
   }
 
   type Query {
-    game(id: String): Game
+    game(id: String!): Game
     hello: String
+  }
+
+  type UserInfo {
+    username: String
+    id: ID
+  }
+
+  type Mutation {
+    registerUser(username: String!): UserInfo
   }
 `;
 
@@ -38,5 +47,12 @@ export const resolvers = {
       return state;
     },
     hello: () => "server says yes",
+  },
+  Mutation: {
+    registerUser: async (root: any, args: any, context: Context) => {
+      const { username } = args;
+      const data = await context.store.addUser({ username });
+      return data;
+    },
   },
 };
