@@ -99,14 +99,11 @@ export const startGroup = (): Action<void> =>
     dispatch({ type: "JOINED_GROUP", data: { groupID: id } });
   };
 
-export const joinGroup = ({
-  userID,
-  groupID,
-}: {
-  userID: string;
-  groupID: string;
-}): Action<void> =>
-  async ({ apollo, dispatch }) => {
+export const joinGroup = (groupID: string): Action<void> =>
+  async ({
+    apollo,
+    dispatch,
+  }) => {
     const mutated = await apollo.mutate({
       mutation: JOIN_GROUP,
       variables: { groupID: groupID.toUpperCase() },

@@ -10,7 +10,6 @@ interface Props {
 
 const SelectGroup = ({ state }: Props) => {
   const perform = usePerform();
-  const { userID } = state;
 
   const handleClick = () => {
     perform(startGroup());
@@ -18,7 +17,7 @@ const SelectGroup = ({ state }: Props) => {
 
   const handleSubmit = (e: FormEvent) => {
     const form = e.target as HTMLFormElement;
-    perform(joinGroup({ userID, groupID: form["groupID"].value }));
+    perform(joinGroup(form["groupID"].value));
   };
 
   return (
