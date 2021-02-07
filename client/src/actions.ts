@@ -26,6 +26,19 @@ const START_GROUP = gql`
   }
 `;
 
+const JOIN_GROUP = gql`
+  mutation JoinGroup($groupID: String!) {
+    joinGroup(id: $groupID) {
+      id
+      game {
+        teams {
+          name
+        }
+      }
+    }
+  }
+`;
+
 export const addUser = (username: string): Action<void> =>
   async ({
     dispatch,
@@ -93,6 +106,11 @@ export const joinGroup = ({
   userID: string;
   groupID: string;
 }): Action<void> =>
-  async ({ socket }) => {
-    socket.emit("JOIN_GROUP", { userID, groupID: groupID.toUpperCase() });
+  async ({ apollo, dispatch }) => {
+    const mutated = await apollo.mutate({
+      mutation: JOIN_GROUP,
+      variables: { groupID: groupID.toUpperCase() },
+    });
+    const { id } = mutated.data.joinGroup;
+    dispatch({ type: "JOINED_GROUP", data: { groupID: id } });
   };

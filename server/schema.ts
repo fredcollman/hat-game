@@ -46,6 +46,7 @@ export const typeDefs = gql`
   type Mutation {
     registerUser(username: String!): UserInfo
     startGroup: Group
+    joinGroup(id: String!): Group
   }
 
   type Subscription {
@@ -73,6 +74,14 @@ export const resolvers = {
     startGroup: async (root: any, args: any, context: Context) => {
       if (!context.user) return; // TODO: what should we do here, throw an error instead?
       const data = await context.store.addGroup(context.user.id);
+      return data;
+    },
+    joinGroup: async (root: any, args: any, context: Context) => {
+      if (!context.user) return; // TODO: what should we do here, throw an error instead?
+      const data = await context.store.joinGroup({
+        userID: context.user.id,
+        groupID: args.id,
+      });
       return data;
     },
   },
