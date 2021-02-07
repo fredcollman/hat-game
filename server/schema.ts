@@ -1,8 +1,8 @@
-import { PubSub } from "apollo-server-express";
-import { gql } from "apollo-server-express";
+import { gql, PubSub } from "apollo-server-express";
 import Store from "./store";
+import { User } from "./game";
 
-type Context = { store: Store };
+type Context = { store: Store; user: User | null };
 
 const pubsub = new PubSub();
 
@@ -28,6 +28,11 @@ export const typeDefs = gql`
     options: Options!
   }
 
+  type Group {
+    game: Game!
+    id: String!
+  }
+
   type Query {
     game(id: String!): Game
     hello: String
@@ -40,6 +45,7 @@ export const typeDefs = gql`
 
   type Mutation {
     registerUser(username: String!): UserInfo
+    startGroup: Group
   }
 
   type Subscription {
@@ -62,6 +68,11 @@ export const resolvers = {
       const { username } = args;
       const data = await context.store.addUser({ username });
       pubsub.publish(PLAYER_JOINED, { playerJoined: data });
+      return data;
+    },
+    startGroup: async (root: any, args: any, context: Context) => {
+      if (!context.user) return; // TODO: what should we do here, throw an error instead?
+      const data = await context.store.addGroup(context.user.id);
       return data;
     },
   },

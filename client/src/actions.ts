@@ -13,6 +13,19 @@ const ADD_USER = gql`
   }
 `;
 
+const START_GROUP = gql`
+  mutation StartGroup {
+    startGroup {
+      id
+      game {
+        teams {
+          name
+        }
+      }
+    }
+  }
+`;
+
 export const addUser = (username: string): Action<void> =>
   async ({
     dispatch,
@@ -64,11 +77,13 @@ export const loadGroupInfo = (groupID: string): Action<void> =>
     });
   };
 
-export const startGroup = (userID: string): Action<void> =>
-  async ({
-    socket,
-  }) => {
-    socket.emit("START_GROUP", { userID });
+export const startGroup = (): Action<void> =>
+  async ({ apollo, dispatch }) => {
+    const mutated = await apollo.mutate({
+      mutation: START_GROUP,
+    });
+    const { id } = mutated.data.startGroup;
+    dispatch({ type: "JOINED_GROUP", data: { groupID: id } });
   };
 
 export const joinGroup = ({

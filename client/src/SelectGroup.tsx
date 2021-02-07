@@ -13,7 +13,7 @@ const SelectGroup = ({ state }: Props) => {
   const { userID } = state;
 
   const handleClick = () => {
-    perform(startGroup(userID));
+    perform(startGroup());
   };
 
   const handleSubmit = (e: FormEvent) => {
