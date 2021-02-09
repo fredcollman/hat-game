@@ -4,27 +4,13 @@ import Suggestions from "./Suggestions";
 import usePerform from "./usePerform";
 import useSender from "./useSender";
 import GroupInfo from "./GroupInfo";
-import Loading from "./Loading";
 import { ConfigureGamePhase } from "./game";
 import { loadGroupInfo, notifyGroupUpdated } from "./actions";
-import { gql, useQuery, useSubscription } from "@apollo/client";
-import { GAME_DETAILS, GameDetails, GroupDetails } from "./dto";
+import { gql, useSubscription } from "@apollo/client";
+import { GAME_DETAILS, GroupDetails } from "./dto";
 
 interface Props {
   state: ConfigureGamePhase;
-}
-
-const GAME = gql`
-  query loadGame($groupID: String!) {
-    game(id: $groupID) {
-      ...GameDetails
-    }
-  }
-  ${GAME_DETAILS}
-`;
-
-interface GameQueryResult {
-  game: GameDetails;
 }
 
 const GROUP_UPDATED_SUBSCRIPTION = gql`
@@ -46,8 +32,7 @@ interface SubscriptionResult {
 const RoundZero = ({ state }: Props) => {
   const perform = usePerform();
   const startGame = useSender("START_GAME");
-  const { suggestionCount, groupID } = state;
-  const result = useQuery<GameQueryResult>(GAME, { variables: { groupID } });
+  const { suggestionCount, groupID, teams, turnDurationSeconds } = state;
   useSubscription<SubscriptionResult>(GROUP_UPDATED_SUBSCRIPTION, {
     variables: { groupID },
     onSubscriptionData: ({ subscriptionData }) =>
@@ -61,15 +46,10 @@ const RoundZero = ({ state }: Props) => {
     }
   }, [perform, groupID]);
 
-  if (result.loading) return <Loading />;
-  if (!result.data) return <>Error: data not found</>;
-
-  const { teams, options } = result.data.game;
   const numTeams = teams.length;
   const numPlayers = teams
     .map((t) => t.members.length)
     .reduce((acc, val) => acc + val, 0);
-  const { turnDurationSeconds } = options;
 
   return (
     <>

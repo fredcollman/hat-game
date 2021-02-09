@@ -6,11 +6,11 @@ export const GAME_DETAILS = gql`
     teams {
       name
       members {
+        id
         username
       }
     }
     users {
-      id
       username
     }
     options {
