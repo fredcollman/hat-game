@@ -8,6 +8,7 @@ import Loading from "./Loading";
 import { ConfigureGamePhase } from "./game";
 import { loadGroupInfo, notifyGroupUpdated } from "./actions";
 import { gql, useQuery, useSubscription } from "@apollo/client";
+import { GAME_DETAILS, GameDetails, GroupDetails } from "./dto";
 
 interface Props {
   state: ConfigureGamePhase;
@@ -16,34 +17,14 @@ interface Props {
 const GAME = gql`
   query loadGame($groupID: String!) {
     game(id: $groupID) {
-      round
-      teams {
-        name
-        members {
-          username
-        }
-      }
-      users {
-        username
-      }
-      options {
-        turnDurationSeconds
-      }
+      ...GameDetails
     }
   }
+  ${GAME_DETAILS}
 `;
 
 interface GameQueryResult {
-  game: {
-    round: number;
-    teams: {
-      name: string;
-      members: {
-        username: string;
-      }[];
-    }[];
-    options: { turnDurationSeconds: number };
-  };
+  game: GameDetails;
 }
 
 const GROUP_UPDATED_SUBSCRIPTION = gql`
@@ -51,25 +32,28 @@ const GROUP_UPDATED_SUBSCRIPTION = gql`
     groupUpdated(groupID: $groupID) {
       id
       game {
-        suggestions {
-          count
-        }
+        ...GameDetails
       }
     }
   }
+  ${GAME_DETAILS}
 `;
+
+interface SubscriptionResult {
+  groupUpdated: GroupDetails;
+}
 
 const RoundZero = ({ state }: Props) => {
   const perform = usePerform();
   const startGame = useSender("START_GAME");
   const { suggestionCount, groupID } = state;
   const result = useQuery<GameQueryResult>(GAME, { variables: { groupID } });
-  useSubscription(GROUP_UPDATED_SUBSCRIPTION, {
+  useSubscription<SubscriptionResult>(GROUP_UPDATED_SUBSCRIPTION, {
     variables: { groupID },
     onSubscriptionData: ({ subscriptionData }) =>
+      subscriptionData.data &&
       perform(notifyGroupUpdated(subscriptionData.data.groupUpdated)),
   });
-  console.log(result);
 
   useEffect(() => {
     if (groupID) {

@@ -8,6 +8,7 @@ const pubsub = new PubSub();
 
 export const typeDefs = gql`
   type User {
+    id: String!
     username: String!
   }
 

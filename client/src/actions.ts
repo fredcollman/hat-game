@@ -3,6 +3,7 @@ import { Action } from "./usePerform";
 import { retrieveGroup } from "./api";
 import { Team, User } from "./game";
 import { setAuth } from "./auth";
+import { GroupDetails } from "./dto";
 
 const ADD_USER = gql`
   mutation AddUser($username: String!) {
@@ -139,17 +140,10 @@ export const addSuggestion = ({
     dispatch({ type: "NEW_SUGGESTION", data: { count: suggestions.count } });
   };
 
-type GroupUpdatedPayload = {
-  id: string;
-  game: {
-    suggestions: {
-      count: number;
-    };
-  };
-};
+export type GroupUpdatedMessage = GroupDetails;
 
 export const notifyGroupUpdated = (
-  group: GroupUpdatedPayload,
+  group: GroupDetails,
 ): Action<void> =>
   async ({ dispatch }) => {
     dispatch({ type: "GROUP_UPDATED", data: group });
