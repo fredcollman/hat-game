@@ -1,5 +1,5 @@
-import { gql, PubSub } from "apollo-server-express";
-import Store from "./store";
+import { gql, PubSub, withFilter } from "apollo-server-express";
+import Store, { Group } from "./store";
 import { addSuggestion, State, User } from "./game";
 
 type Context = { store: Store; user: User | null };
@@ -50,22 +50,28 @@ export const typeDefs = gql`
   }
 
   type Mutation {
-    registerUser(username: String!): UserInfo
-    startGroup: Group
-    joinGroup(id: String!): Group
-    addSuggestion(groupID: String!, suggestion: String!): Game
+    registerUser(username: String!): UserInfo!
+    startGroup: Group!
+    joinGroup(id: String!): Group!
+    addSuggestion(groupID: String!, suggestion: String!): Game!
   }
 
   type Subscription {
     playerJoined: User!
+    groupUpdated(groupID: String!): Group!
   }
 `;
 
 const PLAYER_JOINED = "PLAYER_JOINED";
+const GROUP_UPDATED = "GROUP_UPDATED";
 
 const formatGame = (game: State, userID: String) => {
   const suggestions = { count: game.suggestions.length, yours: [] };
   return { ...game, suggestions };
+};
+
+const formatGroup = (group: Group, userID: String) => {
+  return { ...group, game: formatGame(group.game, userID) };
 };
 
 export const resolvers = {
@@ -80,34 +86,47 @@ export const resolvers = {
   Mutation: {
     registerUser: async (root: any, args: any, context: Context) => {
       const { username } = args;
-      const data = await context.store.addUser({ username });
-      pubsub.publish(PLAYER_JOINED, { playerJoined: data });
-      return data;
+      const user = await context.store.addUser({ username });
+      pubsub.publish(PLAYER_JOINED, { playerJoined: user });
+      return user;
     },
     startGroup: async (root: any, args: any, context: Context) => {
       if (!context.user) return;
-      const data = await context.store.addGroup(context.user.id);
-      return data;
+      const group = await context.store.addGroup(context.user.id);
+      return group;
     },
     joinGroup: async (root: any, args: any, context: Context) => {
       if (!context.user) return;
-      const data = await context.store.joinGroup({
+      const group = await context.store.joinGroup({
         userID: context.user.id,
         groupID: args.id,
       });
-      return data;
+      const groupUpdated = formatGroup(group, context.user.id);
+      pubsub.publish(GROUP_UPDATED, { groupUpdated });
+      return groupUpdated;
     },
     addSuggestion: async (root: any, args: any, context: Context) => {
       if (!context.user) return;
-      const data = await context.store.withGame(args.groupID)(
+      const game = await context.store.withGame(args.groupID)(
         addSuggestion(args.suggestion),
       );
-      return formatGame(data, context.user.id);
+      const groupUpdated = formatGroup(
+        { id: args.groupID, game },
+        context.user.id,
+      );
+      pubsub.publish(GROUP_UPDATED, { groupUpdated });
+      return groupUpdated.game;
     },
   },
   Subscription: {
     playerJoined: {
       subscribe: () => pubsub.asyncIterator([PLAYER_JOINED]),
+    },
+    groupUpdated: {
+      subscribe: withFilter(
+        () => pubsub.asyncIterator(GROUP_UPDATED),
+        (payload, variables) => payload.groupUpdated.id === variables.groupID,
+      ),
     },
   },
 };

@@ -8,7 +8,7 @@ interface User {
   username: string;
 }
 
-interface Group {
+export interface Group {
   id: string;
   game: State;
 }
