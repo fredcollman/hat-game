@@ -1,9 +1,8 @@
 import { gql } from "@apollo/client";
 import { Action } from "./usePerform";
-import { retrieveGroup } from "./api";
 import { Team, User } from "./game";
 import { setAuth } from "./auth";
-import { GroupDetails } from "./dto";
+import { GAME_DETAILS, GameDetails, GroupDetails } from "./dto";
 
 const ADD_USER = gql`
   mutation AddUser($username: String!) {
@@ -78,27 +77,38 @@ export interface RetrievedGroupMessage {
   suggestionCount: number;
 }
 
+const GAME = gql`
+  query loadGame($groupID: String!) {
+    game(id: $groupID) {
+      ...GameDetails
+    }
+  }
+  ${GAME_DETAILS}
+`;
+
 export const loadGroupInfo = (groupID: string): Action<void> =>
   async ({
+    apollo,
     dispatch,
   }) => {
-    const result = await retrieveGroup(groupID);
-    const data: RetrievedGroupMessage = {
-      teams: result.game.teams.map((t) => ({
+    const queried = await apollo.query<
+      { game: GameDetails },
+      { groupID: string }
+    >({ query: GAME, variables: { groupID } });
+    const { game } = queried.data;
+    const message: RetrievedGroupMessage = {
+      teams: game.teams.map((t) => ({
         name: t.name,
         members: t.members,
       })),
-      users: result.game.users.map((u) => ({
-        id: u.id,
-        username: u.username,
-      })),
-      turnDurationSeconds: result.game.options.turnDurationSeconds,
-      numTeams: result.game.options.teams,
-      suggestionCount: result.game.suggestionCount,
+      users: game.teams.map((t) => t.members).flat(1),
+      turnDurationSeconds: game.options.turnDurationSeconds,
+      numTeams: game.teams.length,
+      suggestionCount: game.suggestions.count,
     };
     dispatch({
       type: "RETRIEVED_GROUP",
-      data,
+      data: message,
     });
   };
 

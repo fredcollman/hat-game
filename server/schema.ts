@@ -12,6 +12,11 @@ export const typeDefs = gql`
     username: String!
   }
 
+  type UserInfo {
+    id: ID
+    username: String
+  }
+
   type Team {
     name: String!
     members: [User!]!
@@ -43,11 +48,6 @@ export const typeDefs = gql`
   type Query {
     game(id: String!): Game
     hello: String
-  }
-
-  type UserInfo {
-    username: String
-    id: ID
   }
 
   type Mutation {
