@@ -6,7 +6,7 @@ import useSender from "./useSender";
 import GroupInfo from "./GroupInfo";
 import Loading from "./Loading";
 import { ConfigureGamePhase } from "./game";
-import { loadGroupInfo } from "./actions";
+import { loadGroupInfo, notifyGroupUpdated } from "./actions";
 import { gql, useQuery, useSubscription } from "@apollo/client";
 
 interface Props {
@@ -46,10 +46,15 @@ interface GameQueryResult {
   };
 }
 
-const PLAYER_JOINED_SUBSCRIPTION = gql`
-  subscription OnPlayerJoined {
-    playerJoined {
-      username
+const GROUP_UPDATED_SUBSCRIPTION = gql`
+  subscription OnGroupUpdated($groupID: String!) {
+    groupUpdated(groupID: $groupID) {
+      id
+      game {
+        suggestions {
+          count
+        }
+      }
     }
   }
 `;
@@ -59,8 +64,10 @@ const RoundZero = ({ state }: Props) => {
   const startGame = useSender("START_GAME");
   const { suggestionCount, groupID } = state;
   const result = useQuery<GameQueryResult>(GAME, { variables: { groupID } });
-  useSubscription(PLAYER_JOINED_SUBSCRIPTION, {
-    onSubscriptionData: console.log,
+  useSubscription(GROUP_UPDATED_SUBSCRIPTION, {
+    variables: { groupID },
+    onSubscriptionData: ({ subscriptionData }) =>
+      perform(notifyGroupUpdated(subscriptionData.data.groupUpdated)),
   });
   console.log(result);
 

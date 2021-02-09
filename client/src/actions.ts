@@ -138,3 +138,19 @@ export const addSuggestion = ({
     const { suggestions } = mutated.data.addSuggestion;
     dispatch({ type: "NEW_SUGGESTION", data: { count: suggestions.count } });
   };
+
+type GroupUpdatedPayload = {
+  id: string;
+  game: {
+    suggestions: {
+      count: number;
+    };
+  };
+};
+
+export const notifyGroupUpdated = (
+  group: GroupUpdatedPayload,
+): Action<void> =>
+  async ({ dispatch }) => {
+    dispatch({ type: "GROUP_UPDATED", data: group });
+  };

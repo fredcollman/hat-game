@@ -91,6 +91,9 @@ const reduceConfigureGame = (
         numTeams,
         suggestionCount,
       };
+    case "GROUP_UPDATED":
+      const { suggestions } = data.game;
+      return { ...state, suggestionCount: suggestions.count };
     default:
       console.warn("unhandled", type);
       return state;
