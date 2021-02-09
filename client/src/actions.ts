@@ -39,6 +39,17 @@ const JOIN_GROUP = gql`
   }
 `;
 
+const ADD_SUGGESTION = gql`
+  mutation AddSuggestion($groupID: String!, $suggestion: String!) {
+    addSuggestion(groupID: $groupID, suggestion: $suggestion) {
+      suggestions {
+        count
+        yours
+      }
+    }
+  }
+`;
+
 export const addUser = (username: string): Action<void> =>
   async ({
     dispatch,
@@ -110,4 +121,20 @@ export const joinGroup = (groupID: string): Action<void> =>
     });
     const { id } = mutated.data.joinGroup;
     dispatch({ type: "JOINED_GROUP", data: { groupID: id } });
+  };
+
+export const addSuggestion = ({
+  groupID,
+  suggestion,
+}: {
+  groupID: string;
+  suggestion: string;
+}): Action<void> =>
+  async ({ apollo, dispatch }) => {
+    const mutated = await apollo.mutate({
+      mutation: ADD_SUGGESTION,
+      variables: { groupID, suggestion },
+    });
+    const { suggestions } = mutated.data.addSuggestion;
+    dispatch({ type: "NEW_SUGGESTION", data: { count: suggestions.count } });
   };

@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { gql, useMutation } from "@apollo/client";
+import usePerform from "./usePerform";
 import SuggestionForm from "./SuggestionForm";
+import { addSuggestion } from "./actions";
 
 const YourSuggestions = ({ names }: { names: string[] }) => {
   if (!names.length) {
@@ -25,19 +26,8 @@ interface Props {
   groupID: string;
 }
 
-const ADD_SUGGESTION = gql`
-  mutation AddSuggestion($groupID: String!, $suggestion: String!) {
-    addSuggestion(groupID: $groupID, suggestion: $suggestion) {
-      suggestions {
-        count
-        yours
-      }
-    }
-  }
-`;
-
 const Suggestions = ({ count, groupID }: Props) => {
-  const [addSuggestion] = useMutation(ADD_SUGGESTION);
+  const perform = usePerform();
   const [yourSuggestions, setYourSuggestions] = useState<string[]>([]);
   const countText = count === 1
     ? "There is 1 name"
@@ -48,7 +38,7 @@ const Suggestions = ({ count, groupID }: Props) => {
         if (prev.includes(name)) {
           return prev;
         }
-        addSuggestion({ variables: { groupID, suggestion: name } });
+        perform(addSuggestion({ groupID, suggestion: name }));
         return [...prev, name];
       });
     }
