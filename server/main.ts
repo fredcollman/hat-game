@@ -6,8 +6,6 @@ import { Server } from "socket.io";
 import low from "lowdb";
 import FileAsync from "lowdb/adapters/FileAsync.js";
 import Client from "./client";
-import groupApp from "./group";
-import userApp from "./user";
 import apolloServer from "./apollo";
 
 const PORT = 3001;
@@ -40,9 +38,6 @@ low(adapter)
     return db;
   })
   .then((db) => {
-    app.use("/user", userApp({ db }));
-    app.use("/group", groupApp({ db }));
-
     const apollo = apolloServer({ app, db, httpServer });
 
     httpServer.listen(PORT, () => {
