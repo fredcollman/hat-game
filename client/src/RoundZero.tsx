@@ -2,12 +2,16 @@ import { useEffect } from "react";
 import StartGame from "./StartGame";
 import Suggestions from "./Suggestions";
 import usePerform from "./usePerform";
-import useSender from "./useSender";
 import GroupInfo from "./GroupInfo";
 import { ConfigureGamePhase } from "./game";
-import { loadGroupInfo, notifyGroupUpdated } from "./actions";
+import {
+  loadGroupInfo,
+  notifyGroupUpdated,
+  notifyTurnStarted,
+  startGame,
+} from "./actions";
 import { gql, useSubscription } from "@apollo/client";
-import { GAME_DETAILS, GroupDetails } from "./dto";
+import { GAME_DETAILS, GroupDetails, TURN_DETAILS, TurnDetails } from "./dto";
 
 interface Props {
   state: ConfigureGamePhase;
@@ -25,26 +29,49 @@ const GROUP_UPDATED_SUBSCRIPTION = gql`
   ${GAME_DETAILS}
 `;
 
-interface SubscriptionResult {
+const TURN_STARTED_SUBSCRIPTION = gql`
+  subscription OnTurnStarted($groupID: String!) {
+    turnStarted(groupID: $groupID) {
+      ...TurnDetails
+    }
+  }
+  ${TURN_DETAILS}
+`;
+
+interface GroupSubscriptionResult {
   groupUpdated: GroupDetails;
+}
+
+interface TurnSubscriptionResult {
+  turnStarted: TurnDetails;
 }
 
 const RoundZero = ({ state }: Props) => {
   const perform = usePerform();
-  const startGame = useSender("START_GAME");
   const { suggestionCount, groupID, teams, turnDurationSeconds } = state;
-  useSubscription<SubscriptionResult>(GROUP_UPDATED_SUBSCRIPTION, {
-    variables: { groupID },
-    onSubscriptionData: ({ subscriptionData }) =>
-      subscriptionData.data &&
-      perform(notifyGroupUpdated(subscriptionData.data.groupUpdated)),
-  });
 
   useEffect(() => {
     if (groupID) {
       perform(loadGroupInfo(groupID));
     }
   }, [perform, groupID]);
+  useSubscription<GroupSubscriptionResult>(GROUP_UPDATED_SUBSCRIPTION, {
+    variables: { groupID },
+    onSubscriptionData: ({ subscriptionData }) =>
+      subscriptionData.data &&
+      perform(notifyGroupUpdated(subscriptionData.data.groupUpdated)),
+  });
+  useSubscription<TurnSubscriptionResult>(TURN_STARTED_SUBSCRIPTION, {
+    variables: { groupID },
+    onSubscriptionData: ({ subscriptionData }) => {
+      subscriptionData.data &&
+        perform(notifyTurnStarted(subscriptionData.data.turnStarted));
+    },
+  });
+
+  const doStartGame = () => {
+    perform(startGame(groupID));
+  };
 
   const numTeams = teams.length;
   const numPlayers = teams
@@ -60,7 +87,7 @@ const RoundZero = ({ state }: Props) => {
         numPlayers={numPlayers}
         numTeams={numTeams}
         turnDuration={turnDurationSeconds}
-        startGame={startGame}
+        startGame={doStartGame}
       />
     </>
   );

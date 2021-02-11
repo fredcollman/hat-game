@@ -2,7 +2,7 @@ import { gql } from "@apollo/client";
 import { Action } from "./usePerform";
 import { Team, User } from "./game";
 import { setAuth } from "./auth";
-import { GAME_DETAILS, GameDetails, GroupDetails } from "./dto";
+import { GAME_DETAILS, GameDetails, GroupDetails, TurnDetails } from "./dto";
 
 const ADD_USER = gql`
   mutation AddUser($username: String!) {
@@ -157,4 +157,27 @@ export const notifyGroupUpdated = (
 ): Action<void> =>
   async ({ dispatch }) => {
     dispatch({ type: "GROUP_UPDATED", data: group });
+  };
+
+const START_GAME = gql`
+  mutation StartGame($groupID: String!) {
+    startGame(groupID: $groupID) {
+      round
+    }
+  }
+`;
+
+export const startGame = (groupID: string): Action<void> =>
+  async ({
+    apollo,
+  }) => {
+    await apollo.mutate({ mutation: START_GAME, variables: { groupID } });
+  };
+
+export const notifyTurnStarted = (turn: TurnDetails): Action<void> =>
+  async ({
+    dispatch,
+  }) => {
+    console.log("notifyTurnStarted", turn);
+    dispatch({ type: "NEW_TURN", data: turn });
   };

@@ -1,6 +1,12 @@
 import { gql, PubSub, withFilter } from "apollo-server-express";
 import Store, { Group } from "./store";
-import { addSuggestion, State, User } from "./game";
+import {
+  addSuggestion,
+  getCurrentTurnDetails,
+  start,
+  State,
+  User,
+} from "./game";
 
 type Context = { store: Store; user: User | null };
 
@@ -45,6 +51,18 @@ export const typeDefs = gql`
     id: String!
   }
 
+  type Describer {
+    id: String!
+    username: String!
+    team: String!
+  }
+
+  type Turn {
+    round: Int!
+    duration: Int!
+    describer: Describer!
+  }
+
   type Query {
     game(id: String!): Game
     hello: String
@@ -55,16 +73,19 @@ export const typeDefs = gql`
     startGroup: Group!
     joinGroup(id: String!): Group!
     addSuggestion(groupID: String!, suggestion: String!): Game!
+    startGame(groupID: String!): Turn!
   }
 
   type Subscription {
     playerJoined: User!
     groupUpdated(groupID: String!): Group!
+    turnStarted(groupID: String!): Turn!
   }
 `;
 
 const PLAYER_JOINED = "PLAYER_JOINED";
 const GROUP_UPDATED = "GROUP_UPDATED";
+const TURN_STARTED = "TURN_STARTED";
 
 const formatGame = (game: State, userID: String) => {
   const suggestions = { count: game.suggestions.length, yours: [] };
@@ -118,6 +139,16 @@ export const resolvers = {
       pubsub.publish(GROUP_UPDATED, { groupUpdated });
       return groupUpdated.game;
     },
+    startGame: async (root: any, args: any, context: Context) => {
+      if (!context.user) return;
+      const game = await context.store.withGame(args.groupID)(start);
+      const turn = getCurrentTurnDetails(game);
+      pubsub.publish(TURN_STARTED, {
+        groupID: args.groupID,
+        turnStarted: turn,
+      });
+      return turn;
+    },
   },
   Subscription: {
     playerJoined: {
@@ -127,6 +158,12 @@ export const resolvers = {
       subscribe: withFilter(
         () => pubsub.asyncIterator(GROUP_UPDATED),
         (payload, variables) => payload.groupUpdated.id === variables.groupID,
+      ),
+    },
+    turnStarted: {
+      subscribe: withFilter(
+        () => pubsub.asyncIterator(TURN_STARTED),
+        (payload, variables) => payload.groupID === variables.groupID,
       ),
     },
   },

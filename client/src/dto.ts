@@ -39,3 +39,25 @@ export interface GroupDetails {
   id: string;
   game: GameDetails;
 }
+
+export const TURN_DETAILS = gql`
+  fragment TurnDetails on Turn {
+    round
+    duration
+    describer {
+      id
+      username
+      team
+    }
+  }
+`;
+
+export interface TurnDetails {
+  round: number;
+  duration: number;
+  describer: {
+    id: string;
+    username: string;
+    team: string;
+  };
+}
