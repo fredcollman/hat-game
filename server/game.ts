@@ -98,6 +98,7 @@ export const getScores = (state: State) => {
 export const getNextSuggestion = (state: State) => {
   const nonSkipped = state.availableSuggestions.filter((s) => !s.skipped);
   const randomIndex = Math.floor(Math.random() * nonSkipped.length);
+  console.log(nonSkipped, randomIndex);
   return nonSkipped[randomIndex];
 };
 

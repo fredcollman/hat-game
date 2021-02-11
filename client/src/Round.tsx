@@ -28,7 +28,13 @@ interface Props {
 }
 
 const Round = ({ state }: Props) => {
-  const { describer, round, currentSuggestion, turnDurationSeconds } = state;
+  const {
+    describer,
+    round,
+    currentSuggestion,
+    turnDurationSeconds,
+    groupID,
+  } = state;
   return (
     <section className="stack-m">
       <h2>Round {round}</h2>
@@ -38,6 +44,7 @@ const Round = ({ state }: Props) => {
           <YourTurn
             turnDuration={turnDurationSeconds}
             suggestion={currentSuggestion}
+            groupID={groupID}
           />
         )
         : (

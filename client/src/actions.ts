@@ -181,3 +181,24 @@ export const notifyTurnStarted = (turn: TurnDetails): Action<void> =>
     console.log("notifyTurnStarted", turn);
     dispatch({ type: "NEW_TURN", data: turn });
   };
+
+const REQUEST_SUGGESTION = gql`
+  query NextSuggestion($groupID: String!) {
+    suggestion(groupID: $groupID)
+  }
+`;
+
+export const requestSuggestion = (groupID: string): Action<void> =>
+  async ({
+    apollo,
+    dispatch,
+  }) => {
+    const queried = await apollo.query<
+      { suggestion: string },
+      { groupID: string }
+    >({ query: REQUEST_SUGGESTION, variables: { groupID } });
+    dispatch({
+      type: "NEXT_SUGGESTION",
+      data: { name: queried.data.suggestion },
+    });
+  };

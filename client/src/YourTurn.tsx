@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import Countdown from "./Countdown";
 import useSender from "./useSender";
+import usePerform from "./usePerform";
+import { requestSuggestion } from "./actions";
 
 const COUNTDOWN_DURATION = 3;
 
@@ -54,17 +56,18 @@ const Describe = ({ turnDuration, suggestion, endTurn }: DescribeProps) => {
 interface Props {
   turnDuration: number;
   suggestion: string | null;
+  groupID: string;
 }
 
-const YourTurn = ({ turnDuration, suggestion }: Props) => {
+const YourTurn = ({ turnDuration, suggestion, groupID }: Props) => {
   const [status, setStatus] = useState("WAITING");
-  const requestSuggestion = useSender("REQUEST_SUGGESTION");
+  const perform = usePerform();
   const sendEndTurn = useSender("END_TURN");
   useEffect(() => {
     if (!suggestion) {
-      requestSuggestion();
+      perform(requestSuggestion(groupID));
     }
-  }, [suggestion, requestSuggestion]);
+  }, [suggestion, perform, groupID]);
   const beginTurn = () => {
     setStatus("STARTING");
   };

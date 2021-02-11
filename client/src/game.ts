@@ -19,7 +19,7 @@ interface TeamScore {
 }
 
 export interface GroupState {
-  groupID: string | null;
+  groupID: string;
   teams: Team[];
   userID: string;
   users: User[];
@@ -40,7 +40,6 @@ export interface SignUpPhase {
 }
 
 export interface ConfigureGamePhase extends GroupState, GameOptions {
-  groupID: string;
   phase: "CONFIGURE_GAME";
   suggestionCount: number;
 }

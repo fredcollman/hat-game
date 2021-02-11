@@ -3,6 +3,7 @@ import Store, { Group } from "./store";
 import {
   addSuggestion,
   getCurrentTurnDetails,
+  getNextSuggestion,
   start,
   State,
   User,
@@ -65,6 +66,7 @@ export const typeDefs = gql`
 
   type Query {
     game(id: String!): Game
+    suggestion(groupID: String!): String
     hello: String
   }
 
@@ -102,6 +104,15 @@ export const resolvers = {
       if (!context.user) return; // TODO: what should we do here, throw an error instead?
       const state = await context.store.readGameState(args.id);
       return formatGame(state, context.user.id);
+    },
+    suggestion: async (
+      root: any,
+      args: any,
+      context: Context,
+    ): Promise<string | undefined> => {
+      if (!context.user) return;
+      const state = await context.store.readGameState(args.groupID);
+      return getNextSuggestion(state).name;
     },
     hello: () => "server says yes",
   },
