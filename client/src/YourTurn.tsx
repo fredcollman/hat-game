@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import Countdown from "./Countdown";
 import useSender from "./useSender";
 import usePerform from "./usePerform";
-import { requestSuggestion } from "./actions";
+import { guessCorrectly, requestSuggestion, skip } from "./actions";
 
 const COUNTDOWN_DURATION = 3;
 
@@ -10,22 +10,27 @@ interface DescribeProps {
   turnDuration: number;
   suggestion: string;
   endTurn: () => void;
+  groupID: string;
 }
 
-const Describe = ({ turnDuration, suggestion, endTurn }: DescribeProps) => {
-  const guessCorrectly = useSender("GUESS_CORRECTLY");
-  const skip = useSender("SKIP");
+const Describe = ({
+  turnDuration,
+  suggestion,
+  endTurn,
+  groupID,
+}: DescribeProps) => {
+  const perform = usePerform();
   const [submitted, setSubmitted] = useState(false);
   useEffect(() => {
     setSubmitted(false);
   }, [suggestion]);
   const handleSkip = () => {
     setSubmitted(true);
-    skip({ name: suggestion });
+    perform(skip({ groupID, suggestion }));
   };
   const handleGuess = () => {
     setSubmitted(true);
-    guessCorrectly({ name: suggestion });
+    perform(guessCorrectly({ groupID, suggestion }));
   };
   return (
     <div className="stack-m center-text">
@@ -107,6 +112,7 @@ const YourTurn = ({ turnDuration, suggestion, groupID }: Props) => {
           turnDuration={turnDuration}
           suggestion={suggestion}
           endTurn={finishTurn}
+          groupID={groupID}
         />
       )}
       {status === "FINISHED" && "You can relax now, your turn is over."}

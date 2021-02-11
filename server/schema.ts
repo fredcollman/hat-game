@@ -4,6 +4,9 @@ import {
   addSuggestion,
   getCurrentTurnDetails,
   getNextSuggestion,
+  getScores,
+  guessCorrectly,
+  skip,
   start,
   State,
   User,
@@ -64,6 +67,17 @@ export const typeDefs = gql`
     describer: Describer!
   }
 
+  type Score {
+    name: String!
+    correct: Int!
+    skips: Int!
+  }
+
+  type DescriberUpdate {
+    scores: [Score!]!
+    suggestion: String
+  }
+
   type Query {
     game(id: String!): Game
     suggestion(groupID: String!): String
@@ -76,6 +90,8 @@ export const typeDefs = gql`
     joinGroup(id: String!): Group!
     addSuggestion(groupID: String!, suggestion: String!): Game!
     startGame(groupID: String!): Turn!
+    guessCorrectly(groupID: String!, suggestion: String!): DescriberUpdate!
+    skip(groupID: String!, suggestion: String!): DescriberUpdate!
   }
 
   type Subscription {
@@ -98,6 +114,17 @@ const formatGroup = (group: Group, userID: String) => {
   return { ...group, game: formatGame(group.game, userID) };
 };
 
+interface TeamScore {
+  name: string;
+  correct: number;
+  skips: number;
+}
+
+interface DescriberUpdate {
+  scores: TeamScore[];
+  suggestion: string | null;
+}
+
 export const resolvers = {
   Query: {
     game: async (root: any, args: any, context: Context) => {
@@ -112,7 +139,7 @@ export const resolvers = {
     ): Promise<string | undefined> => {
       if (!context.user) return;
       const state = await context.store.readGameState(args.groupID);
-      return getNextSuggestion(state).name;
+      return getNextSuggestion(state)?.name;
     },
     hello: () => "server says yes",
   },
@@ -159,6 +186,36 @@ export const resolvers = {
         turnStarted: turn,
       });
       return turn;
+    },
+    guessCorrectly: async (
+      root: any,
+      args: any,
+      context: Context,
+    ): Promise<DescriberUpdate | undefined> => {
+      if (!context.user) return;
+      const game = await context.store.withGame(args.groupID)(
+        guessCorrectly(args.suggestion),
+      );
+      const scores = getScores(game);
+      return {
+        scores,
+        suggestion: getNextSuggestion(game)?.name,
+      };
+    },
+    skip: async (
+      root: any,
+      args: any,
+      context: Context,
+    ): Promise<DescriberUpdate | undefined> => {
+      if (!context.user) return;
+      const game = await context.store.withGame(args.groupID)(
+        skip(args.suggestion),
+      );
+      const scores = getScores(game);
+      return {
+        scores,
+        suggestion: getNextSuggestion(game)?.name,
+      };
     },
   },
   Subscription: {

@@ -202,3 +202,59 @@ export const requestSuggestion = (groupID: string): Action<void> =>
       data: { name: queried.data.suggestion },
     });
   };
+
+interface DescriberUpdate {
+  suggestion: string | null;
+}
+
+const GUESS_CORRECTLY = gql`
+  mutation GuessCorrectly($groupID: String!, $suggestion: String!) {
+    guessCorrectly(groupID: $groupID, suggestion: $suggestion) {
+      suggestion
+    }
+  }
+`;
+
+export const guessCorrectly = (variables: {
+  groupID: string;
+  suggestion: string;
+}): Action<void> =>
+  async ({ apollo, dispatch }) => {
+    const mutated = await apollo.mutate<{ guessCorrectly: DescriberUpdate }>({
+      mutation: GUESS_CORRECTLY,
+      variables,
+    });
+    const { suggestion } = mutated.data?.guessCorrectly || {};
+    if (suggestion) {
+      dispatch({
+        type: "NEXT_SUGGESTION",
+        data: { name: suggestion },
+      });
+    }
+  };
+
+const SKIP = gql`
+  mutation Skip($groupID: String!, $suggestion: String!) {
+    skip(groupID: $groupID, suggestion: $suggestion) {
+      suggestion
+    }
+  }
+`;
+
+export const skip = (variables: {
+  groupID: string;
+  suggestion: string;
+}): Action<void> =>
+  async ({ apollo, dispatch }) => {
+    const mutated = await apollo.mutate<{ skip: DescriberUpdate }>({
+      mutation: SKIP,
+      variables,
+    });
+    const { suggestion } = mutated.data?.skip || {};
+    if (suggestion) {
+      dispatch({
+        type: "NEXT_SUGGESTION",
+        data: { name: suggestion },
+      });
+    }
+  };
