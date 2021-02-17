@@ -258,3 +258,19 @@ export const skip = (variables: {
       });
     }
   };
+
+const END_TURN = gql`
+  mutation EndTurn($groupID: String!) {
+    endTurn(groupID: $groupID) {
+      round
+    }
+  }
+`;
+
+export const endTurn = (groupID: string): Action<void> =>
+  async ({
+    apollo,
+    dispatch,
+  }) => {
+    await apollo.mutate({ mutation: END_TURN, variables: { groupID } });
+  };

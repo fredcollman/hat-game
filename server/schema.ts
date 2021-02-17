@@ -2,6 +2,7 @@ import { gql, PubSub, withFilter } from "apollo-server-express";
 import Store, { Group } from "./store";
 import {
   addSuggestion,
+  endTurn,
   getCurrentTurnDetails,
   getNextSuggestion,
   getScores,
@@ -92,6 +93,7 @@ export const typeDefs = gql`
     startGame(groupID: String!): Turn!
     guessCorrectly(groupID: String!, suggestion: String!): DescriberUpdate!
     skip(groupID: String!, suggestion: String!): DescriberUpdate!
+    endTurn(groupID: String!): Turn!
   }
 
   type Subscription {
@@ -217,6 +219,16 @@ export const resolvers = {
         suggestion: getNextSuggestion(game)?.name,
       };
     },
+    endTurn: async (root: any, args: any, context: Context) => {
+      if (!context.user) return;
+      const game = await context.store.withGame(args.groupID)(endTurn);
+      const turn = getCurrentTurnDetails(game);
+      pubsub.publish(TURN_STARTED, {
+        groupID: args.groupID,
+        turnStarted: turn,
+      });
+      return turn;
+    },
   },
   Subscription: {
     playerJoined: {
@@ -230,7 +242,10 @@ export const resolvers = {
     },
     turnStarted: {
       subscribe: withFilter(
-        () => pubsub.asyncIterator(TURN_STARTED),
+        () => {
+          console.log("notify subscription:turnStarted");
+          return pubsub.asyncIterator(TURN_STARTED);
+        },
         (payload, variables) => payload.groupID === variables.groupID,
       ),
     },

@@ -1,8 +1,7 @@
 import { useEffect, useState } from "react";
 import Countdown from "./Countdown";
-import useSender from "./useSender";
 import usePerform from "./usePerform";
-import { guessCorrectly, requestSuggestion, skip } from "./actions";
+import { endTurn, guessCorrectly, requestSuggestion, skip } from "./actions";
 
 const COUNTDOWN_DURATION = 3;
 
@@ -67,7 +66,6 @@ interface Props {
 const YourTurn = ({ turnDuration, suggestion, groupID }: Props) => {
   const [status, setStatus] = useState("WAITING");
   const perform = usePerform();
-  const sendEndTurn = useSender("END_TURN");
   useEffect(() => {
     if (!suggestion) {
       perform(requestSuggestion(groupID));
@@ -81,7 +79,7 @@ const YourTurn = ({ turnDuration, suggestion, groupID }: Props) => {
   };
   const finishTurn = () => {
     setStatus("FINISHED");
-    sendEndTurn();
+    perform(endTurn(groupID));
   };
   if (!suggestion) {
     return <>Loading...</>;

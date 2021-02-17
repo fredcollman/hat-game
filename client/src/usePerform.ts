@@ -25,7 +25,7 @@ const usePerform = <Result extends unknown>() => {
         action({ socket, dispatch, apollo });
       }
     },
-    [socket, dispatch],
+    [socket, dispatch, apollo],
   );
 };
 
