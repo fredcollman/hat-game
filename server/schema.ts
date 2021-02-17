@@ -127,6 +127,25 @@ interface DescriberUpdate {
   suggestion: string | null;
 }
 
+interface Turn {
+  round: number;
+  duration: number;
+  describer: {
+    id: string;
+    username: string;
+    team: string;
+  };
+}
+
+const notifyNewTurn = (groupID: string, game: State): Turn => {
+  const turn = getCurrentTurnDetails(game);
+  pubsub.publish(TURN_STARTED, {
+    groupID: groupID,
+    turnStarted: turn,
+  });
+  return turn;
+};
+
 export const resolvers = {
   Query: {
     game: async (root: any, args: any, context: Context) => {
@@ -179,15 +198,14 @@ export const resolvers = {
       pubsub.publish(GROUP_UPDATED, { groupUpdated });
       return groupUpdated.game;
     },
-    startGame: async (root: any, args: any, context: Context) => {
+    startGame: async (
+      root: any,
+      args: any,
+      context: Context,
+    ): Promise<Turn | undefined> => {
       if (!context.user) return;
       const game = await context.store.withGame(args.groupID)(start);
-      const turn = getCurrentTurnDetails(game);
-      pubsub.publish(TURN_STARTED, {
-        groupID: args.groupID,
-        turnStarted: turn,
-      });
-      return turn;
+      return notifyNewTurn(args.groupID, game);
     },
     guessCorrectly: async (
       root: any,
@@ -195,14 +213,20 @@ export const resolvers = {
       context: Context,
     ): Promise<DescriberUpdate | undefined> => {
       if (!context.user) return;
-      const game = await context.store.withGame(args.groupID)(
-        guessCorrectly(args.suggestion),
+      let suggestion: string | null = null;
+      const finalState = await context.store.withGame(args.groupID)(
+        (initial) => {
+          let game = initial;
+          game = guessCorrectly(args.suggestion)(game);
+          suggestion = getNextSuggestion(game)?.name;
+          if (!suggestion) {
+            game = endTurn(game);
+            notifyNewTurn(args.groupID, game);
+          }
+          return game;
+        },
       );
-      const scores = getScores(game);
-      return {
-        scores,
-        suggestion: getNextSuggestion(game)?.name,
-      };
+      return { scores: getScores(finalState), suggestion };
     },
     skip: async (
       root: any,
@@ -210,24 +234,29 @@ export const resolvers = {
       context: Context,
     ): Promise<DescriberUpdate | undefined> => {
       if (!context.user) return;
-      const game = await context.store.withGame(args.groupID)(
-        skip(args.suggestion),
+      let suggestion: string | null = null;
+      const finalState = await context.store.withGame(args.groupID)(
+        (initial) => {
+          let game = initial;
+          game = skip(args.suggestion)(game);
+          suggestion = getNextSuggestion(game)?.name;
+          if (!suggestion) {
+            game = endTurn(game);
+            notifyNewTurn(args.groupID, game);
+          }
+          return game;
+        },
       );
-      const scores = getScores(game);
-      return {
-        scores,
-        suggestion: getNextSuggestion(game)?.name,
-      };
+      return { scores: getScores(finalState), suggestion } as DescriberUpdate;
     },
-    endTurn: async (root: any, args: any, context: Context) => {
+    endTurn: async (
+      root: any,
+      args: any,
+      context: Context,
+    ): Promise<Turn | undefined> => {
       if (!context.user) return;
       const game = await context.store.withGame(args.groupID)(endTurn);
-      const turn = getCurrentTurnDetails(game);
-      pubsub.publish(TURN_STARTED, {
-        groupID: args.groupID,
-        turnStarted: turn,
-      });
-      return turn;
+      return notifyNewTurn(args.groupID, game);
     },
   },
   Subscription: {
