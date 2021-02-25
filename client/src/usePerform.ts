@@ -1,5 +1,4 @@
 import { Dispatch, useCallback } from "react";
-import { Socket } from "socket.io-client";
 import { ApolloClient, useApolloClient } from "@apollo/client";
 import useDispatch from "./useDispatch";
 import { Message } from "./utils";
