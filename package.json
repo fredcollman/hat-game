@@ -17,6 +17,7 @@
     "eslint-plugin-prettier": "^3.2.0",
     "eslint-plugin-react": "^7.21.5",
     "nodemon": "^2.0.7",
+    "playwright": "^1.9.1",
     "prettier": "^2.2.1",
     "stylelint": "^13.8.0",
     "stylelint-config-prettier": "^8.0.2",
@@ -38,6 +39,7 @@
     "server": "node build/main.js",
     "dev:server": "ts-node-dev --watch server server/main.ts",
     "lint": "eslint server/**/*.{js,ts}",
-    "tsc": "tsc"
+    "tsc": "tsc",
+    "test": "ts-node-dev e2e/demo.ts"
   }
 }
