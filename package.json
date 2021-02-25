@@ -42,7 +42,6 @@
     "dev:server": "ts-node-dev --watch server server/main.ts",
     "lint": "eslint server/**/*.{js,ts}",
     "tsc": "tsc",
-    "test": "jest",
-    "test:example": "ts-node-dev e2e/demo.ts"
+    "test": "jest"
   }
 }

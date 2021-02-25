@@ -48,8 +48,8 @@ describe("smoke tests", () => {
     await addName("Nick Frost", one);
     await one.click('button:has-text("Start")');
 
-    expect(await one.textContent("section h2")).toBe("Round 1");
-    expect(await two.textContent("section h2")).toBe("Round 1");
+    await one.textContent("section h2:has-text('Round 1')");
+    await two.textContent("section h2:has-text('Round 1')");
     expect(await one.textContent("section")).toMatch(/It's your turn/);
     expect(await two.textContent("section")).not.toMatch(/It's your turn/);
     expect(await two.textContent("section")).toMatch(/Alice is describing/);
@@ -58,15 +58,25 @@ describe("smoke tests", () => {
     await one.click('button:has-text("Got It")');
     await one.click('button:has-text("Got It")');
 
+    await one.textContent("section h2:has-text('Round 2')");
+    await two.textContent("section h2:has-text('Round 2')");
     await two.click('button:has-text("Start")');
     await two.click('button:has-text("Got It")');
     await two.click('button:has-text("Got It")');
 
+    await one.textContent("section h2:has-text('Round 3')");
+    await two.textContent("section h2:has-text('Round 3')");
     await one.click('button:has-text("Start")');
-    await one.click('button:has-text("Got It")');
-    await one.click('button:has-text("Got It")');
+    await one.click('button:has-text("Skip")');
+    await one.click('button:has-text("Skip")');
 
-    await one.textContent("section h2:has-text('Congrats to Team 1')");
-    await two.textContent("section h2:has-text('Congrats to Team 1')");
+    await one.textContent("section h2:has-text('Round 3')");
+    await two.textContent("section h2:has-text('Round 3')");
+    await two.click('button:has-text("Start")');
+    await two.click('button:has-text("Got It")');
+    await two.click('button:has-text("Got It")');
+
+    await one.textContent("section h2:has-text('Congrats to Team 2')");
+    await two.textContent("section h2:has-text('Congrats to Team 2')");
   });
 });
