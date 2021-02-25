@@ -94,7 +94,7 @@ const reduceConfigureGame = (
     }
     case "GROUP_UPDATED": {
       const { game } = data as GroupUpdatedMessage;
-      const { suggestions, teams } = game;
+      const { suggestions, teams, scores } = game;
       return { ...state, suggestionCount: suggestions.count, teams };
     }
     default:

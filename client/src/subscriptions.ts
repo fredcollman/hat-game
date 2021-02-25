@@ -1,12 +1,7 @@
 import { gql, useSubscription } from "@apollo/client";
 import usePerform from "./usePerform";
 import { GAME_DETAILS, GroupDetails, TURN_DETAILS, TurnDetails } from "./dto";
-import {
-  loadGroupInfo,
-  notifyGroupUpdated,
-  notifyTurnStarted,
-  startGame,
-} from "./actions";
+import { notifyGroupUpdated, notifyTurnStarted } from "./actions";
 
 const GROUP_UPDATED_SUBSCRIPTION = gql`
   subscription OnGroupUpdated($groupID: String!) {

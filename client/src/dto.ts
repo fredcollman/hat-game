@@ -19,6 +19,11 @@ export const GAME_DETAILS = gql`
     suggestions {
       count
     }
+    scores {
+      name
+      correct
+      skips
+    }
   }
 `;
 
@@ -33,6 +38,7 @@ export interface GameDetails {
   }[];
   options: { turnDurationSeconds: number };
   suggestions: { count: number };
+  scores: { name: string; correct: number; skips: number }[];
 }
 
 export interface GroupDetails {

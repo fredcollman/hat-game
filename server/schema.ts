@@ -49,6 +49,7 @@ export const typeDefs = gql`
     teams: [Team!]!
     options: Options!
     suggestions: Suggestions
+    scores: [Score!]!
   }
 
   type Group {
@@ -107,15 +108,6 @@ const PLAYER_JOINED = "PLAYER_JOINED";
 const GROUP_UPDATED = "GROUP_UPDATED";
 const TURN_STARTED = "TURN_STARTED";
 
-const formatGame = (game: State, userID: String) => {
-  const suggestions = { count: game.suggestions.length, yours: [] };
-  return { ...game, suggestions };
-};
-
-const formatGroup = (group: Group, userID: String) => {
-  return { ...group, game: formatGame(group.game, userID) };
-};
-
 interface TeamScore {
   name: string;
   correct: number;
@@ -137,6 +129,35 @@ interface Turn {
   };
 }
 
+interface Team {
+  name: string;
+  members: User[];
+}
+
+interface Suggestions {
+  count: number;
+  yours: string[];
+}
+
+interface Game {
+  round: number;
+  users: User[];
+  teams: Team[];
+  scores: TeamScore[];
+  options: {};
+  suggestions: Suggestions;
+}
+
+const formatGame = (game: State, userID: String): Game => {
+  const suggestions = { count: game.suggestions.length, yours: [] };
+  const scores = getScores(game);
+  return { ...game, scores, suggestions };
+};
+
+const formatGroup = (group: Group, userID: String) => {
+  return { ...group, game: formatGame(group.game, userID) };
+};
+
 const notifyNewTurn = (groupID: string, game: State): Turn => {
   const turn = getCurrentTurnDetails(game);
   pubsub.publish(TURN_STARTED, {
@@ -148,7 +169,11 @@ const notifyNewTurn = (groupID: string, game: State): Turn => {
 
 export const resolvers = {
   Query: {
-    game: async (root: any, args: any, context: Context) => {
+    game: async (
+      root: any,
+      args: any,
+      context: Context,
+    ): Promise<Game | undefined> => {
       if (!context.user) return; // TODO: what should we do here, throw an error instead?
       const state = await context.store.readGameState(args.id);
       return formatGame(state, context.user.id);
