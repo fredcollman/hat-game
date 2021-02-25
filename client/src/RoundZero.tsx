@@ -2,10 +2,10 @@ import { useEffect } from "react";
 import StartGame from "./StartGame";
 import Suggestions from "./Suggestions";
 import usePerform from "./usePerform";
-import useSender from "./useSender";
 import GroupInfo from "./GroupInfo";
 import { ConfigureGamePhase } from "./game";
-import { loadGroupInfo } from "./actions";
+import { loadGroupInfo, startGame } from "./actions";
+import { useGroupUpdates, useTurnStartNotifications } from "./subscriptions";
 
 interface Props {
   state: ConfigureGamePhase;
@@ -13,31 +13,35 @@ interface Props {
 
 const RoundZero = ({ state }: Props) => {
   const perform = usePerform();
-  const startGame = useSender("START_GAME");
-  const {
-    suggestionCount,
-    numTeams,
-    turnDurationSeconds,
-    users,
-    groupID,
-  } = state;
+  const { suggestionCount, groupID, teams, turnDurationSeconds } = state;
 
   useEffect(() => {
     if (groupID) {
       perform(loadGroupInfo(groupID));
     }
   }, [perform, groupID]);
+  useGroupUpdates(groupID);
+  useTurnStartNotifications(groupID);
+
+  const doStartGame = () => {
+    perform(startGame(groupID));
+  };
+
+  const numTeams = teams.length;
+  const numPlayers = teams
+    .map((t) => t.members.length)
+    .reduce((acc, val) => acc + val, 0);
 
   return (
     <>
       <GroupInfo state={state} />
-      <Suggestions count={suggestionCount} />
+      <Suggestions count={suggestionCount} groupID={groupID} />
       <StartGame
         suggestionCount={suggestionCount}
-        users={users}
+        numPlayers={numPlayers}
         numTeams={numTeams}
         turnDuration={turnDurationSeconds}
-        startGame={startGame}
+        startGame={doStartGame}
       />
     </>
   );

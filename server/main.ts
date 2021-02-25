@@ -2,19 +2,15 @@ import express from "express";
 import http from "http";
 import path from "path";
 import { v4 } from "uuid";
-import { Server } from "socket.io";
 import low from "lowdb";
 import FileAsync from "lowdb/adapters/FileAsync.js";
-import Client from "./client";
-import groupApp from "./group";
-import userApp from "./user";
+import apolloServer from "./apollo";
 
 const PORT = 3001;
 const rootDir = path.resolve();
 
 const app = express();
-const server = http.createServer(app);
-const io = new Server(server);
+const httpServer = http.createServer(app);
 
 app.use((req, res, next) => {
   const id = v4();
@@ -39,20 +35,12 @@ low(adapter)
     return db;
   })
   .then((db) => {
-    app.use("/user", userApp({ db }));
-    app.use("/group", groupApp({ db }));
+    const apollo = apolloServer({ app, db, httpServer });
 
-    server.listen(PORT, () => {
-      console.log(`Serving at http://localhost:${PORT}`);
-    });
-
-    io.on("connection", (socket) => {
-      console.log(`[${socket.id}] user connected`);
-      socket.on("disconnect", (reason: string) => {
-        console.log(`[${socket.id}] user disconnected for reason ${reason}`);
-        // TODO remove user from list of players
-      });
-
-      Client.prepare({ io, socket, db });
+    httpServer.listen(PORT, () => {
+      console.log(`Serving at http://localhost:${PORT}${apollo.graphqlPath}`);
+      console.log(
+        `Subscriptions ready at ws://localhost:${PORT}${apollo.subscriptionsPath}`,
+      );
     });
   });

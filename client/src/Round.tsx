@@ -1,6 +1,7 @@
 import { isThisPlayer } from "./utils";
 import YourTurn from "./YourTurn";
 import { Describer, PlayPhase } from "./game";
+import { useTurnStartNotifications } from "./subscriptions";
 
 const ROUND_DESCRIPTIONS: { [round: number]: string } = {
   1: "In Round 1, you can use as many words as you need to describe the name you draw.",
@@ -28,7 +29,14 @@ interface Props {
 }
 
 const Round = ({ state }: Props) => {
-  const { describer, round, currentSuggestion, turnDurationSeconds } = state;
+  const {
+    describer,
+    round,
+    currentSuggestion,
+    turnDurationSeconds,
+    groupID,
+  } = state;
+  useTurnStartNotifications(groupID);
   return (
     <section className="stack-m">
       <h2>Round {round}</h2>
@@ -38,6 +46,7 @@ const Round = ({ state }: Props) => {
           <YourTurn
             turnDuration={turnDurationSeconds}
             suggestion={currentSuggestion}
+            groupID={groupID}
           />
         )
         : (

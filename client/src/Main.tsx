@@ -1,24 +1,11 @@
-import { useEffect, useReducer } from "react";
-import "./reset.css";
-import "./variables.css";
-import "./global.css";
-import "./utility.css";
-import useSocket from "./useSocket";
+import { useReducer } from "react";
 import Layout from "./Layout";
 import CurrentPhase from "./CurrentPhase";
 import reducer, { initialize } from "./reducer";
 import { DispatchProvider } from "./useDispatch";
 
 const useDispatcher = () => {
-  const socket = useSocket();
   const [state, dispatch] = useReducer(reducer, initialize());
-  useEffect(() => {
-    if (socket) {
-      console.log("configuring socket via useDispatcher!");
-      socket.onAny((type, data) => dispatch({ type, data }));
-    }
-  }, [socket]);
-
   return { state, dispatch };
 };
 

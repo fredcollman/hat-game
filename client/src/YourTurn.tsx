@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import Countdown from "./Countdown";
-import useSender from "./useSender";
+import usePerform from "./usePerform";
+import { endTurn, guessCorrectly, requestSuggestion, skip } from "./actions";
 
 const COUNTDOWN_DURATION = 3;
 
@@ -8,22 +9,27 @@ interface DescribeProps {
   turnDuration: number;
   suggestion: string;
   endTurn: () => void;
+  groupID: string;
 }
 
-const Describe = ({ turnDuration, suggestion, endTurn }: DescribeProps) => {
-  const guessCorrectly = useSender("GUESS_CORRECTLY");
-  const skip = useSender("SKIP");
+const Describe = ({
+  turnDuration,
+  suggestion,
+  endTurn,
+  groupID,
+}: DescribeProps) => {
+  const perform = usePerform();
   const [submitted, setSubmitted] = useState(false);
   useEffect(() => {
     setSubmitted(false);
   }, [suggestion]);
   const handleSkip = () => {
     setSubmitted(true);
-    skip({ name: suggestion });
+    perform(skip({ groupID, suggestion }));
   };
   const handleGuess = () => {
     setSubmitted(true);
-    guessCorrectly({ name: suggestion });
+    perform(guessCorrectly({ groupID, suggestion }));
   };
   return (
     <div className="stack-m center-text">
@@ -54,17 +60,17 @@ const Describe = ({ turnDuration, suggestion, endTurn }: DescribeProps) => {
 interface Props {
   turnDuration: number;
   suggestion: string | null;
+  groupID: string;
 }
 
-const YourTurn = ({ turnDuration, suggestion }: Props) => {
+const YourTurn = ({ turnDuration, suggestion, groupID }: Props) => {
   const [status, setStatus] = useState("WAITING");
-  const requestSuggestion = useSender("REQUEST_SUGGESTION");
-  const sendEndTurn = useSender("END_TURN");
+  const perform = usePerform();
   useEffect(() => {
     if (!suggestion) {
-      requestSuggestion();
+      perform(requestSuggestion(groupID));
     }
-  }, [suggestion, requestSuggestion]);
+  }, [suggestion, perform, groupID]);
   const beginTurn = () => {
     setStatus("STARTING");
   };
@@ -73,7 +79,7 @@ const YourTurn = ({ turnDuration, suggestion }: Props) => {
   };
   const finishTurn = () => {
     setStatus("FINISHED");
-    sendEndTurn();
+    perform(endTurn(groupID));
   };
   if (!suggestion) {
     return <>Loading...</>;
@@ -104,6 +110,7 @@ const YourTurn = ({ turnDuration, suggestion }: Props) => {
           turnDuration={turnDuration}
           suggestion={suggestion}
           endTurn={finishTurn}
+          groupID={groupID}
         />
       )}
       {status === "FINISHED" && "You can relax now, your turn is over."}

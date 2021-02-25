@@ -1,16 +1,37 @@
+import { gql, useQuery } from "@apollo/client";
 import { isThisTeam } from "./utils";
 import { GameOverPhase } from "./game";
 import GroupInfo from "./GroupInfo";
+import { GAME_DETAILS, GameDetails } from "./dto";
 
 interface Props {
   state: GameOverPhase;
 }
 
+const GAME = gql`
+  query loadGame($groupID: String!) {
+    game(id: $groupID) {
+      ...GameDetails
+    }
+  }
+  ${GAME_DETAILS}
+`;
+
 const GameOver = ({ state }: Props) => {
-  const { scores } = state;
-  const ordered = scores.sort(
+  const { groupID } = state;
+  const { data } = useQuery<{ game: GameDetails }, { groupID: string }>(GAME, {
+    variables: { groupID },
+    fetchPolicy: "network-only",
+  });
+  console.log("GAME OVER", data);
+
+  if (!data) return <>Loading...</>;
+
+  const { scores } = data.game;
+  const ordered = [...scores].sort(
     (a, b) => b.correct - a.correct || a.skips - b.skips,
   );
+  console.log("GAME OVER ORDERED", ordered);
   return (
     <>
       <GroupInfo state={state} />

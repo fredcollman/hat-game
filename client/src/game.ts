@@ -19,7 +19,7 @@ interface TeamScore {
 }
 
 export interface GroupState {
-  groupID: string | null;
+  groupID: string;
   teams: Team[];
   userID: string;
   users: User[];

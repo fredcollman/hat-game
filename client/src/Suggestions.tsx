@@ -1,6 +1,7 @@
 import { useState } from "react";
+import usePerform from "./usePerform";
 import SuggestionForm from "./SuggestionForm";
-import useSender from "./useSender";
+import { addSuggestion } from "./actions";
 
 const YourSuggestions = ({ names }: { names: string[] }) => {
   if (!names.length) {
@@ -22,10 +23,11 @@ const YourSuggestions = ({ names }: { names: string[] }) => {
 
 interface Props {
   count: number;
+  groupID: string;
 }
 
-const Suggestions = ({ count }: Props) => {
-  const sendSuggestion = useSender("ADD_SUGGESTION");
+const Suggestions = ({ count, groupID }: Props) => {
+  const perform = usePerform();
   const [yourSuggestions, setYourSuggestions] = useState<string[]>([]);
   const countText = count === 1
     ? "There is 1 name"
@@ -36,7 +38,7 @@ const Suggestions = ({ count }: Props) => {
         if (prev.includes(name)) {
           return prev;
         }
-        sendSuggestion({ suggestion: name });
+        perform(addSuggestion({ groupID, suggestion: name }));
         return [...prev, name];
       });
     }
